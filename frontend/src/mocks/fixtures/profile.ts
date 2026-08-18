@@ -19,10 +19,10 @@ export const profileSeed: Profile = {
     interviewReminderAt: "21:00",
   },
   stats: {
-    storiesPublished: 214,
-    flashes: 38,
-    facts: 12,
-    draftsInProgress: 1,
+    storiesPublished: 6,
+    flashes: 4,
+    facts: 5,
+    draftsInProgress: 0,
   },
   sectionCounts: [
     { label: "עבודה", detail: "61 ידיעות · מדור ראשי" },

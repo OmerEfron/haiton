@@ -45,7 +45,13 @@ export function seed(): void {
     profileSeed.publishingSince,
   );
 
-  const { settings, stats, sectionCounts, archive } = profileSeed;
+  const { settings, sectionCounts, archive } = profileSeed;
+  const stats = {
+    storiesPublished: storiesSeed.length,
+    flashes: flashesSeed.length,
+    facts: factsSeed.length,
+    draftsInProgress: 0,
+  };
 
   db.prepare(
     `INSERT INTO edition_settings (user_id, edition_name, show_edition_tag, interview_reminder_at)
