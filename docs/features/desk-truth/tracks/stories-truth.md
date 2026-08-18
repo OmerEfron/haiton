@@ -44,4 +44,4 @@ Yes/no: `cd api && node --experimental-strip-types --test src/stories/stories.te
 
 ## Close notes
 
-_Not started._
+Done. Removed `FROZEN_OPEN_DRAFT`; `openDraft` is null unless `open_draft_title` is set. Publish rebuilds digests and section counts from stories. Commit `d14a57f` on `agent/feature/desk-truth/stories-truth`.

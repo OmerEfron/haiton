@@ -89,7 +89,7 @@ Add `invitation_meta` to `schema.sql`. No routers, no UI.
 ### Wave W1 — Parallel slices
 - id: `W1`
 - kind: `parallel`
-- status: `pending`
+- status: `complete`
 - tracks: `auth-errors`, `circle-invite`, `stories-truth`, `interview-desk`, `circle-edit`
 - isolation_default: `worktree`
 

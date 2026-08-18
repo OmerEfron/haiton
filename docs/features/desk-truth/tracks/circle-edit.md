@@ -45,4 +45,4 @@ Yes/no: `cd frontend && npm run lint` exits 0. `CirclePage.tsx` Edit and Manage 
 
 ## Close notes
 
-_Not started._
+Done. Desktop Edit and mobile Manage open `EditConnectionDialog`, which calls `updateConnection`. Commit `7dba414` on `agent/feature/desk-truth/circle-edit`.

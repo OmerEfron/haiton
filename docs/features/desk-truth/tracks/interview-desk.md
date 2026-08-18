@@ -57,4 +57,4 @@ Yes/no: `cd frontend && npm run lint` exits 0. `rg "db.facts" frontend/src/api/r
 
 ## Close notes
 
-_Not started._
+Done. Cold opener uses `listFacts()`. Save keeps the session; publish calls `discardSession`. One key `qk.interview`. Commit `e94880c` on `agent/feature/desk-truth/interview-desk`.

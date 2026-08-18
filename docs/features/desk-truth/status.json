@@ -3,7 +3,7 @@
   "feature_id": "desk-truth",
   "title": "Desk truth (split-brain + bugs)",
   "status": "in_progress",
-  "current_wave": "W1",
+  "current_wave": "Wint",
   "isolation_default": "worktree",
   "base_branch": "main",
   "tracks": [
@@ -32,7 +32,7 @@
       "id": "auth-errors",
       "wave": "W1",
       "isolation": "worktree",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["backend-engineer"],
       "branch": "agent/feature/desk-truth/auth-errors",
       "owns": ["api/src/auth/"],
@@ -54,7 +54,7 @@
       "id": "circle-invite",
       "wave": "W1",
       "isolation": "worktree",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["backend-engineer"],
       "branch": "agent/feature/desk-truth/circle-invite",
       "owns": ["api/src/circle/"],
@@ -77,7 +77,7 @@
       "id": "stories-truth",
       "wave": "W1",
       "isolation": "worktree",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["backend-engineer"],
       "branch": "agent/feature/desk-truth/stories-truth",
       "owns": ["api/src/stories/"],
@@ -100,7 +100,7 @@
       "id": "interview-desk",
       "wave": "W1",
       "isolation": "worktree",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["frontend-engineer"],
       "branch": "agent/feature/desk-truth/interview-desk",
       "owns": [
@@ -135,7 +135,7 @@
       "id": "circle-edit",
       "wave": "W1",
       "isolation": "worktree",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["frontend-engineer"],
       "branch": "agent/feature/desk-truth/circle-edit",
       "owns": [
@@ -219,7 +219,7 @@
     {
       "id": "W1",
       "kind": "parallel",
-      "status": "pending",
+      "status": "complete",
       "tracks": [
         "auth-errors",
         "circle-invite",
@@ -253,5 +253,5 @@
   ],
   "blockers": [],
   "open_decisions": [],
-  "last_updated": "2026-08-18T11:38:16Z"
+  "last_updated": "2026-08-18T11:43:45Z"
 }

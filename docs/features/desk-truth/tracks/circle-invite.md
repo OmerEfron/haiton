@@ -45,4 +45,4 @@ Yes/no: `cd api && node --experimental-strip-types --test src/circle/circle.test
 
 ## Close notes
 
-_Not started._
+Done. `POST /invitations` upserts `invitation_meta`; accept applies relation/section/settings. Suggested omits already-connected names; `updatedThisWeek` is a row count. Commit `4c54363` on `agent/feature/desk-truth/circle-invite`.

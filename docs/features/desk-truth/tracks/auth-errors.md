@@ -41,4 +41,4 @@ Yes/no: `cd api && node --experimental-strip-types --test src/auth/auth.test.ts`
 
 ## Close notes
 
-_Not started._
+Done. Duplicate email + wrong password on sign-up returns 400 with `הדוא״ל הזה כבר רשום`. Matching password still signs in. Commit `2b01817` on `agent/feature/desk-truth/auth-errors`.
