@@ -1,0 +1,19 @@
+{
+  "name": "iton-ai-reporter",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types -e \"process.exit(0)\""
+  },
+  "dependencies": {
+    "openai": "^6.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "typescript": "~6.0.2"
+  },
+  "engines": {
+    "node": ">=20.19"
+  }
+}

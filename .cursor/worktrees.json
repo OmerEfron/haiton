@@ -1,6 +1,8 @@
 {
   "setup-worktree": [
     "npm ci --prefix frontend",
-    "npm ci --prefix api"
+    "npm ci --prefix api",
+    "npm ci --prefix ai-reporter",
+    "test -f .env || { test -f \"$CURSOR_REPO/.env\" && cp \"$CURSOR_REPO/.env\" .env; } || true"
   ]
 }
