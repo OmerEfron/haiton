@@ -58,4 +58,4 @@ Yes/no: `cd ai-reporter && node --experimental-strip-types --test src/contract.t
 
 ## Close notes
 
-_Not started._
+Done. Frozen 8 PLAN.md routes in `ai-reporter/src/contract.ts`; `askedCount` ignores empty opening questions; defaults `intimate`/`feature`; Hono deps in lockfile; env names set. Contract tests pass (5). Zero live OpenAI. No listen. Commit `6d53fff`.

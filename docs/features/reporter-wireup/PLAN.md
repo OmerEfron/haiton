@@ -1,7 +1,7 @@
 # Feature plan — Reporter desk wire-up (user-first)
 
 - id: `reporter-wireup`
-- status: `planned`
+- status: `in_progress`
 - isolation_default: `worktree`
 - base_branch: `main`
 
@@ -88,7 +88,7 @@ Parent chat stays Grok 4.6.
 ### Wave W0 — HTTP contract + user-first rules
 - id: `W0`
 - kind: `sequential`
-- status: `pending`
+- status: `complete`
 - tracks: `contracts`
 - isolation_default: `sequential`
 
