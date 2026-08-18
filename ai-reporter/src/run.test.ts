@@ -82,8 +82,8 @@ describe("runReporter live e2e", () => {
       }
     }
 
-    assert.ok(questions.length >= 1 && questions.length <= 4, {
-      message: `expected 1–4 questions, got ${questions.length}`,
+    assert.ok(questions.length >= 1 && questions.length <= 3, {
+      message: `expected 1–3 questions, got ${questions.length}`,
     });
 
     const band = WORD_COUNT.feature;
@@ -105,7 +105,7 @@ describe("runReporter live e2e", () => {
     ].join("\n");
     assert.ok(!hasLongEnglishSentence(body), "article must be Hebrew");
 
-    assert.ok(llmCalls <= 5, `expected ≤5 LLM calls, got ${llmCalls}`);
+    assert.ok(llmCalls <= 4, `expected ≤4 LLM calls, got ${llmCalls}`);
 
     console.log("\n--- Questions ---");
     questions.forEach((q, i) => console.log(`Q${i + 1}: ${q}`));

@@ -1,6 +1,7 @@
 export const MODEL = "gpt-5.5";
 
-export const MAX_QUESTIONS = 4;
+/** Reader turns per interview, then the reporter stops and writes a draft. */
+export const MAX_MESSAGES = 4;
 
 export const GENERIC_QUESTION_NEEDLES = [
   "מה נשמע",

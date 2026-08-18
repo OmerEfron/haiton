@@ -26,6 +26,7 @@ export async function getSession(): Promise<InterviewSession | null> {
 export async function sendMessage(text: string): Promise<InterviewSession> {
   const session = await getSession();
   if (!session) throw new ApiError("אין ראיון פתוח", 409);
+  if (session.exhausted) throw new ApiError("הראיון הסתיים", 409);
   if (!text.trim()) throw new ApiError("אי אפשר לשלוח הודעה ריקה");
 
   return reporterRequest<InterviewSession>(`/interviews/${session.id}/messages`, {

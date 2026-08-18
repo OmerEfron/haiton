@@ -80,6 +80,6 @@ describe("writeArticle", () => {
     console.log(`Word count: ${words}`);
     console.log("Paragraphs:");
     article.paragraphs.forEach((p, i) => console.log(`  ${i + 1}. ${p}`));
-    console.log(`[llm] calls used: ${getCallCount()}/4`);
+    console.log(`[llm] calls used: ${getCallCount()}`);
   });
 });

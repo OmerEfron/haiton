@@ -17,6 +17,7 @@ export const desk = {
   writingDraft: "הכתב מנסח טיוטה…",
   suggestedOpeners: "התחלות מוצעות",
   noDraftYet: "אין טיוטה עדיין — כשתרצו ידיעה, בקשו מהכתב לנסח",
+  interviewClosed: "הכתב סיים לשאול — הטיוטה מוכנה לאישור",
 
   draft: "טיוטה",
   editing: "בעריכה",

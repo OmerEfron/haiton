@@ -7,7 +7,7 @@ import type {
   ToneId,
   Turn,
 } from "./types.js";
-import { MAX_QUESTIONS, askedCount } from "./types.js";
+import { MAX_MESSAGES } from "./types.js";
 import { writeArticle } from "./writer/writer.js";
 
 type RunReporterInput = {
@@ -63,19 +63,16 @@ export async function runReporter({
     });
     answerIdx += 1;
 
-    if (askedCount(turns) >= MAX_QUESTIONS) {
+    if (turns.length >= MAX_MESSAGES) {
       break;
     }
   }
-
-  const interviewerCalls = getCallCount();
-  resetCallCount();
 
   const article = await writeArticle({ facts, turns, tone, type });
 
   return {
     questions,
     article,
-    llmCalls: interviewerCalls + getCallCount(),
+    llmCalls: getCallCount(),
   };
 }

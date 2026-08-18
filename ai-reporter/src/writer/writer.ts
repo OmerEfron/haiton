@@ -138,7 +138,7 @@ ${formatTurns(turns)}
 
 כתוב את הכתבה.`;
 
-  const output = await complete({ instructions, input, budget: 4 });
+  const output = await complete({ instructions, input });
   const raw = parseArticleOutput(output, pickForm);
 
   return {

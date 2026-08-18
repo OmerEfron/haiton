@@ -206,9 +206,12 @@ export interface InterviewSession {
   draft: Draft;
   /** Offered as opening chips when the conversation is empty (mockup 1f). */
   openers: string[];
-  /** No more scripted turns left. */
+  /** No more turns — reporter stopped and wrote (or was asked to write) a draft. */
   exhausted: boolean;
 }
+
+/** Reader turns after which the reporter stops and writes a draft. */
+export const MAX_INTERVIEW_MESSAGES = 4;
 
 export interface Session {
   user: User;

@@ -7,6 +7,7 @@ register("./hook.mjs", import.meta.url);
 
 const {
   ERROR_EMPTY_MESSAGE,
+  ERROR_INTERVIEW_CLOSED,
   ERROR_INTERVIEW_NOT_FOUND,
   ERROR_NO_OPEN_INTERVIEW,
   ERROR_STATUS,
@@ -193,5 +194,56 @@ describe("http session", () => {
     assert.equal(session.draft.status, "ready");
     assert.equal(session.draft.headline, "כותרת בדיקה");
     assert.equal(session.draft.pendingParagraph, null);
+    assert.equal(session.exhausted, true);
+  });
+
+  it("fourth message stops the interview and writes a draft", async () => {
+    const nextQuestion = async (): Promise<NextQuestion> => ({
+      question: "עוד פרט?",
+      done: false,
+    });
+    const writeArticle = async (): Promise<Article> => ({
+      angle: "זווית",
+      headline: "כותרת בדיקה",
+      standfirst: "כותרת משנה",
+      paragraphs: ["פסקה"],
+      tone: "intimate",
+      type: "feature",
+    });
+    const app = createApp({ nextQuestion, writeArticle });
+    const createRes = await app.request("/interviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ facts: FACTS }),
+    });
+    const { id } = await createRes.json();
+
+    let session;
+    for (let i = 1; i <= 4; i++) {
+      const res = await app.request(`/interviews/${id}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: `תשובה ${i}` }),
+      });
+      assert.equal(res.status, 200);
+      session = await res.json();
+    }
+
+    const readers = session.messages.filter((m: { role: string }) => m.role === "reader");
+    const last = session.messages[session.messages.length - 1];
+    assert.equal(readers.length, 4);
+    assert.equal(last.role, "reader");
+    assert.equal(session.exhausted, true);
+    assert.equal(session.draft.status, "ready");
+    assert.equal(session.draft.headline, "כותרת בדיקה");
+
+    const extra = await app.request(`/interviews/${id}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "עוד אחת" }),
+    });
+    assert.equal(extra.status, ERROR_STATUS.interviewClosed);
+    const body = await extra.json();
+    assert.equal(body.message, ERROR_INTERVIEW_CLOSED);
   });
 });

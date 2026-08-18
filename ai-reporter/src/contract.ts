@@ -66,12 +66,14 @@ export const SESSION_OPENERS = [
 export const ERROR_NO_OPEN_INTERVIEW = "אין ראיון פתוח";
 export const ERROR_EMPTY_MESSAGE = "אי אפשר לשלוח הודעה ריקה";
 export const ERROR_INTERVIEW_NOT_FOUND = "ראיון לא נמצא";
+export const ERROR_INTERVIEW_CLOSED = "הראיון הסתיים";
 
 /** HTTP status codes paired with the Hebrew errors above. */
 export const ERROR_STATUS = {
   noOpenInterview: 409,
   emptyMessage: 400,
   interviewNotFound: 404,
+  interviewClosed: 409,
 } as const;
 
 /** Wire keys for InterviewMessage (matches frontend/src/api/types.ts). */

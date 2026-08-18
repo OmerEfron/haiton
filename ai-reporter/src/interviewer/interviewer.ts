@@ -1,8 +1,6 @@
 import { complete } from "../llm.js";
 import type { FactInput, NextQuestion, Turn } from "../types.js";
-import { MAX_QUESTIONS, askedCount } from "../types.js";
-
-const BUDGET = 8;
+import { MAX_MESSAGES } from "../types.js";
 
 const INSTRUCTIONS = `אתה עיתונאי בעיתון "העיתון". קראת מראש את כרטיסיית המרואיין ומקשיב לתשובות — לא שואל כמו זר.
 
@@ -14,7 +12,7 @@ const INSTRUCTIONS = `אתה עיתונאי בעיתון "העיתון". קרא�
 - אסור שאלות כלליות: "מה נשמע", "איך היה השבוע", "ספר על עצמך", "מה חדש", "איך אתה מרגיש" ודומות.
 - אל תחזור על מה שכבר נאמר. חפור לעומק — מה קרה, למי, מתי, איפה, מה ההימור.
 - אם כבר יש במסלול התשובות מה/מי/מתי/איפה או הימור אנושי ברור — החזר {"question": "", "done": true}.
-- אם זו תהיה שאלה 4 ועדיין חסר — שאל אותה ואז done: true.
+- אחרי 4 תשובות מהקורא הראיון נגמר — אל תשאל שאלה נוספת.
 
 החזר JSON בלבד: {"question": "...", "done": false}`;
 
@@ -42,7 +40,7 @@ function buildInput(facts: FactInput[], turns: Turn[]): string {
   const karteset = facts.map((f) => `- ${f.text}`).join("\n");
   const transcript = formatTranscript(turns);
 
-  return `כרטיסייה:\n${karteset}\n\nשיחה עד כה:\n${transcript}\n\nמספר שאלות שכבר נשאלו: ${askedCount(turns)}/${MAX_QUESTIONS}`;
+  return `כרטיסייה:\n${karteset}\n\nשיחה עד כה:\n${transcript}\n\nתשובות מהקורא: ${turns.length}/${MAX_MESSAGES}`;
 }
 
 function parseResponse(text: string): NextQuestion {
@@ -64,14 +62,13 @@ export async function nextQuestion(
   facts: FactInput[],
   turns: Turn[],
 ): Promise<NextQuestion> {
-  if (askedCount(turns) >= MAX_QUESTIONS) {
+  if (turns.length >= MAX_MESSAGES) {
     return { question: "", done: true };
   }
 
   const output = await complete({
     instructions: INSTRUCTIONS,
     input: buildInput(facts, turns),
-    budget: BUDGET,
   });
 
   return parseResponse(output);

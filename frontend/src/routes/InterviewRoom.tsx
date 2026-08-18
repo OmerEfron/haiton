@@ -9,7 +9,7 @@ import { Avatar, ErrorState, LivePill, Loading } from "../components/ui/Bits";
 import { Button } from "../components/ui/Button";
 import { Chip } from "../components/ui/Chip";
 import { TextArea } from "../components/ui/Field";
-import type { SectionId } from "../api/types";
+import { MAX_INTERVIEW_MESSAGES, type SectionId } from "../api/types";
 import {
   discardSession,
   requestDraft,
@@ -73,6 +73,10 @@ export function InterviewRoom() {
     threadEnd.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [interview.data?.messages.length, busy]);
 
+  useEffect(() => {
+    if (interview.data?.draft.status === "ready") setSheetOpen(true);
+  }, [interview.data?.draft.status]);
+
   if (interview.isPending) return <Loading />;
   if (interview.error) return <ErrorState error={interview.error} />;
 
@@ -81,11 +85,15 @@ export function InterviewRoom() {
   // this page starts an interview. Cached null is a successful result.
   if (!s) return <Loading />;
   const readerName = appSession?.user.name.split(" ")[0] ?? "אתה";
-  const firstInterview = s.messages.filter((m) => m.role === "reader").length === 0;
+  const readerTurns = s.messages.filter((m) => m.role === "reader").length;
+  const firstInterview = readerTurns === 0;
+  const closed = s.exhausted || s.draft.status === "ready";
+  const writingNow =
+    draftIt.isPending || (send.isPending && readerTurns >= MAX_INTERVIEW_MESSAGES - 1);
 
   function submit(e: FormEvent) {
     e.preventDefault();
-    if (!text.trim() || busy) return;
+    if (closed || !text.trim() || busy) return;
     send.mutate(text);
   }
 
@@ -157,7 +165,7 @@ export function InterviewRoom() {
                 key={message.id}
                 message={message}
                 readerName={readerName}
-                onSuggestion={(value) => !busy && send.mutate(value)}
+                onSuggestion={(value) => !busy && !closed && send.mutate(value)}
               />
             ))}
 
@@ -169,7 +177,7 @@ export function InterviewRoom() {
                     key={opener}
                     type="button"
                     className={styles.opener}
-                    onClick={() => !busy && send.mutate(opener)}
+                    onClick={() => !busy && !closed && send.mutate(opener)}
                   >
                     {opener}
                   </button>
@@ -179,7 +187,7 @@ export function InterviewRoom() {
 
             {busy && (
               <TypingIndicator
-                label={draftIt.isPending ? desk.writingDraft : "הכתב מקליד…"}
+                label={writingNow ? desk.writingDraft : "הכתב מקליד…"}
               />
             )}
             <div ref={threadEnd} />
@@ -188,25 +196,32 @@ export function InterviewRoom() {
           <form className={interviewStyles.composer} onSubmit={submit}>
             <TextArea
               label={desk.composerLabel}
-              placeholder={desk.composerPlaceholder}
+              placeholder={closed ? desk.interviewClosed : desk.composerPlaceholder}
               value={text}
               onChange={(e) => setText(e.target.value)}
               rows={2}
+              disabled={busy || closed}
             />
             <div className={interviewStyles.composerActions}>
-              <Button type="submit" size="lg" disabled={busy || !text.trim()}>
+              <Button type="submit" size="lg" disabled={busy || closed || !text.trim()}>
                 {desk.send}
               </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => !busy && draftIt.mutate()}
-                disabled={busy}
-              >
-                {desk.writeDraft}
-              </Button>
+              {!closed && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => !busy && draftIt.mutate()}
+                  disabled={busy}
+                >
+                  {desk.writeDraft}
+                </Button>
+              )}
               <span className={interviewStyles.consent}>
-                {s.draft.status === "empty" ? desk.noDraftYet : desk.consentNote}
+                {closed
+                  ? desk.interviewClosed
+                  : s.draft.status === "empty"
+                    ? desk.noDraftYet
+                    : desk.consentNote}
               </span>
             </div>
           </form>

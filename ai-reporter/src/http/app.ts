@@ -2,12 +2,13 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import {
   ERROR_EMPTY_MESSAGE,
+  ERROR_INTERVIEW_CLOSED,
   ERROR_INTERVIEW_NOT_FOUND,
   ERROR_NO_OPEN_INTERVIEW,
   ERROR_STATUS,
 } from "../contract.js";
-import { resetCallCount } from "../llm.js";
 import type { Article, FactInput } from "../types.js";
+import { MAX_MESSAGES } from "../types.js";
 import {
   buildTurns,
   clearSession,
@@ -16,7 +17,7 @@ import {
   newMessage,
   toWireSession,
 } from "./session.js";
-import type { NextQuestionFn, SectionId, WriteArticleFn } from "./types.js";
+import type { NextQuestionFn, SectionId, SessionState, WriteArticleFn } from "./types.js";
 
 const DEFAULT_ORIGIN = "http://localhost:5173";
 
@@ -41,6 +42,20 @@ function articleToDraft(article: Article, draftId: string) {
     checks: [] as { label: string; done: boolean }[],
     section: null as SectionId | null,
   };
+}
+
+function readerCount(state: SessionState): number {
+  return state.messages.filter((m) => m.role === "reader").length;
+}
+
+async function closeWithDraft(state: SessionState, writeArticle: WriteArticleFn) {
+  state.exhausted = true;
+  const article = await writeArticle({
+    facts: state.facts,
+    turns: state.turns,
+  });
+  state.draft = articleToDraft(article, state.draft.id);
+  state.angleChosen = true;
 }
 
 async function resolveDeps(deps?: AppDeps): Promise<Required<AppDeps>> {
@@ -115,9 +130,19 @@ export function createApp(deps?: AppDeps): Hono {
       return jsonError(ERROR_EMPTY_MESSAGE, ERROR_STATUS.emptyMessage);
     }
 
+    if (state!.exhausted) {
+      return jsonError(ERROR_INTERVIEW_CLOSED, ERROR_STATUS.interviewClosed);
+    }
+
     const { nextQuestion, writeArticle } = await getDeps();
+
     state!.messages.push(newMessage("reader", text));
     state!.turns = buildTurns(state!.messages);
+
+    if (readerCount(state!) >= MAX_MESSAGES) {
+      await closeWithDraft(state!, writeArticle);
+      return c.json(toWireSession(state!));
+    }
 
     const result = await nextQuestion(state!.facts, state!.turns);
     if (result.question) {
@@ -125,14 +150,7 @@ export function createApp(deps?: AppDeps): Hono {
     }
 
     if (result.done && !result.question) {
-      state!.exhausted = true;
-      resetCallCount();
-      const article = await writeArticle({
-        facts: state!.facts,
-        turns: state!.turns,
-      });
-      state!.draft = articleToDraft(article, state!.draft.id);
-      state!.angleChosen = true;
+      await closeWithDraft(state!, writeArticle);
     }
 
     return c.json(toWireSession(state!));
@@ -144,13 +162,7 @@ export function createApp(deps?: AppDeps): Hono {
     if (error) return error;
 
     const { writeArticle } = await getDeps();
-    resetCallCount();
-    const article = await writeArticle({
-      facts: state!.facts,
-      turns: state!.turns,
-    });
-    state!.draft = articleToDraft(article, state!.draft.id);
-    state!.angleChosen = true;
+    await closeWithDraft(state!, writeArticle);
     return c.json(toWireSession(state!));
   });
 
