@@ -54,8 +54,8 @@ export type SessionState = InterviewSession & { facts: FactInput[]; turns: Turn[
 export type WriteArticleFn = (input: {
   facts: FactInput[];
   turns: Turn[];
-  tone: import("../types.js").ToneId;
-  type: import("../types.js").ArticleTypeId;
+  tone?: import("../types.js").ToneId;
+  type?: import("../types.js").ArticleTypeId;
 }) => Promise<import("../types.js").Article>;
 
 export type NextQuestionFn = (

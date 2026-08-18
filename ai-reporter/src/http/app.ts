@@ -6,7 +6,7 @@ import {
   ERROR_NO_OPEN_INTERVIEW,
   ERROR_STATUS,
 } from "../contract.js";
-import { DEFAULT_TONE, DEFAULT_TYPE } from "../types.js";
+import { resetCallCount } from "../llm.js";
 import type { Article, FactInput } from "../types.js";
 import {
   buildTurns,
@@ -126,11 +126,10 @@ export function createApp(deps?: AppDeps): Hono {
 
     if (result.done && !result.question) {
       state!.exhausted = true;
+      resetCallCount();
       const article = await writeArticle({
         facts: state!.facts,
         turns: state!.turns,
-        tone: DEFAULT_TONE,
-        type: DEFAULT_TYPE,
       });
       state!.draft = articleToDraft(article, state!.draft.id);
       state!.angleChosen = true;
@@ -145,11 +144,10 @@ export function createApp(deps?: AppDeps): Hono {
     if (error) return error;
 
     const { writeArticle } = await getDeps();
+    resetCallCount();
     const article = await writeArticle({
       facts: state!.facts,
       turns: state!.turns,
-      tone: DEFAULT_TONE,
-      type: DEFAULT_TYPE,
     });
     state!.draft = articleToDraft(article, state!.draft.id);
     state!.angleChosen = true;
