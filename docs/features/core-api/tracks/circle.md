@@ -55,4 +55,4 @@ Yes/no: tests for search-empty, send-invite 400, accept-incoming creates a conne
 
 ## Close notes
 
-_Not started._
+Done on `agent/feature/core-api/circle` (`dc951ca`). Goal test passed. Router not mounted until Wint.

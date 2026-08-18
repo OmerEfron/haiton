@@ -49,4 +49,4 @@ Yes/no: GET profile matches seed shape keys; PATCH `showEditionTag` round-trips.
 
 ## Close notes
 
-_Not started._
+Done on `agent/feature/core-api/profile` (`87dc919`). Goal test passed. Router not mounted until Wint.

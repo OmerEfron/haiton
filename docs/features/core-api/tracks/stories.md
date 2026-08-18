@@ -54,4 +54,4 @@ Yes/no: handler tests for 404 story, list-by-section, publish demotes lead and i
 
 ## Close notes
 
-_Not started._
+Done on `agent/feature/core-api/stories` (`c2ccbe6`). Goal test passed. Router not mounted until Wint.

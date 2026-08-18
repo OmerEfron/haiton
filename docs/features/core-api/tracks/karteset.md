@@ -50,4 +50,4 @@ Yes/no: tests for list/add/update/delete and the two Hebrew errors. `frontend/sr
 
 ## Close notes
 
-_Not started._
+Done on `agent/feature/core-api/karteset` (`5614288`). Goal test passed. Router not mounted until Wint.

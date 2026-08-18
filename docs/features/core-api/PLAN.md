@@ -110,7 +110,7 @@ Create `api/` package, freeze route table + SQLite schema + env names, add `requ
 ### Wave W1 — Parallel domain slices
 - id: `W1`
 - kind: `parallel`
-- status: `pending`
+- status: `complete`
 - tracks: `auth`, `stories`, `karteset`, `circle`, `profile`
 - isolation_default: `worktree`
 

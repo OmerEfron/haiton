@@ -3,7 +3,7 @@
   "feature_id": "core-api",
   "title": "Core API (un-mock the newspaper)",
   "status": "in_progress",
-  "current_wave": "W1",
+  "current_wave": "Wint",
   "isolation_default": "worktree",
   "base_branch": "main",
   "tracks": [
@@ -47,7 +47,7 @@
       "id": "auth",
       "wave": "W1",
       "isolation": "worktree",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["backend-engineer"],
       "branch": "agent/feature/core-api/auth",
       "owns": ["api/src/auth/", "frontend/src/api/core/auth.ts"],
@@ -74,7 +74,7 @@
       "id": "stories",
       "wave": "W1",
       "isolation": "worktree",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["backend-engineer"],
       "branch": "agent/feature/core-api/stories",
       "owns": ["api/src/stories/", "frontend/src/api/core/stories.ts"],
@@ -101,7 +101,7 @@
       "id": "karteset",
       "wave": "W1",
       "isolation": "worktree",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["backend-engineer"],
       "branch": "agent/feature/core-api/karteset",
       "owns": ["api/src/karteset/", "frontend/src/api/core/karteset.ts"],
@@ -127,7 +127,7 @@
       "id": "circle",
       "wave": "W1",
       "isolation": "worktree",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["backend-engineer"],
       "branch": "agent/feature/core-api/circle",
       "owns": ["api/src/circle/", "frontend/src/api/core/connections.ts"],
@@ -153,7 +153,7 @@
       "id": "profile",
       "wave": "W1",
       "isolation": "worktree",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["backend-engineer"],
       "branch": "agent/feature/core-api/profile",
       "owns": ["api/src/profile/", "frontend/src/api/core/profile.ts"],
@@ -235,7 +235,7 @@
     {
       "id": "W1",
       "kind": "parallel",
-      "status": "pending",
+      "status": "complete",
       "tracks": ["auth", "stories", "karteset", "circle", "profile"],
       "isolation_default": "worktree",
       "merge_order": ["auth", "profile", "karteset", "circle", "stories"]
@@ -257,5 +257,5 @@
   ],
   "blockers": [],
   "open_decisions": [],
-  "last_updated": "2026-08-18T08:55:00Z"
+  "last_updated": "2026-08-18T09:04:00Z"
 }

@@ -52,4 +52,4 @@ Yes/no: `cd api && node --test api/src/auth` (or the repo's `npm test` glob) cov
 
 ## Close notes
 
-_Not started._
+Done on `agent/feature/core-api/auth` (`a417688`). Goal test passed. Router not mounted until Wint.
