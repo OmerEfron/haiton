@@ -40,4 +40,4 @@ Yes/no: feature goal test in `PLAN.md` is true.
 
 ## Close notes
 
-_Not started._
+Done. Feature goal test passed on `main` after live e2e (parent `npm test` exit 0; 5 LLM calls). Overlap OK. 3 grounded questions, no banned needles. Intimate feature article: 369 words, 5 Hebrew paragraphs. Desk mock still imports `../../mocks/db`. No `must_not` violations. Feature close not started.

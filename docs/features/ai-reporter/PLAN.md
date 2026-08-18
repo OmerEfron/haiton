@@ -149,7 +149,7 @@ Feature goal test items 2–4 are true. Call count ≤5 for that `npm test` run.
 ### Wave Wrev — Review
 - id: `Wrev`
 - kind: `sequential`
-- status: `pending`
+- status: `complete`
 - tracks: `review`
 - isolation_default: `sequential`
 
