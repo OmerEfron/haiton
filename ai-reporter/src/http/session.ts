@@ -27,7 +27,10 @@ export function clearSession(): void {
   current = null;
 }
 
-export function createSession(facts: FactInput[]): SessionState {
+export function createSession(
+  facts: FactInput[],
+  subjectName?: string,
+): SessionState {
   const session: InterviewSession = {
     id: randomUUID(),
     startedAt: new Date().toISOString(),
@@ -40,7 +43,8 @@ export function createSession(facts: FactInput[]): SessionState {
     openers: [...SESSION_OPENERS],
     exhausted: false,
   };
-  current = { ...session, facts, turns: [] };
+  const name = subjectName?.trim();
+  current = { ...session, facts, turns: [], ...(name ? { subjectName: name } : {}) };
   return current;
 }
 
@@ -66,6 +70,6 @@ export function buildTurns(messages: InterviewMessage[]): Turn[] {
 }
 
 export function toWireSession(state: SessionState): InterviewSession {
-  const { facts: _facts, turns: _turns, ...session } = state;
+  const { facts: _facts, turns: _turns, subjectName: _name, ...session } = state;
   return session;
 }

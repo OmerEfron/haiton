@@ -6,14 +6,18 @@ import { ApiError } from "../client";
 import { listFacts } from "../core/karteset";
 import { reporterRequest } from "./fetch";
 
-export async function startSession(): Promise<InterviewSession> {
+export async function startSession(subjectName?: string): Promise<InterviewSession> {
   const existing = await reporterRequest<InterviewSession | undefined>("/interviews");
   if (existing) return existing;
 
   const facts = await listFacts();
+  const name = subjectName?.trim();
   return reporterRequest<InterviewSession>("/interviews", {
     method: "POST",
-    body: JSON.stringify({ facts }),
+    body: JSON.stringify({
+      facts,
+      ...(name ? { subjectName: name } : {}),
+    }),
   });
 }
 

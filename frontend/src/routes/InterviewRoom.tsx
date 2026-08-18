@@ -33,7 +33,7 @@ export function InterviewRoom() {
 
   const interview = useQuery({
     queryKey: qk.interview,
-    queryFn: startSession,
+    queryFn: () => startSession(appSession?.user.name),
   });
 
   const refresh = () => client.invalidateQueries({ queryKey: qk.interview });

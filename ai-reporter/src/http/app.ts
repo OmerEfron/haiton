@@ -53,6 +53,7 @@ async function closeWithDraft(state: SessionState, writeArticle: WriteArticleFn)
   const article = await writeArticle({
     facts: state.facts,
     turns: state.turns,
+    subjectName: state.subjectName,
   });
   state.draft = articleToDraft(article, state.draft.id);
   state.angleChosen = true;
@@ -107,9 +108,14 @@ export function createApp(deps?: AppDeps): Hono {
   });
 
   app.post("/interviews", async (c) => {
-    const body = (await c.req.json()) as { facts?: FactInput[] };
+    const body = (await c.req.json()) as {
+      facts?: FactInput[];
+      subjectName?: string;
+    };
     const facts = Array.isArray(body.facts) ? body.facts : [];
-    const state = createSession(facts);
+    const subjectName =
+      typeof body.subjectName === "string" ? body.subjectName : undefined;
+    const state = createSession(facts, subjectName);
     return c.json(toWireSession(state), 200);
   });
 

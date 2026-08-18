@@ -246,4 +246,36 @@ describe("http session", () => {
     const body = await extra.json();
     assert.equal(body.message, ERROR_INTERVIEW_CLOSED);
   });
+
+  it("passes subjectName through to writeArticle", async () => {
+    let seenName: string | undefined;
+    const nextQuestion = async (): Promise<NextQuestion> => ({
+      question: "",
+      done: true,
+    });
+    const writeArticle = async (input: {
+      subjectName?: string;
+    }): Promise<Article> => {
+      seenName = input.subjectName;
+      return {
+        angle: "זווית",
+        headline: "כותרת בדיקה",
+        standfirst: "כותרת משנה",
+        paragraphs: ["פסקה"],
+        tone: "intimate",
+        type: "feature",
+      };
+    };
+    const app = createApp({ nextQuestion, writeArticle });
+    const createRes = await app.request("/interviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ facts: FACTS, subjectName: "עומר" }),
+    });
+    const { id, subjectName } = await createRes.json();
+    assert.equal(subjectName, undefined);
+
+    await app.request(`/interviews/${id}/draft`, { method: "POST" });
+    assert.equal(seenName, "עומר");
+  });
 });

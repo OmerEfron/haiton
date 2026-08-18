@@ -12,6 +12,7 @@ import { forcedTypeBlock, pickerBlock, SHARED_RULES } from "./machines.js";
 type WriteArticleInput = {
   facts: FactInput[];
   turns: Turn[];
+  subjectName?: string;
   tone?: ToneId;
   type?: ArticleTypeId;
 };
@@ -97,6 +98,27 @@ function formatTurns(turns: Turn[]): string {
     .join("\n\n");
 }
 
+export function buildWriterInput(
+  facts: FactInput[],
+  turns: Turn[],
+  subjectName?: string,
+): string {
+  const name = subjectName?.trim();
+  const who = name
+    ? `המרואיין: ${name}`
+    : "המרואיין: השם לא סופק. אל תמציא שם פרטי — כתוב בלי שם, או «המרואיין».";
+
+  return `${who}
+
+רקע (עובדות לבדיקה — לא למילוי אוטומטי):
+${formatFacts(facts)}
+
+תמליל ראיון (זה הסיפור):
+${formatTurns(turns)}
+
+כתוב את הכתבה.`;
+}
+
 function jsonShape(pickForm: boolean): string {
   const extra = pickForm
     ? `\n  "type": "news|profile|feature|interview|column",\n  "tone": "factual|magazine|witty|dramatic|intimate",`
@@ -125,18 +147,13 @@ ${jsonShape(pickForm)}`;
 export async function writeArticle({
   facts,
   turns,
+  subjectName,
   tone,
   type,
 }: WriteArticleInput): Promise<Article> {
   const pickForm = type === undefined || tone === undefined;
   const instructions = buildInstructions(type, tone);
-  const input = `רקע (עובדות לבדיקה — לא למילוי אוטומטי):
-${formatFacts(facts)}
-
-תמליל ראיון (זה הסיפור):
-${formatTurns(turns)}
-
-כתוב את הכתבה.`;
+  const input = buildWriterInput(facts, turns, subjectName);
 
   const output = await complete({ instructions, input });
   const raw = parseArticleOutput(output, pickForm);

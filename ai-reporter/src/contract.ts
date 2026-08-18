@@ -21,7 +21,7 @@ export const ROUTES: readonly RouteContract[] = [
     method: "POST",
     path: "/interviews",
     handler: "createInterview",
-    notes: "body: { facts: FactInput[] }; replaces current",
+    notes: "body: { facts: FactInput[]; subjectName?: string }; replaces current",
   },
   { method: "GET", path: "/interviews/:id", handler: "getInterview" },
   {

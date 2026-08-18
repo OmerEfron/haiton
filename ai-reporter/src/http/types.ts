@@ -49,11 +49,16 @@ export interface InterviewSession {
   exhausted: boolean;
 }
 
-export type SessionState = InterviewSession & { facts: FactInput[]; turns: Turn[] };
+export type SessionState = InterviewSession & {
+  facts: FactInput[];
+  turns: Turn[];
+  subjectName?: string;
+};
 
 export type WriteArticleFn = (input: {
   facts: FactInput[];
   turns: Turn[];
+  subjectName?: string;
   tone?: import("../types.js").ToneId;
   type?: import("../types.js").ArticleTypeId;
 }) => Promise<import("../types.js").Article>;

@@ -8,7 +8,7 @@ const { personaFacts } = await import("../fixtures/persona.js");
 const { weekAnswers } = await import("../fixtures/week-answers.js");
 const { getCallCount } = await import("../llm.js");
 const { WORD_COUNT } = await import("../types.js");
-const { writeArticle } = await import("./writer.js");
+const { buildWriterInput, writeArticle } = await import("./writer.js");
 
 const turns = [
   {
@@ -41,6 +41,19 @@ function hasLongEnglishSentence(text: string): boolean {
   });
 }
 
+describe("buildWriterInput", () => {
+  it("names the interviewee so the model cannot pick a prompt example", () => {
+    const input = buildWriterInput(personaFacts, turns, "עומר");
+    assert.match(input, /^המרואיין: עומר/m);
+    assert.doesNotMatch(input, /תומר/);
+  });
+
+  it("forbids inventing a name when none was given", () => {
+    const input = buildWriterInput([], []);
+    assert.match(input, /השם לא סופק/);
+  });
+});
+
 describe("writeArticle", () => {
   it("writes a factual news article from persona and week answers", async () => {
     if (!process.env.OPENAI_API_KEY) {
@@ -50,6 +63,7 @@ describe("writeArticle", () => {
     const article = await writeArticle({
       facts: personaFacts,
       turns,
+      subjectName: "עומר עפרון",
       tone: "factual",
       type: "news",
     });
@@ -72,6 +86,8 @@ describe("writeArticle", () => {
       ...article.paragraphs,
     ].join("\n");
     assert.ok(!hasLongEnglishSentence(body), "article must be Hebrew");
+    assert.ok(body.includes("עומר"), "article must use the subject name");
+    assert.ok(!body.includes("תומר"), "article must not copy the old prompt example");
 
     console.log("\n--- Article ---");
     console.log(`Angle: ${article.angle}`);

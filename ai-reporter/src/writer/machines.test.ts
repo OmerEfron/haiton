@@ -32,6 +32,14 @@ describe("writer machines", () => {
     assert.match(SHARED_RULES, /לא מילוי/);
   });
 
+  it("does not seed a fake subject name or job for the model to copy", () => {
+    assert.doesNotMatch(MACHINES.profile, /תומר/);
+    assert.doesNotMatch(SHARED_RULES, /תומר/);
+    assert.doesNotMatch(MACHINES.profile, /מנהל פרויקטים/);
+    assert.match(SHARED_RULES, /המרואיין:/);
+    assert.match(MACHINES.profile, /אם אין גיל או תפקיד/);
+  });
+
   it("forced news instructions omit the picker", () => {
     const text = forcedTypeBlock("news", "factual");
     assert.match(text, /מכונת חדשות/);
