@@ -1,7 +1,7 @@
 # Feature plan — Simple AI reporter
 
 - id: `ai-reporter`
-- status: `planned`
+- status: `in_progress`
 - isolation_default: `worktree`
 - base_branch: `main`
 
@@ -93,7 +93,7 @@ Parent chat stays Grok 4.6.
 ### Wave W0 — Contracts and LLM wrapper
 - id: `W0`
 - kind: `sequential`
-- status: `pending`
+- status: `complete`
 - tracks: `contracts`
 - isolation_default: `sequential`
 

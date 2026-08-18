@@ -52,4 +52,4 @@ Yes/no: those owned files exist. `ai-reporter/package-lock.json` mentions `opena
 
 ## Close notes
 
-_Not started._
+Done. Frozen types/labels/needles/word bands, Responses API wrapper (`complete` in `llm.ts`, not invoked), persona + week fixtures, `openai` in lockfile. Goal test passed. Commit `f0fd998`. Zero live calls.
