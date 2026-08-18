@@ -30,8 +30,8 @@ export async function searchReaders(query: string): Promise<ReaderSearchResult[]
   return request<ReaderSearchResult[]>(`/readers?q=${q}`);
 }
 
-export async function listSuggestedConnections() {
-  return request("/connections/suggested");
+export async function listSuggestedConnections(): Promise<ReaderSearchResult[]> {
+  return request<ReaderSearchResult[]>("/connections/suggested");
 }
 
 export async function sendInvitation(input: {
