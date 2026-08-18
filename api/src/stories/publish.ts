@@ -142,7 +142,7 @@ export function publishDraft(
   ).run(flashId, userId, time, draft.headline, storyId, flashOrder.next);
 
   const ticker = [
-    `ידיעה חדשה פורסמה: ${draft.headline}`,
+    `${draft.headline}`,
     ...(JSON.parse(state.ticker_json) as string[]),
   ].slice(0, 5);
 

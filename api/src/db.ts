@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DatabaseSync } from "node:sqlite";
@@ -22,7 +22,9 @@ function applySchema(database: DatabaseSync): void {
 /** Open (or return) the shared SQLite database; applies schema.sql on first open. */
 export function getDb(): DatabaseSync {
   if (db) return db;
-  db = new DatabaseSync(resolveDatabasePath());
+  const path = resolveDatabasePath();
+  mkdirSync(dirname(path), { recursive: true });
+  db = new DatabaseSync(path);
   applySchema(db);
   return db;
 }

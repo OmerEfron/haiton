@@ -6,20 +6,23 @@ your week and writes news stories about your life, published into your daily edi
 Built from the **"Haiton app UI mockups"** Claude Design project (13 screens, desktop 1280
 and mobile 390). React + Vite, TypeScript, static build, RTL throughout.
 
-**All data is mocked.** There is no API here — see [The API seam](#the-api-seam).
+Data comes from the `api/` and `ai-reporter/` packages over HTTP (`VITE_API_URL`,
+`VITE_REPORTER_URL`). A seeded login (`omer@example.com` / `iton-dev`) starts with an
+empty edition.
 
 This is the `frontend/` package of the repo:
 
 ```
 iton/
-  frontend/   this app
-  api/        reserved — core service (auth, users, CRUD, social graph)
-  reporter/   reserved — reporter-agent service (interviewing, story writing)
+  frontend/     this app
+  api/          core service (auth, users, CRUD, social graph)
+  ai-reporter/  reporter-agent service (interviewing, story writing)
 ```
 
 ## Running it
 
-Needs **Node ≥ 20.19** (`.nvmrc` pins 24; the tooling will not run on Node 18).
+Needs **Node ≥ 20.19** (`.nvmrc` pins 24; the tooling will not run on Node 18). The API
+must be running as well (see `api/`).
 
 ```bash
 nvm use && npm install && npm run dev
@@ -51,46 +54,32 @@ of the nav in 1a/1g/1h.
 
 ## What is interactive
 
-State lives in memory and resets on reload — deliberately, so there is no persistence
-layer to unpick when the real services arrive.
+Server state is TanStack Query over the functions in `src/api/`. Query keys live in
+`src/lib/queryKeys.ts`.
 
-- **Interview → publish.** Sending a message advances a scripted reporter turn and fills in
-  another part of the draft; "נסחו טיוטה" jumps to the finished story. Publishing writes it
-  to the front page as both a lead story and a flash, and bumps the edition number.
+- **Interview → publish.** The reporter service runs the interview and writes the draft.
+  Publishing posts it to the core API as both a lead story and a flash.
 - **Karteset.** Add, inline-edit and remove facts, filtered by category.
 - **Circle.** Approve or reject invitations (the masthead badge follows), search readers,
   send an invitation, remove a connection.
 - **Profile.** Edition-tag and reminder settings; the tag setting changes what the front
   page and story pages render.
 
-To see an empty state, clear the matching array in `src/mocks/fixtures/`.
-
 ## The API seam
-
-Two services are planned — the `api/` and `reporter/` folders alongside this one — and the
-code here is already split along that line:
 
 ```
 src/api/
-  types.ts       the wire shapes both services will return
-  client.ts      delay/clone helpers — where the HTTP client will be constructed
+  types.ts       the wire shapes both services return
+  client.ts      fetch wrapper for the core API
   core/          → CORE API:     auth, stories, karteset, connections, profile
   reporter/      → REPORTER API: the interviewing / story-writing agent
 ```
 
-Every function there is `async (input) => Promise<T>`, reads and writes the in-memory store
-in `src/mocks/db.ts`, and awaits an artificial delay so loading states are real. **To go
-live, replace each function body with a call to the real endpoint. Nothing under
-`src/components` or `src/routes` changes.**
+Every function there is `async (input) => Promise<T>` over HTTP. Nothing under
+`src/components` or `src/routes` talks to a backend directly.
 
-Two details that already anticipate the real thing:
-
-- Reads return `clone(...)`, exactly as an HTTP response would hand back fresh JSON.
-- `InterviewSession` carries `reporterTyping` and `draft.pendingParagraph`, so the UI
-  already renders a story that is only half-written — the shape a streaming agent needs.
-
-Server state is TanStack Query over those functions; query keys live in
-`src/lib/queryKeys.ts`. There is no `fetch`, base URL or endpoint string anywhere in `src/`.
+`InterviewSession` carries `reporterTyping` and `draft.pendingParagraph`, so the UI
+can render a story that is only half-written.
 
 ## Layout
 

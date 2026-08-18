@@ -3,8 +3,10 @@ import type { Draft, SectionId } from "../../api/types";
 import { LivePill } from "../ui/Bits";
 import { Button } from "../ui/Button";
 import { Chip } from "../ui/Chip";
+import { sectionNames } from "../../copy/common";
 import { desk } from "../../copy/desk";
-import { draftSections } from "../../mocks/fixtures/interview-script";
+
+const DRAFT_SECTIONS: SectionId[] = ["work", "moments", "flashes"];
 
 export function DraftPanel({
   draft,
@@ -87,9 +89,9 @@ export function DraftPanel({
         {draft.status !== "empty" && (
           <div className={styles.sectionRow}>
             <span className={styles.sectionLabel}>{desk.section}</span>
-            {draftSections.map((s) => (
-              <Chip key={s.id} active={draft.section === s.id} onClick={() => onSection(s.id)}>
-                {s.name}
+            {DRAFT_SECTIONS.map((id) => (
+              <Chip key={id} active={draft.section === id} onClick={() => onSection(id)}>
+                {sectionNames[id]}
               </Chip>
             ))}
           </div>

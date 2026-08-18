@@ -7,7 +7,7 @@ import { SESSION_COOKIE_NAME } from "./contract.ts";
 import { closeDb } from "./db.ts";
 import { createApp } from "./app.ts";
 import { seed } from "./seed.ts";
-import type { FrontPage, Profile, Story } from "./types.ts";
+import type { FrontPage, Profile } from "./types.ts";
 
 const SEED_EMAIL = "omer@example.com";
 const SEED_PASSWORD = "iton-dev";
@@ -91,25 +91,22 @@ test("seeded user: every UI GET returns 200 with wire shapes", async () => {
 
     const edition = (await authedGet(app, cookie, "/editions/current")).body as FrontPage;
     assert.equal(typeof edition.editionNumber, "number");
+    assert.equal(edition.lead, null);
+    assert.deepEqual(edition.flashes, []);
     assert.ok(Array.isArray(edition.ticker));
-    assert.ok(edition.lead && typeof edition.lead.headline === "string");
-    assert.ok(edition.flashes.length > 0);
     assert.ok(Array.isArray(edition.secondary));
     assert.ok(Array.isArray(edition.list));
     assert.ok(Array.isArray(edition.digests));
 
     const profile = (await authedGet(app, cookie, "/profile")).body as Profile;
     assert.equal(profile.user.email, SEED_EMAIL);
+    assert.equal(profile.stats.storiesPublished, 0);
     assert.equal(typeof profile.stats.draftsInProgress, "number");
 
-    const story = (await authedGet(app, cookie, "/stories/214")).body as Story;
-    assert.equal(story.id, "214");
-    assert.ok(story.headline);
-
     const facts = (await authedGet(app, cookie, "/karteset/facts")).body as unknown[];
-    assert.ok(facts.length > 0);
+    assert.deepEqual(facts, []);
     const connections = (await authedGet(app, cookie, "/connections")).body as unknown[];
-    assert.ok(connections.length > 0);
+    assert.deepEqual(connections, []);
   } finally {
     teardown(dbPath);
   }
