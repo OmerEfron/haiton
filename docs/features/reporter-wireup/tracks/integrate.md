@@ -58,4 +58,4 @@ Yes/no: `cd ai-reporter && npm test` exits 0, ≤5 LLM calls, user-first as in P
 
 ## Close notes
 
-_Not started._
+Done on `main` (`4ab9713`). User-first `runReporter` seeds `{ question: "", answer: answers[0] }`; live e2e 4 follow-ups, 5 LLM calls, intimate/feature 425 words, headline הריצה שאחרי שיחת המשוב. Vite `/interviews` → `:8788`. Goal test exit 0. Leftover: model variance; proxy is Vite-dev only.

@@ -3,7 +3,7 @@
   "feature_id": "reporter-wireup",
   "title": "Reporter desk wire-up (user-first)",
   "status": "in_progress",
-  "current_wave": "Wint",
+  "current_wave": "Wrev",
   "isolation_default": "worktree",
   "base_branch": "main",
   "tracks": [
@@ -139,7 +139,7 @@
       "id": "integrate",
       "wave": "Wint",
       "isolation": "sequential",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["reporter-engineer"],
       "branch": "main",
       "owns": [
@@ -214,7 +214,7 @@
     {
       "id": "Wint",
       "kind": "sequential",
-      "status": "pending",
+      "status": "complete",
       "tracks": ["integrate"],
       "isolation_default": "sequential"
     },
@@ -228,5 +228,5 @@
   ],
   "blockers": [],
   "open_decisions": [],
-  "last_updated": "2026-08-18T13:29:21Z"
+  "last_updated": "2026-08-18T13:40:00Z"
 }

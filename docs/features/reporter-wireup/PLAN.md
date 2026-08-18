@@ -130,7 +130,7 @@ All W1 tracks complete and `python3 scripts/check_feature_tracks.py docs/feature
 ### Wave Wint — Integration
 - id: `Wint`
 - kind: `sequential`
-- status: `pending`
+- status: `complete`
 - tracks: `integrate`
 - isolation_default: `sequential`
 
