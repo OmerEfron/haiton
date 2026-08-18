@@ -85,6 +85,27 @@ export function wordBandLine(type: ArticleTypeId): string {
   return `חובה: ${band.min}–${band.max} מילים בגוף בלבד (paragraphs מחוברות) — מילים מופרדות ברווח. 2–8 פסקאות. לפני ההחזרה ספור; אם מחוץ לטווח, כתוב מחדש.`;
 }
 
+const DEFAULT_TONE_HINT =
+  "טון נלווה אלא אם החומר דורש אחרת: news=factual, profile=intimate, feature=magazine, interview=factual, column=dramatic.";
+
+function machinesBlock(): string {
+  return (Object.keys(MACHINES) as ArticleTypeId[])
+    .map((t) => `### ${t}\n${MACHINES[t]}`)
+    .join("\n\n");
+}
+
+function wordBandsBlock(): string {
+  return (Object.keys(WORD_COUNT) as ArticleTypeId[])
+    .map((t) => `- ${t}: ${WORD_COUNT[t].min}–${WORD_COUNT[t].max} מילים. ${TYPE_LABELS[t]}`)
+    .join("\n");
+}
+
+function toneMenu(): string {
+  return (Object.keys(TONE_LABELS) as ToneId[])
+    .map((t) => `- ${t}: ${TONE_LABELS[t]}`)
+    .join("\n");
+}
+
 export function forcedTypeBlock(type: ArticleTypeId, tone: ToneId): string {
   return `סוג קבוע: ${TYPE_LABELS[type]}
 טון: ${TONE_LABELS[tone]}
@@ -94,18 +115,30 @@ ${MACHINES[type]}
 ${wordBandLine(type)}`;
 }
 
-export function pickerBlock(): string {
-  const bands = (Object.keys(WORD_COUNT) as ArticleTypeId[])
-    .map((t) => `- ${t}: ${WORD_COUNT[t].min}–${WORD_COUNT[t].max} מילים. ${TYPE_LABELS[t]}`)
-    .join("\n");
+/** Type locked; model picks tone. */
+export function forcedTypePickToneBlock(type: ArticleTypeId): string {
+  const fallback = TYPE_DEFAULT_TONE[type];
+  return `סוג קבוע: ${TYPE_LABELS[type]}
+בחר טון מהרשימה; ברירת מחדל ${fallback} אלא אם החומר דורש אחרת:
+${toneMenu()}
+
+${MACHINES[type]}
+
+${wordBandLine(type)}`;
+}
+
+export function pickerBlock(tone?: ToneId): string {
+  const toneLine = tone
+    ? `טון קבוע: ${TONE_LABELS[tone]}. אל תשנה טון.`
+    : DEFAULT_TONE_HINT;
 
   return `${PICKER_RULES}
 
 אחרי הבחירה כתוב במכונה של הסוג שנבחר:
-${(Object.keys(MACHINES) as ArticleTypeId[]).map((t) => `### ${t}\n${MACHINES[t]}`).join("\n\n")}
+${machinesBlock()}
 
-טון נלווה אלא אם החומר דורש אחרת: news=factual, profile=intimate, feature=magazine, interview=factual, column=dramatic.
+${toneLine}
 
 טווחי מילים לפי סוג שנבחר:
-${bands}`;
+${wordBandsBlock()}`;
 }

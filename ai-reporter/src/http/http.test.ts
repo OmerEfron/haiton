@@ -9,6 +9,7 @@ const {
   ERROR_EMPTY_MESSAGE,
   ERROR_INTERVIEW_CLOSED,
   ERROR_INTERVIEW_NOT_FOUND,
+  ERROR_INVALID_FORM,
   ERROR_NO_OPEN_INTERVIEW,
   ERROR_STATUS,
 } = await import("../contract.js");
@@ -68,6 +69,8 @@ describe("http session", () => {
     assert.equal(session.reporterTyping, false);
     assert.equal(session.draft.status, "empty");
     assert.equal(session.exhausted, false);
+    assert.equal(session.type, null);
+    assert.equal(session.tone, null);
     assert.deepEqual(session.openers, [
       "משהו קרה בעבודה",
       "משהו קרה למישהו קרוב",
@@ -277,5 +280,129 @@ describe("http session", () => {
 
     await app.request(`/interviews/${id}/draft`, { method: "POST" });
     assert.equal(seenName, "עומר");
+  });
+
+  it("PATCH form stores type and tone", async () => {
+    const app = createApp(fakeDeps());
+    const createRes = await app.request("/interviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ facts: FACTS }),
+    });
+    const { id } = await createRes.json();
+
+    const res = await app.request(`/interviews/${id}/form`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "news", tone: "factual" }),
+    });
+    assert.equal(res.status, 200);
+    const session = await res.json();
+    assert.equal(session.type, "news");
+    assert.equal(session.tone, "factual");
+  });
+
+  it("PATCH form null resets to auto", async () => {
+    const app = createApp(fakeDeps());
+    const createRes = await app.request("/interviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ facts: FACTS }),
+    });
+    const { id } = await createRes.json();
+
+    await app.request(`/interviews/${id}/form`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "column" }),
+    });
+    const res = await app.request(`/interviews/${id}/form`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: null }),
+    });
+    assert.equal(res.status, 200);
+    const session = await res.json();
+    assert.equal(session.type, null);
+  });
+
+  it("passes stored form into writeArticle and stamps resolved ids", async () => {
+    let seen: { type?: string; tone?: string } = {};
+    const writeArticle = async (input: {
+      type?: string;
+      tone?: string;
+    }): Promise<Article> => {
+      seen = input;
+      return {
+        angle: "זווית",
+        headline: "כותרת בדיקה",
+        standfirst: "כותרת משנה",
+        paragraphs: ["פסקה"],
+        tone: "witty",
+        type: "news",
+      };
+    };
+    const app = createApp({
+      nextQuestion: async () => ({ question: "", done: true }),
+      writeArticle,
+    });
+    const createRes = await app.request("/interviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ facts: FACTS }),
+    });
+    const { id } = await createRes.json();
+
+    await app.request(`/interviews/${id}/form`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "news" }),
+    });
+
+    const res = await app.request(`/interviews/${id}/draft`, { method: "POST" });
+    const session = await res.json();
+    assert.equal(seen.type, "news");
+    assert.equal(seen.tone, undefined);
+    assert.equal(session.type, "news");
+    assert.equal(session.tone, "witty");
+  });
+
+  it("PATCH form after exhaust is 409", async () => {
+    const app = createApp(fakeDeps());
+    const createRes = await app.request("/interviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ facts: FACTS }),
+    });
+    const { id } = await createRes.json();
+    await app.request(`/interviews/${id}/draft`, { method: "POST" });
+
+    const res = await app.request(`/interviews/${id}/form`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "news" }),
+    });
+    assert.equal(res.status, ERROR_STATUS.interviewClosed);
+    const body = await res.json();
+    assert.equal(body.message, ERROR_INTERVIEW_CLOSED);
+  });
+
+  it("PATCH form rejects unknown ids", async () => {
+    const app = createApp(fakeDeps());
+    const createRes = await app.request("/interviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ facts: FACTS }),
+    });
+    const { id } = await createRes.json();
+
+    const res = await app.request(`/interviews/${id}/form`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "essay" }),
+    });
+    assert.equal(res.status, ERROR_STATUS.invalidForm);
+    const body = await res.json();
+    assert.equal(body.message, ERROR_INVALID_FORM);
   });
 });

@@ -55,6 +55,26 @@
 .composerActions { margin-top: 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .consent { margin-inline-start: auto; font: 400 11.5px/1.5 var(--sans); color: var(--ink-2); }
 
+.form {
+  border-top: 1px solid var(--rule);
+  padding: 10px var(--gutter) 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--white);
+}
+.formRow { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.formRow > :last-child {
+  min-width: 0;
+  flex: 1;
+}
+.formLabel {
+  flex: none;
+  min-width: 2.2em;
+  font: 500 11.5px/1 var(--sans);
+  color: var(--ink-2);
+}
+
 /* ---- Draft panel -------------------------------------------------------- */
 .draft { background: var(--tint); display: flex; flex-direction: column; min-height: 0; }
 .draftHead {

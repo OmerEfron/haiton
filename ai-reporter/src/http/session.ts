@@ -42,6 +42,8 @@ export function createSession(
     draft: emptyDraft(),
     openers: [...SESSION_OPENERS],
     exhausted: false,
+    type: null,
+    tone: null,
   };
   const name = subjectName?.trim();
   current = { ...session, facts, turns: [], ...(name ? { subjectName: name } : {}) };

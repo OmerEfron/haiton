@@ -4,11 +4,12 @@ import {
   ERROR_EMPTY_MESSAGE,
   ERROR_INTERVIEW_CLOSED,
   ERROR_INTERVIEW_NOT_FOUND,
+  ERROR_INVALID_FORM,
   ERROR_NO_OPEN_INTERVIEW,
   ERROR_STATUS,
 } from "../contract.js";
-import type { Article, FactInput } from "../types.js";
-import { MAX_MESSAGES } from "../types.js";
+import type { Article, ArticleTypeId, FactInput, ToneId } from "../types.js";
+import { MAX_MESSAGES, TONE_LABELS, TYPE_LABELS } from "../types.js";
 import {
   buildTurns,
   clearSession,
@@ -25,6 +26,9 @@ export type AppDeps = {
   nextQuestion?: NextQuestionFn;
   writeArticle?: WriteArticleFn;
 };
+
+const TYPE_IDS = new Set(Object.keys(TYPE_LABELS));
+const TONE_IDS = new Set(Object.keys(TONE_LABELS));
 
 function jsonError(message: string, status: number) {
   return Response.json({ message }, { status });
@@ -54,9 +58,13 @@ async function closeWithDraft(state: SessionState, writeArticle: WriteArticleFn)
     facts: state.facts,
     turns: state.turns,
     subjectName: state.subjectName,
+    ...(state.type ? { type: state.type } : {}),
+    ...(state.tone ? { tone: state.tone } : {}),
   });
   state.draft = articleToDraft(article, state.draft.id);
   state.angleChosen = true;
+  state.type = article.type;
+  state.tone = article.tone;
 }
 
 async function resolveDeps(deps?: AppDeps): Promise<Required<AppDeps>> {
@@ -70,6 +78,15 @@ async function resolveDeps(deps?: AppDeps): Promise<Required<AppDeps>> {
 
 function sessionNotFound() {
   return jsonError(ERROR_INTERVIEW_NOT_FOUND, ERROR_STATUS.interviewNotFound);
+}
+
+function parseFormId(
+  value: unknown,
+  ids: Set<string>,
+): { ok: true; value: string | null } | { ok: false } {
+  if (value === null) return { ok: true, value: null };
+  if (typeof value === "string" && ids.has(value)) return { ok: true, value };
+  return { ok: false };
 }
 
 function requireCurrent(id?: string) {
@@ -179,6 +196,38 @@ export function createApp(deps?: AppDeps): Hono {
 
     const body = (await c.req.json()) as { section?: SectionId };
     if (body.section) state!.draft.section = body.section;
+    return c.json(toWireSession(state!));
+  });
+
+  app.patch("/interviews/:id/form", async (c) => {
+    const id = c.req.param("id");
+    const { error, state } = requireCurrent(id);
+    if (error) return error;
+
+    if (state!.exhausted) {
+      return jsonError(ERROR_INTERVIEW_CLOSED, ERROR_STATUS.interviewClosed);
+    }
+
+    const body = (await c.req.json()) as {
+      type?: ArticleTypeId | null;
+      tone?: ToneId | null;
+    };
+
+    if ("type" in body) {
+      const parsed = parseFormId(body.type, TYPE_IDS);
+      if (!parsed.ok) {
+        return jsonError(ERROR_INVALID_FORM, ERROR_STATUS.invalidForm);
+      }
+      state!.type = parsed.value as ArticleTypeId | null;
+    }
+    if ("tone" in body) {
+      const parsed = parseFormId(body.tone, TONE_IDS);
+      if (!parsed.ok) {
+        return jsonError(ERROR_INVALID_FORM, ERROR_STATUS.invalidForm);
+      }
+      state!.tone = parsed.value as ToneId | null;
+    }
+
     return c.json(toWireSession(state!));
   });
 

@@ -43,6 +43,12 @@ export const ROUTES: readonly RouteContract[] = [
     notes: "body: { section: SectionId }",
   },
   {
+    method: "PATCH",
+    path: "/interviews/:id/form",
+    handler: "setArticleForm",
+    notes: "body: { type?: ArticleTypeId | null, tone?: ToneId | null }; null is auto",
+  },
+  {
     method: "DELETE",
     path: "/interviews/:id",
     handler: "discardInterview",
@@ -67,6 +73,7 @@ export const ERROR_NO_OPEN_INTERVIEW = "אין ראיון פתוח";
 export const ERROR_EMPTY_MESSAGE = "אי אפשר לשלוח הודעה ריקה";
 export const ERROR_INTERVIEW_NOT_FOUND = "ראיון לא נמצא";
 export const ERROR_INTERVIEW_CLOSED = "הראיון הסתיים";
+export const ERROR_INVALID_FORM = "בחירה לא חוקית";
 
 /** HTTP status codes paired with the Hebrew errors above. */
 export const ERROR_STATUS = {
@@ -74,6 +81,7 @@ export const ERROR_STATUS = {
   emptyMessage: 400,
   interviewNotFound: 404,
   interviewClosed: 409,
+  invalidForm: 400,
 } as const;
 
 /** Wire keys for InterviewMessage (matches frontend/src/api/types.ts). */
@@ -110,4 +118,6 @@ export const INTERVIEW_SESSION_KEYS = [
   "draft",
   "openers",
   "exhausted",
+  "type",
+  "tone",
 ] as const;

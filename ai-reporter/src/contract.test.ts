@@ -20,6 +20,11 @@ const PLAN_ROUTES: { method: string; path: string; handler: string }[] = [
     path: "/interviews/:id/draft/section",
     handler: "setDraftSection",
   },
+  {
+    method: "PATCH",
+    path: "/interviews/:id/form",
+    handler: "setArticleForm",
+  },
   { method: "DELETE", path: "/interviews/:id", handler: "discardInterview" },
 ];
 

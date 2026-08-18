@@ -8,8 +8,10 @@ const {
   MACHINES,
   SHARED_RULES,
   forcedTypeBlock,
+  forcedTypePickToneBlock,
   pickerBlock,
 } = await import("./machines.js");
+const { buildInstructions } = await import("./writer.js");
 
 describe("writer machines", () => {
   it("news machine is a pyramid, not a magazine essay", () => {
@@ -49,8 +51,59 @@ describe("writer machines", () => {
   it("auto instructions include every machine", () => {
     const text = pickerBlock();
     assert.match(text, /בחר סוג לפי החומר/);
+    assert.match(text, /טון נלווה/);
     for (const type of Object.keys(MACHINES)) {
       assert.match(text, new RegExp(`### ${type}`));
     }
+  });
+
+  it("locked-tone picker keeps type choice and forbids changing tone", () => {
+    const text = pickerBlock("intimate");
+    assert.match(text, /בחר סוג לפי החומר/);
+    assert.match(text, /טון קבוע/);
+    assert.match(text, /אישי ואינטימי/);
+    assert.doesNotMatch(text, /טון נלווה/);
+  });
+
+  it("forced type with auto tone omits the type picker", () => {
+    const text = forcedTypePickToneBlock("news");
+    assert.match(text, /מכונת חדשות/);
+    assert.match(text, /בחר טון מהרשימה/);
+    assert.match(text, /factual/);
+    assert.doesNotMatch(text, /בחר סוג לפי החומר/);
+  });
+});
+
+describe("buildInstructions", () => {
+  it("both omitted asks the model for type and tone", () => {
+    const text = buildInstructions();
+    assert.match(text, /בחר סוג לפי החומר/);
+    assert.match(text, /"type": "news\|profile\|feature\|interview\|column"/);
+    assert.match(text, /"tone": "factual\|magazine\|witty\|dramatic\|intimate"/);
+  });
+
+  it("both set uses the forced machine and omits pick fields", () => {
+    const text = buildInstructions("news", "factual");
+    assert.match(text, /מכונת חדשות/);
+    assert.match(text, /עיתונאי ענייני/);
+    assert.doesNotMatch(text, /בחר סוג לפי החומר/);
+    assert.doesNotMatch(text, /"type": "news\|profile/);
+    assert.doesNotMatch(text, /"tone": "factual\|magazine/);
+  });
+
+  it("type only asks for tone", () => {
+    const text = buildInstructions("news");
+    assert.match(text, /מכונת חדשות/);
+    assert.match(text, /בחר טון מהרשימה/);
+    assert.doesNotMatch(text, /"type": "news\|profile/);
+    assert.match(text, /"tone": "factual\|magazine\|witty\|dramatic\|intimate"/);
+  });
+
+  it("tone only asks for type", () => {
+    const text = buildInstructions(undefined, "intimate");
+    assert.match(text, /בחר סוג לפי החומר/);
+    assert.match(text, /טון קבוע/);
+    assert.match(text, /"type": "news\|profile\|feature\|interview\|column"/);
+    assert.doesNotMatch(text, /"tone": "factual\|magazine/);
   });
 });

@@ -5,15 +5,22 @@ import styles from "./InterviewRoom.module.css";
 import interviewStyles from "../components/interview/Interview.module.css";
 import { ChatBubble, TimeStamp, TypingIndicator } from "../components/interview/ChatBubble";
 import { DraftPanel } from "../components/interview/DraftPanel";
+import { ArticleFormChips } from "../components/interview/ArticleFormChips";
 import { Avatar, ErrorState, LivePill, Loading } from "../components/ui/Bits";
 import { Button } from "../components/ui/Button";
 import { Chip } from "../components/ui/Chip";
 import { TextArea } from "../components/ui/Field";
-import { MAX_INTERVIEW_MESSAGES, type SectionId } from "../api/types";
+import {
+  MAX_INTERVIEW_MESSAGES,
+  type ArticleTypeId,
+  type SectionId,
+  type ToneId,
+} from "../api/types";
 import {
   discardSession,
   requestDraft,
   sendMessage,
+  setArticleForm,
   setDraftSection,
   startSession,
 } from "../api/reporter/interview";
@@ -48,6 +55,12 @@ export function InterviewRoom() {
 
   const chooseSection = useMutation({
     mutationFn: (s: SectionId) => setDraftSection(s),
+    onSuccess: refresh,
+  });
+
+  const chooseForm = useMutation({
+    mutationFn: (patch: { type?: ArticleTypeId | null; tone?: ToneId | null }) =>
+      setArticleForm(patch),
     onSuccess: refresh,
   });
 
@@ -192,6 +205,13 @@ export function InterviewRoom() {
             )}
             <div ref={threadEnd} />
           </div>
+
+          <ArticleFormChips
+            type={s.type ?? null}
+            tone={s.tone ?? null}
+            locked={closed}
+            onChange={(patch) => !busy && !closed && chooseForm.mutate(patch)}
+          />
 
           <form className={interviewStyles.composer} onSubmit={submit}>
             <TextArea

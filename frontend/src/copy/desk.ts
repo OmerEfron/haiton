@@ -58,4 +58,36 @@ export const desk = {
 
   moreIn: (section: string) => `עוד ב${section}`,
   moreInEdition: "עוד במהדורה",
+
+  articleType: "סוג",
+  articleTone: "טון",
+  articleFormAuto: "אוטומטי",
+  articleTypes: {
+    news: "חדשות",
+    profile: "פרופיל",
+    feature: "מגזין",
+    interview: "ראיון",
+    column: "טור",
+  },
+  articleTones: {
+    factual: "ענייני",
+    magazine: "מגזיני",
+    witty: "שנון",
+    dramatic: "דרמטי",
+    intimate: "אינטימי",
+  },
+  articleTypeHints: {
+    news: "חדשותית — מה קרה, למי, מתי, איפה ולמה",
+    profile: "פרופיל — אדם דרך אישיות, הרגלים, חיים",
+    feature: "כתבת מגזין — סיפור רחב סביב נושא / תופעה / זווית אנושית",
+    interview: "ראיון — בנוי בעיקר סביב דברי המרואיין",
+    column: "טור / פרשנות — עמדה או נקודת מבט של הכותב",
+  },
+  articleToneHints: {
+    factual: "עיתונאי ענייני — נקי, עובדתי, ישיר",
+    magazine: "מגזיני סיפורי — תיאורי, זורם, עם סצנות",
+    witty: "קליל ושנון — הומור עדין, ניסוחים חדים",
+    dramatic: "דרמטי — מדגיש מתח, קונפליקט ומשמעות",
+    intimate: "אישי ואינטימי — חם, קרוב לדמות",
+  },
 } as const;

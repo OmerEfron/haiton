@@ -166,6 +166,15 @@ export interface ReaderSearchResult {
 
 export type InterviewRole = "reporter" | "reader";
 
+export type ToneId = "factual" | "magazine" | "witty" | "dramatic" | "intimate";
+
+export type ArticleTypeId =
+  | "news"
+  | "profile"
+  | "feature"
+  | "interview"
+  | "column";
+
 export interface InterviewMessage {
   id: string;
   role: InterviewRole;
@@ -208,6 +217,10 @@ export interface InterviewSession {
   openers: string[];
   /** No more turns — reporter stopped and wrote (or was asked to write) a draft. */
   exhausted: boolean;
+  /** null = Auto. Filled with the resolved id after the draft is written. */
+  type: ArticleTypeId | null;
+  /** null = Auto. Filled with the resolved id after the draft is written. */
+  tone: ToneId | null;
 }
 
 /** Reader turns after which the reporter stops and writes a draft. */

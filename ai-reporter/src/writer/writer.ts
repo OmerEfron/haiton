@@ -7,7 +7,12 @@ import type {
   Turn,
 } from "../types.js";
 import { TONE_LABELS, TYPE_LABELS } from "../types.js";
-import { forcedTypeBlock, pickerBlock, SHARED_RULES } from "./machines.js";
+import {
+  forcedTypeBlock,
+  forcedTypePickToneBlock,
+  pickerBlock,
+  SHARED_RULES,
+} from "./machines.js";
 
 type WriteArticleInput = {
   facts: FactInput[];
@@ -42,7 +47,11 @@ function asNonEmptyString(value: unknown, label: string): string {
   return value.trim();
 }
 
-function parseArticleOutput(text: string, pickForm: boolean): RawArticle {
+function parseArticleOutput(
+  text: string,
+  pickType: boolean,
+  pickTone: boolean,
+): RawArticle {
   const json = stripJsonFences(text);
   let parsed: unknown;
   try {
@@ -71,14 +80,16 @@ function parseArticleOutput(text: string, pickForm: boolean): RawArticle {
     paragraphs: paragraphs.map((p) => (p as string).trim()),
   };
 
-  if (pickForm) {
+  if (pickType) {
     if (typeof obj.type !== "string" || !TYPE_IDS.has(obj.type)) {
       throw new Error("Writer output missing type");
     }
+    raw.type = obj.type as ArticleTypeId;
+  }
+  if (pickTone) {
     if (typeof obj.tone !== "string" || !TONE_IDS.has(obj.tone)) {
       throw new Error("Writer output missing tone");
     }
-    raw.type = obj.type as ArticleTypeId;
     raw.tone = obj.tone as ToneId;
   }
 
@@ -119,10 +130,14 @@ ${formatTurns(turns)}
 כתוב את הכתבה.`;
 }
 
-function jsonShape(pickForm: boolean): string {
-  const extra = pickForm
-    ? `\n  "type": "news|profile|feature|interview|column",\n  "tone": "factual|magazine|witty|dramatic|intimate",`
-    : "";
+function jsonShape(pickType: boolean, pickTone: boolean): string {
+  const extra = [
+    pickType ? `  "type": "news|profile|feature|interview|column"` : "",
+    pickTone ? `  "tone": "factual|magazine|witty|dramatic|intimate"` : "",
+  ]
+    .filter(Boolean)
+    .map((line) => `\n${line},`)
+    .join("");
   return `החזר JSON בלבד, ללא markdown, ללא טקסט נוסף:
 {${extra}
   "angle": "תיאור קצר של הזווית",
@@ -132,16 +147,20 @@ function jsonShape(pickForm: boolean): string {
 }`;
 }
 
+function formBlock(type?: ArticleTypeId, tone?: ToneId): string {
+  if (type && tone) return forcedTypeBlock(type, tone);
+  if (type) return forcedTypePickToneBlock(type);
+  return pickerBlock(tone);
+}
+
 export function buildInstructions(type?: ArticleTypeId, tone?: ToneId): string {
-  const pickForm = type === undefined || tone === undefined;
-  const form = pickForm
-    ? pickerBlock()
-    : forcedTypeBlock(type, tone);
+  const pickType = type === undefined;
+  const pickTone = tone === undefined;
   return `${SHARED_RULES}
 
-${form}
+${formBlock(type, tone)}
 
-${jsonShape(pickForm)}`;
+${jsonShape(pickType, pickTone)}`;
 }
 
 export async function writeArticle({
@@ -151,19 +170,20 @@ export async function writeArticle({
   tone,
   type,
 }: WriteArticleInput): Promise<Article> {
-  const pickForm = type === undefined || tone === undefined;
+  const pickType = type === undefined;
+  const pickTone = tone === undefined;
   const instructions = buildInstructions(type, tone);
   const input = buildWriterInput(facts, turns, subjectName);
 
   const output = await complete({ instructions, input });
-  const raw = parseArticleOutput(output, pickForm);
+  const raw = parseArticleOutput(output, pickType, pickTone);
 
   return {
     angle: raw.angle,
     headline: raw.headline,
     standfirst: raw.standfirst,
     paragraphs: raw.paragraphs,
-    tone: pickForm ? raw.tone! : tone,
-    type: pickForm ? raw.type! : type,
+    tone: pickTone ? raw.tone! : tone!,
+    type: pickType ? raw.type! : type!,
   };
 }

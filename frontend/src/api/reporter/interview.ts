@@ -1,7 +1,7 @@
 /* REPORTER AGENT API — the interviewing / story-writing service.
  * Separate deployment from the core API; wired via VITE_REPORTER_URL. */
 
-import type { InterviewSession, SectionId } from "../types";
+import type { InterviewSession, SectionId, ArticleTypeId, ToneId } from "../types";
 import { ApiError } from "../client";
 import { listFacts } from "../core/karteset";
 import { reporterRequest } from "./fetch";
@@ -57,6 +57,20 @@ export async function setDraftSection(section: SectionId): Promise<InterviewSess
   return reporterRequest<InterviewSession>(`/interviews/${session.id}/draft/section`, {
     method: "PATCH",
     body: JSON.stringify({ section }),
+  });
+}
+
+export async function setArticleForm(patch: {
+  type?: ArticleTypeId | null;
+  tone?: ToneId | null;
+}): Promise<InterviewSession> {
+  const session = await getSession();
+  if (!session) throw new ApiError("אין ראיון פתוח", 409);
+  if (session.exhausted) throw new ApiError("הראיון הסתיים", 409);
+
+  return reporterRequest<InterviewSession>(`/interviews/${session.id}/form`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
   });
 }
 

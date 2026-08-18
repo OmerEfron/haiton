@@ -47,6 +47,10 @@ export interface InterviewSession {
   draft: Draft;
   openers: string[];
   exhausted: boolean;
+  /** null = Auto. Filled with the resolved id after the draft is written. */
+  type: import("../types.js").ArticleTypeId | null;
+  /** null = Auto. Filled with the resolved id after the draft is written. */
+  tone: import("../types.js").ToneId | null;
 }
 
 export type SessionState = InterviewSession & {
