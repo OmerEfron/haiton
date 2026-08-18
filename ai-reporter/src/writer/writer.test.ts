@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
+import { register } from "node:module";
 import { describe, it } from "node:test";
-import { personaFacts } from "../fixtures/persona.js";
-import { weekAnswers } from "../fixtures/week-answers.js";
-import { getCallCount } from "../llm.js";
-import { WORD_COUNT } from "../types.js";
-import { writeArticle } from "./writer.js";
+
+register("./hook.mjs", import.meta.url);
+
+const { personaFacts } = await import("../fixtures/persona.js");
+const { weekAnswers } = await import("../fixtures/week-answers.js");
+const { getCallCount } = await import("../llm.js");
+const { WORD_COUNT } = await import("../types.js");
+const { writeArticle } = await import("./writer.js");
 
 const turns = [
   {
