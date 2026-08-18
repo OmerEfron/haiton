@@ -28,7 +28,7 @@ qa-reviewer (readonly, `grok-4.5`) if not already done on Wrev.
 
 Set `status.json` `status` to `complete`, `current_wave` to the last completed wave, `last_updated` now.
 
-Append close notes to PLAN.md (what landed, merge order used, follow-ups). Do not invent a next product version. Do not start reporter.
+Append close notes to PLAN.md (what landed, merge order used, follow-ups). Do not invent a next product version. Do not start another feature.
 
 ## 4. Stop
 

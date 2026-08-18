@@ -13,4 +13,4 @@ When invoked:
 3. Launch every track in the current wave per isolation (`worktree` / `sequential` / `cloud`)
 4. Collect goal-test evidence. After each track passes, it must have committed. After the wave, commit the `status.json` update. Do not start the next wave. Do not start vite or the API listen loop. Do not push unless asked.
 
-Models: Cursor pool only. Implementers are `backend-engineer` or `frontend-engineer` (`composer-2.5[]`) per track `owner_agents`. Review is `qa-reviewer` (`grok-4.5`, readonly).
+Models: Cursor pool only for agents. Implementers are `backend-engineer`, `frontend-engineer`, or `reporter-engineer` (`composer-2.5[]`) per track `owner_agents`. Review is `qa-reviewer` (`grok-4.5`, readonly). `reporter-engineer` owns `ai-reporter/` only.

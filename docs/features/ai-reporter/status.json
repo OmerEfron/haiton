@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "feature_id": "ai-reporter",
+  "title": "Simple AI reporter",
+  "status": "planned",
+  "current_wave": "W0",
+  "isolation_default": "worktree",
+  "base_branch": "main",
+  "tracks": [
+    {
+      "id": "contracts",
+      "wave": "W0",
+      "isolation": "sequential",
+      "status": "pending",
+      "owner_agents": ["reporter-engineer"],
+      "branch": "main",
+      "owns": [
+        "ai-reporter/package.json",
+        "ai-reporter/package-lock.json",
+        "ai-reporter/tsconfig.json",
+        "ai-reporter/.env.example",
+        "ai-reporter/src/types.ts",
+        "ai-reporter/src/llm.ts",
+        "ai-reporter/src/fixtures/persona.ts",
+        "ai-reporter/src/fixtures/week-answers.ts",
+        ".cursor/worktrees.json"
+      ],
+      "reads": [
+        "docs/features/ai-reporter/PLAN.md",
+        "frontend/src/mocks/fixtures/facts.ts"
+      ],
+      "must_not": [
+        "ai-reporter/src/interviewer/",
+        "ai-reporter/src/writer/",
+        "frontend/",
+        "api/",
+        "frontend/src/api/types.ts"
+      ]
+    },
+    {
+      "id": "interviewer",
+      "wave": "W1",
+      "isolation": "worktree",
+      "status": "pending",
+      "owner_agents": ["reporter-engineer"],
+      "branch": "agent/feature/ai-reporter/interviewer",
+      "owns": ["ai-reporter/src/interviewer/"],
+      "reads": [
+        "docs/features/ai-reporter/PLAN.md",
+        "ai-reporter/src/types.ts",
+        "ai-reporter/src/llm.ts",
+        "ai-reporter/src/fixtures/persona.ts",
+        "ai-reporter/src/fixtures/week-answers.ts"
+      ],
+      "must_not": [
+        "ai-reporter/src/types.ts",
+        "ai-reporter/src/llm.ts",
+        "ai-reporter/src/fixtures/",
+        "ai-reporter/src/writer/",
+        "ai-reporter/package.json",
+        "ai-reporter/package-lock.json",
+        "frontend/",
+        "api/"
+      ]
+    },
+    {
+      "id": "writer",
+      "wave": "W1",
+      "isolation": "worktree",
+      "status": "pending",
+      "owner_agents": ["reporter-engineer"],
+      "branch": "agent/feature/ai-reporter/writer",
+      "owns": ["ai-reporter/src/writer/"],
+      "reads": [
+        "docs/features/ai-reporter/PLAN.md",
+        "ai-reporter/src/types.ts",
+        "ai-reporter/src/llm.ts",
+        "ai-reporter/src/fixtures/persona.ts",
+        "ai-reporter/src/fixtures/week-answers.ts"
+      ],
+      "must_not": [
+        "ai-reporter/src/types.ts",
+        "ai-reporter/src/llm.ts",
+        "ai-reporter/src/fixtures/",
+        "ai-reporter/src/interviewer/",
+        "ai-reporter/package.json",
+        "ai-reporter/package-lock.json",
+        "frontend/",
+        "api/"
+      ]
+    },
+    {
+      "id": "integrate",
+      "wave": "Wint",
+      "isolation": "sequential",
+      "status": "pending",
+      "owner_agents": ["reporter-engineer"],
+      "branch": "main",
+      "owns": [
+        "ai-reporter/src/run.ts",
+        "ai-reporter/src/run.test.ts",
+        "ai-reporter/package.json"
+      ],
+      "reads": [
+        "docs/features/ai-reporter/PLAN.md",
+        "ai-reporter/src/types.ts",
+        "ai-reporter/src/llm.ts",
+        "ai-reporter/src/fixtures/",
+        "ai-reporter/src/interviewer/",
+        "ai-reporter/src/writer/"
+      ],
+      "must_not": [
+        "ai-reporter/src/interviewer/",
+        "ai-reporter/src/writer/",
+        "ai-reporter/src/types.ts",
+        "ai-reporter/src/llm.ts",
+        "ai-reporter/src/fixtures/",
+        "frontend/",
+        "api/",
+        "ai-reporter/package-lock.json"
+      ]
+    },
+    {
+      "id": "review",
+      "wave": "Wrev",
+      "isolation": "sequential",
+      "status": "pending",
+      "owner_agents": ["qa-reviewer"],
+      "branch": "main",
+      "owns": [],
+      "reads": [
+        "docs/features/ai-reporter/",
+        "ai-reporter/",
+        "frontend/src/api/reporter/interview.ts"
+      ],
+      "must_not": [
+        "ai-reporter/",
+        "frontend/",
+        "api/",
+        "docs/features/ai-reporter/status.json"
+      ]
+    }
+  ],
+  "waves": [
+    {
+      "id": "W0",
+      "kind": "sequential",
+      "status": "pending",
+      "tracks": ["contracts"],
+      "isolation_default": "sequential"
+    },
+    {
+      "id": "W1",
+      "kind": "parallel",
+      "status": "pending",
+      "tracks": ["interviewer", "writer"],
+      "isolation_default": "worktree",
+      "merge_order": ["interviewer", "writer"]
+    },
+    {
+      "id": "Wint",
+      "kind": "sequential",
+      "status": "pending",
+      "tracks": ["integrate"],
+      "isolation_default": "sequential"
+    },
+    {
+      "id": "Wrev",
+      "kind": "sequential",
+      "status": "pending",
+      "tracks": ["review"],
+      "isolation_default": "sequential"
+    }
+  ],
+  "blockers": [],
+  "open_decisions": [],
+  "last_updated": "2026-08-18T12:24:00Z"
+}

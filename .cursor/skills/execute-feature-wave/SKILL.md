@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 Run **one** wave from `docs/features/<id>/`. Feature id from chat, or the only feature with status `planned` / `in_progress`. Do not auto-start the next wave. Do not start vite or the API listen loop.
 
-This repo uses **Cursor models only** (Grok 4.6, Grok 4.5, Composer 2.5). Do not pin Claude, GPT, or Gemini.
+This repo uses **Cursor models only** (Grok 4.6, Grok 4.5, Composer 2.5) for agents. Do not pin Claude, GPT, or Gemini as the Cursor model. Product code in `ai-reporter/` may call OpenAI `gpt-5.5` when that feature's PLAN says so.
 
 Checks (from `docs/features/<id>/MAP.md`):
 
@@ -16,6 +16,7 @@ Checks (from `docs/features/<id>/MAP.md`):
 - frontend lint: `cd frontend && npm run lint`
 - frontend build: `cd frontend && npm run build` (Wint/Wrev)
 - api tests: `cd api && npm test` (after W0 if the wave says so)
+- ai-reporter live: `cd ai-reporter && npm test` (Wint/Wrev of `ai-reporter`; needs `OPENAI_API_KEY`; honor PLAN call caps; do not also run W1 module live tests)
 
 ## 1. Select
 
@@ -47,7 +48,7 @@ Current wave = `current_wave` whose status is `pending` (or the in-progress wave
 
 ### sequential
 
-One team in the current checkout. Follow the single track brief. Implementer: track `owner_agents` — `backend-engineer` or `frontend-engineer` (`composer-2.5[]` / Task `composer-2.5-fast`). Wrev: `qa-reviewer` readonly (`grok-4.5` / Task `cursor-grok-4.5-high-fast`).
+One team in the current checkout. Follow the single track brief. Implementer: track `owner_agents` — `backend-engineer`, `frontend-engineer`, or `reporter-engineer` (`composer-2.5[]` / Task `composer-2.5-fast`). Wrev: `qa-reviewer` readonly (`grok-4.5` / Task `cursor-grok-4.5-high-fast`).
 
 ### parallel
 
