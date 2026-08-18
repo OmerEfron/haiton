@@ -203,7 +203,7 @@ export function CirclePage() {
                       </span>
                     </span>
                   </span>
-                  <span className={styles.relation}>{c.sectionName}</span>
+                  <span className={styles.relation}>{c.relationLabel}</span>
                   <span className={styles.actions}>
                     <Button variant="quiet" size="sm" onClick={() => setEditing(c)}>
                       {common.edit}

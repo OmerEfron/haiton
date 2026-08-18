@@ -17,8 +17,8 @@ export function StoryPage() {
   const story = useQuery({ queryKey: qk.story(storyId), queryFn: () => getStory(storyId) });
   const profile = useQuery({ queryKey: qk.profile, queryFn: getProfile });
   const siblings = useQuery({
-    queryKey: ["stories", story.data?.section],
-    queryFn: () => listStories(story.data?.section),
+    queryKey: ["stories"],
+    queryFn: () => listStories(),
     enabled: Boolean(story.data),
   });
 
@@ -48,7 +48,7 @@ export function StoryPage() {
     <>
       <PageHeader />
       <CrumbBar>
-        <span style={{ fontWeight: 700 }}>{s.sectionName}</span>
+        <span style={{ fontWeight: 700 }}>ראשי</span>
         <span className={crumbStyles.sep}>›</span>
         <span className={crumbStyles.muted}>ידיעה {s.id}</span>
       </CrumbBar>
@@ -93,7 +93,7 @@ export function StoryPage() {
 
         {more.length > 0 && (
           <div className={styles.more}>
-            <h3 className={styles.moreTitle}>{desk.moreIn(s.sectionName)}</h3>
+            <h3 className={styles.moreTitle}>{desk.moreInEdition}</h3>
             <div className={styles.moreLinks}>
               {more.map((item) => (
                 <Link key={item.id} to={`/story/${item.id}`}>

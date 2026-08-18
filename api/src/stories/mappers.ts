@@ -10,6 +10,9 @@ export const SECTION_NAMES: Record<SectionId, string> = {
   flashes: "מבזקים",
 };
 
+export const MAIN_SECTION: SectionId = "work";
+export const MAIN_SECTION_NAME = "ראשי";
+
 export const BYLINE = "כתב העיתון | שולחן העורכים";
 export const STORY_NOT_FOUND = "הידיעה לא נמצאה בארכיון";
 export const DRAFT_NOT_READY = "הטיוטה עדיין לא מוכנה לפרסום";
@@ -78,10 +81,6 @@ export function nowPublishedAt(dateShort: string): { time: string; full: string 
   const mm = String(d.getMinutes()).padStart(2, "0");
   const datePart = dateShort.split(", ")[1] ?? dateShort;
   return { time: `${hh}:${mm}`, full: `${datePart}, ${hh}:${mm}` };
-}
-
-export function sectionNameFor(section: SectionId | null): string {
-  return section ? SECTION_NAMES[section] : SECTION_NAMES.work;
 }
 
 export function angleFromDraft(draft: Draft): string {

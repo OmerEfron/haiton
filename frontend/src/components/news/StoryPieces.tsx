@@ -103,24 +103,3 @@ export function FlashItem({ flash }: { flash: Flash }) {
     </div>
   );
 }
-
-export function DigestColumn({
-  name,
-  items,
-}: {
-  name: string;
-  items: { id: string; headline: string }[];
-}) {
-  return (
-    <div>
-      <h4 className={styles.digestTitle}>{name}</h4>
-      <div className={styles.digestLinks}>
-        {items.map((item, i) => (
-          <Link key={`${item.id}-${i}`} to={`/story/${item.id}`}>
-            {item.headline}
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}

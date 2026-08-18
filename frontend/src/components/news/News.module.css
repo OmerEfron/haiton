@@ -95,15 +95,6 @@ a.flashText:hover { color: var(--paper-red); }
 .promptKicker { margin: 0 0 3px; font: 700 11px/1 var(--sans); letter-spacing: var(--track-sm); color: var(--paper-red); }
 .promptBody { margin: 0 0 10px; font: 400 13px/1.55 var(--sans); color: var(--ink); }
 
-/* ---- Digest columns ---------------------------------------------------- */
-.digestTitle {
-  margin: 0 0 8px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid var(--rule);
-  font: 700 16px/1 var(--serif);
-}
-.digestLinks { display: flex; flex-direction: column; gap: 7px; font: 500 13.5px/1.45 var(--sans); }
-
 @media (max-width: 900px) {
   .leadHeadline { font-size: 30px; line-height: 1.13; }
   .leadStandfirst { font-size: 15px; margin-top: 10px; max-width: none; }

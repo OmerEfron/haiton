@@ -5,7 +5,6 @@ import { SectionsBar } from "../components/layout/SectionsBar";
 import { Ticker } from "../components/layout/Ticker";
 import { Footer } from "../components/layout/Footer";
 import {
-  DigestColumn,
   FlashItem,
   LeadStory,
   StoryCard,
@@ -134,23 +133,13 @@ export function FrontPage() {
           )}
 
           <section className={styles.lower}>
+            <h3 className={styles.lowerTitlePlain}>{common.allStories}</h3>
             <div>
-              <h3 className={styles.lowerTitle}>מדורים</h3>
-              <div className={styles.digestGrid}>
-                {page.digests.map((digest) => (
-                  <DigestColumn key={digest.section} name={digest.name} items={digest.items} />
+              {[page.lead, ...page.secondary, ...page.list]
+                .filter((s): s is NonNullable<typeof s> => Boolean(s))
+                .map((story) => (
+                  <StoryListRow key={story.id} story={story} showTag={showTag} />
                 ))}
-              </div>
-            </div>
-            <div>
-              <h3 className={styles.lowerTitlePlain}>{common.allStories}</h3>
-              <div>
-                {[page.lead, ...page.secondary, ...page.list]
-                  .filter((s): s is NonNullable<typeof s> => Boolean(s))
-                  .map((story) => (
-                    <StoryListRow key={story.id} story={story} showTag={showTag} />
-                  ))}
-              </div>
             </div>
           </section>
         </>
@@ -188,8 +177,8 @@ function EmptyEdition() {
         <p className={styles.tomorrowLabel}>{desk.tomorrowTitle}</p>
         <div className={styles.tomorrowGrid}>
           {desk.tomorrowCards.map((card) => (
-            <div key={card.section} className={styles.tomorrowCard}>
-              <span className={styles.tomorrowKicker}>{card.section}</span>
+            <div key={card.kicker + card.text} className={styles.tomorrowCard}>
+              <span className={styles.tomorrowKicker}>{card.kicker}</span>
               <p className={styles.tomorrowText}>{card.text}</p>
             </div>
           ))}

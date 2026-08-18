@@ -105,9 +105,6 @@
 .mark { color: var(--paper-red); font-weight: 700; }
 .markOff { color: var(--muted); font-weight: 700; }
 
-.sectionRow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.sectionLabel { font: 500 12.5px/1 var(--sans); color: var(--ink-2); }
-
 .draftFoot {
   border-top: 1px solid var(--rule);
   background: var(--white);

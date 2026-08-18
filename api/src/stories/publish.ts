@@ -2,12 +2,13 @@ import type { DatabaseSync } from "node:sqlite";
 import type { Draft, FrontPage, SectionId, Story } from "../types.ts";
 import {
   BYLINE,
+  MAIN_SECTION,
+  MAIN_SECTION_NAME,
   SECTION_NAMES,
   angleFromDraft,
   nowPublishedAt,
   paragraphsToBody,
   rowToStory,
-  sectionNameFor,
   type StoryRow,
 } from "./mappers.ts";
 
@@ -105,7 +106,6 @@ export function publishDraft(
 
   const { time, full } = nowPublishedAt(state.date_short);
   const storyId = nextStoryId(db, userId);
-  const section = draft.section ?? "work";
   const body = paragraphsToBody(draft.paragraphs);
 
   db.prepare(
@@ -120,8 +120,8 @@ export function publishDraft(
   ).run(
     storyId,
     userId,
-    section,
-    sectionNameFor(section),
+    MAIN_SECTION,
+    MAIN_SECTION_NAME,
     settings.edition_name,
     draft.headline,
     draft.standfirst ?? "",

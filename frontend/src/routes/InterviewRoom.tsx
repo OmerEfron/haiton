@@ -13,7 +13,6 @@ import { TextArea } from "../components/ui/Field";
 import {
   MAX_INTERVIEW_MESSAGES,
   type ArticleTypeId,
-  type SectionId,
   type ToneId,
 } from "../api/types";
 import {
@@ -21,7 +20,6 @@ import {
   requestDraft,
   sendMessage,
   setArticleForm,
-  setDraftSection,
   startSession,
 } from "../api/reporter/interview";
 import { publishStory } from "../api/core/stories";
@@ -52,11 +50,6 @@ export function InterviewRoom() {
   });
 
   const draftIt = useMutation({ mutationFn: requestDraft, onSuccess: refresh });
-
-  const chooseSection = useMutation({
-    mutationFn: (s: SectionId) => setDraftSection(s),
-    onSuccess: refresh,
-  });
 
   const chooseForm = useMutation({
     mutationFn: (patch: { type?: ArticleTypeId | null; tone?: ToneId | null }) =>
@@ -113,7 +106,6 @@ export function InterviewRoom() {
   const draftPanel = (
     <DraftPanel
       draft={s.draft}
-      onSection={(section) => chooseSection.mutate(section)}
       onPublish={() => publish.mutate(s.draft)}
       publishing={publish.isPending}
       onSave={saveDraft}

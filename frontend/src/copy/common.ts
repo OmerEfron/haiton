@@ -37,13 +37,3 @@ export const common = {
   backHome: "חזרה לעמוד הראשי",
   signOut: "יציאה מהחשבון",
 } as const;
-
-export const sectionNames: Record<string, string> = {
-  work: "עבודה",
-  family: "משפחה",
-  friends: "חברים",
-  celebrations: "חגיגות",
-  food: "אוכל",
-  moments: "רגעים",
-  flashes: "מבזקים",
-};

@@ -1,27 +1,21 @@
 import styles from "./Interview.module.css";
-import type { Draft, SectionId } from "../../api/types";
+import type { Draft } from "../../api/types";
 import { LivePill } from "../ui/Bits";
 import { Button } from "../ui/Button";
-import { Chip } from "../ui/Chip";
-import { sectionNames } from "../../copy/common";
 import { desk } from "../../copy/desk";
-
-const DRAFT_SECTIONS: SectionId[] = ["work", "moments", "flashes"];
 
 export function DraftPanel({
   draft,
-  onSection,
   onPublish,
   publishing,
   onSave,
 }: {
   draft: Draft;
-  onSection: (section: SectionId) => void;
   onPublish: () => void;
   publishing: boolean;
   onSave: () => void;
 }) {
-  const ready = draft.status === "ready" && Boolean(draft.section);
+  const ready = draft.status === "ready";
 
   return (
     <div className={styles.draft}>
@@ -85,17 +79,6 @@ export function DraftPanel({
             </div>
           </div>
         )}
-
-        {draft.status !== "empty" && (
-          <div className={styles.sectionRow}>
-            <span className={styles.sectionLabel}>{desk.section}</span>
-            {DRAFT_SECTIONS.map((id) => (
-              <Chip key={id} active={draft.section === id} onClick={() => onSection(id)}>
-                {sectionNames[id]}
-              </Chip>
-            ))}
-          </div>
-        )}
       </div>
 
       <div className={styles.draftFoot}>
@@ -110,11 +93,7 @@ export function DraftPanel({
             {desk.saveDraft}
           </Button>
         </div>
-        <p className={styles.footNote}>
-          {draft.status === "ready" && !draft.section
-            ? "בחרו מדור כדי לפרסם"
-            : desk.publishNote}
-        </p>
+        <p className={styles.footNote}>{desk.publishNote}</p>
       </div>
     </div>
   );

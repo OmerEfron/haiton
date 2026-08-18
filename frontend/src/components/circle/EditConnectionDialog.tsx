@@ -5,14 +5,13 @@ import { Modal } from "../ui/Modal";
 import { Button } from "../ui/Button";
 import { Chip, ChipRow } from "../ui/Chip";
 import { Toggle } from "../ui/Bits";
-import type { Connection, RelationKind, SectionId } from "../../api/types";
+import type { Connection, RelationKind } from "../../api/types";
 import { updateConnection } from "../../api/core/connections";
 import { qk } from "../../lib/queryKeys";
 import { circle } from "../../copy/circle";
-import { common, sectionNames } from "../../copy/common";
+import { common } from "../../copy/common";
 
 const RELATIONS: RelationKind[] = ["friend", "family", "work", "neighbour", "other"];
-const SECTIONS: SectionId[] = ["friends", "family", "moments", "celebrations"];
 
 export function EditConnectionDialog({
   connection,
@@ -24,7 +23,6 @@ export function EditConnectionDialog({
   const client = useQueryClient();
 
   const [relation, setRelation] = useState<RelationKind>(connection.relation);
-  const [section, setSection] = useState<SectionId>(connection.section);
   const [settings, setSettings] = useState<Connection["settings"]>(connection.settings);
 
   const save = useMutation({
@@ -32,7 +30,6 @@ export function EditConnectionDialog({
       updateConnection({
         id: connection.id,
         relation,
-        section,
         settings,
       }),
     onSuccess: async () => {
@@ -56,17 +53,6 @@ export function EditConnectionDialog({
           {RELATIONS.map((r) => (
             <Chip key={r} active={relation === r} onClick={() => setRelation(r)}>
               {circle.relations[r]}
-            </Chip>
-          ))}
-        </ChipRow>
-
-        <span className={`${styles.groupLabel} ${styles.groupLabelSpaced}`}>
-          {circle.dialog.sectionLabel}
-        </span>
-        <ChipRow>
-          {SECTIONS.map((s) => (
-            <Chip key={s} active={section === s} onClick={() => setSection(s)}>
-              {sectionNames[s]}
             </Chip>
           ))}
         </ChipRow>

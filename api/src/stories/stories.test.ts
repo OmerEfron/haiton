@@ -116,7 +116,7 @@ test("POST /stories demotes lead and increments edition", async () => {
     paragraphs: ["חיפה. פסקה ראשונה.", "פסקה שנייה."],
     pendingParagraph: null,
     checks: [],
-    section: "work" as const,
+    section: null,
   };
 
   const res = await app.request("/stories", {
@@ -126,9 +126,15 @@ test("POST /stories demotes lead and increments edition", async () => {
   });
   assert.equal(res.status, 201);
 
-  const story = (await res.json()) as { id: string; placement: string; ownEdition: boolean };
+  const story = (await res.json()) as {
+    id: string;
+    placement: string;
+    ownEdition: boolean;
+    sectionName: string;
+  };
   assert.equal(story.placement, "lead");
   assert.equal(story.ownEdition, true);
+  assert.equal(story.sectionName, "ראשי");
 
   const db = getDb();
   const oldLead = db

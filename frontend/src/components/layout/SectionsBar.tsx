@@ -1,16 +1,12 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import styles from "./SectionsBar.module.css";
-import { nav, sectionNames } from "../../copy/common";
-
-const order = ["work", "family", "friends", "celebrations", "food", "moments", "flashes"] as const;
+import { nav } from "../../copy/common";
 
 export function SectionsBar({ active }: { active?: string }) {
   return (
-    <nav className={styles.bar} aria-label={nav.sections}>
+    <nav className={styles.bar} aria-label={`${nav.home} ${nav.briefs}`}>
       <div className={styles.inner}>
-        <span className={styles.label}>{nav.sections}</span>
-        <span className={styles.divider}>|</span>
         <div className={styles.items}>
           <Link
             to="/"
@@ -18,15 +14,12 @@ export function SectionsBar({ active }: { active?: string }) {
           >
             ראשי
           </Link>
-          {order.map((id) => (
-            <Link
-              key={id}
-              to={id === "flashes" ? "/briefs" : `/?section=${id}`}
-              className={[styles.item, active === id && styles.active].filter(Boolean).join(" ")}
-            >
-              {sectionNames[id]}
-            </Link>
-          ))}
+          <Link
+            to="/briefs"
+            className={[styles.item, active === "flashes" && styles.active].filter(Boolean).join(" ")}
+          >
+            {nav.briefs}
+          </Link>
         </div>
       </div>
     </nav>

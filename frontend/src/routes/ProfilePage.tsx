@@ -102,18 +102,6 @@ export function ProfilePage() {
           </div>
 
           <section className={styles.block}>
-            <h2 className={styles.blockTitle}>{profileCopy.mySections}</h2>
-            <div className={styles.listBox}>
-              {p.sectionCounts.map((row) => (
-                <div key={row.label} className={styles.listRow}>
-                  <span className={styles.listLabel}>{row.label}</span>
-                  <span className={styles.listValue}>{row.detail}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className={styles.block}>
             <h2 className={styles.blockTitle}>{profileCopy.editionSettings}</h2>
             <div className={styles.listBox}>
               <div className={`${styles.listRow} ${styles.settingRow}`}>
@@ -205,7 +193,7 @@ export function ProfilePage() {
                   <span style={{ flex: 1 }}>
                     <span className={styles.personName}>{person.name}</span>
                     <span className={styles.personMeta}>
-                      {person.relationLabel} · {person.sectionName} · {person.storyCount} ידיעות
+                      {person.relationLabel} · {person.storyCount} ידיעות
                     </span>
                   </span>
                 </div>

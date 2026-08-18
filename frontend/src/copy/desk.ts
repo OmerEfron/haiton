@@ -51,9 +51,9 @@ export const desk = {
   noFlashes: "לא נמצאו מבזקים כרגע",
   tomorrowTitle: "מה יכול להיות כאן מחר",
   tomorrowCards: [
-    { section: "עבודה", text: "כותרת ראשית מהשבוע שלך" },
-    { section: "משפחה", text: "ידיעה על מישהו קרוב" },
-    { section: "רגעים", text: "מבזק קטן מהיום" },
+    { kicker: "ראשי", text: "כותרת ראשית מהשבוע שלך" },
+    { kicker: "ראשי", text: "ידיעה על מישהו קרוב" },
+    { kicker: "מבזקים", text: "מבזק קטן מהיום" },
   ],
 
   moreIn: (section: string) => `עוד ב${section}`,

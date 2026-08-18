@@ -38,7 +38,6 @@ export async function sendInvitation(input: {
   readerId?: string;
   name: string;
   relation: RelationKind;
-  section: SectionId;
   note?: string;
   settings: Connection["settings"];
 }): Promise<Invitation> {

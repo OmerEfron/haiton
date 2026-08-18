@@ -6,14 +6,12 @@ import { Button } from "../ui/Button";
 import { Chip, ChipRow } from "../ui/Chip";
 import { TextArea, TextField } from "../ui/Field";
 import { Avatar, Toggle } from "../ui/Bits";
-import type { Connection, RelationKind, SectionId } from "../../api/types";
+import type { Connection, RelationKind } from "../../api/types";
 import { searchReaders, sendInvitation } from "../../api/core/connections";
 import { qk } from "../../lib/queryKeys";
 import { circle } from "../../copy/circle";
-import { sectionNames } from "../../copy/common";
 
 const RELATIONS: RelationKind[] = ["friend", "family", "work", "neighbour", "other"];
-const SECTIONS: SectionId[] = ["friends", "family", "moments", "celebrations"];
 
 /** Mockup 2b. */
 export function AddConnectionDialog({ onClose }: { onClose: () => void }) {
@@ -24,7 +22,6 @@ export function AddConnectionDialog({ onClose }: { onClose: () => void }) {
   const [chosenId, setChosenId] = useState<string | null>(null);
   const [chosenName, setChosenName] = useState("");
   const [relation, setRelation] = useState<RelationKind>("friend");
-  const [section, setSection] = useState<SectionId>("friends");
   const [note, setNote] = useState("");
   const [settings, setSettings] = useState<Connection["settings"]>({
     seesMyEdition: true,
@@ -44,7 +41,6 @@ export function AddConnectionDialog({ onClose }: { onClose: () => void }) {
         readerId: chosenId ?? undefined,
         name: chosenName || term,
         relation,
-        section,
         note,
         settings,
       }),
@@ -116,17 +112,6 @@ export function AddConnectionDialog({ onClose }: { onClose: () => void }) {
           {RELATIONS.map((r) => (
             <Chip key={r} active={relation === r} onClick={() => setRelation(r)}>
               {circle.relations[r]}
-            </Chip>
-          ))}
-        </ChipRow>
-
-        <span className={`${styles.groupLabel} ${styles.groupLabelSpaced}`}>
-          {circle.dialog.sectionLabel}
-        </span>
-        <ChipRow>
-          {SECTIONS.map((s) => (
-            <Chip key={s} active={section === s} onClick={() => setSection(s)}>
-              {sectionNames[s]}
             </Chip>
           ))}
         </ChipRow>
