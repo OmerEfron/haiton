@@ -51,4 +51,4 @@ Yes/no: seed inserts those four stat values (or equivalent derived counts). `cd 
 
 ## Close notes
 
-_Not started._
+Done. Seed `profile_stats` derived from fixture array lengths (6/4/5/0). `npm test` now runs auth, stories, and circle domain tests. Commit `0b84dc2`.
