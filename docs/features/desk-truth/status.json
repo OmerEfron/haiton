@@ -2,8 +2,8 @@
   "schema_version": 1,
   "feature_id": "desk-truth",
   "title": "Desk truth (split-brain + bugs)",
-  "status": "planned",
-  "current_wave": "W0",
+  "status": "in_progress",
+  "current_wave": "W1",
   "isolation_default": "worktree",
   "base_branch": "main",
   "tracks": [
@@ -11,7 +11,7 @@
       "id": "schema",
       "wave": "W0",
       "isolation": "sequential",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["backend-engineer"],
       "branch": "main",
       "owns": ["api/src/schema.sql"],
@@ -212,7 +212,7 @@
     {
       "id": "W0",
       "kind": "sequential",
-      "status": "pending",
+      "status": "complete",
       "tracks": ["schema"],
       "isolation_default": "sequential"
     },
@@ -253,5 +253,5 @@
   ],
   "blockers": [],
   "open_decisions": [],
-  "last_updated": "2026-08-18T11:27:00Z"
+  "last_updated": "2026-08-18T11:38:16Z"
 }

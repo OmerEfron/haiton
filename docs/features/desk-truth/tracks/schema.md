@@ -42,4 +42,4 @@ Yes/no: `rg invitation_meta api/src/schema.sql` matches. `python3 scripts/check_
 
 ## Close notes
 
-_Not started._
+Done. `invitation_meta` added to `api/src/schema.sql` with PK `(user_id, invitation_id)` and defaults `friend` / `friends` / `{}`. Composite FK to `invitations` skipped to match existing schema style. Commit `6e110c4`.

@@ -1,7 +1,7 @@
 # Feature plan — Desk truth (split-brain + bugs)
 
 - id: `desk-truth`
-- status: `planned`
+- status: `in_progress`
 - isolation_default: `worktree`
 - base_branch: `main`
 
@@ -70,7 +70,7 @@ test-engineer (optional, tests inside `owns`): same as backend-engineer (`compos
 ### Wave W0 — Invitation meta schema
 - id: `W0`
 - kind: `sequential`
-- status: `pending`
+- status: `complete`
 - tracks: `schema`
 - isolation_default: `sequential`
 
