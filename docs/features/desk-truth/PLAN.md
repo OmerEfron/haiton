@@ -129,7 +129,7 @@ Seed path writes `stories_published = 6`, `flashes = 4`, `facts = 5`, `drafts_in
 ### Wave Wrev — Review
 - id: `Wrev`
 - kind: `sequential`
-- status: `pending`
+- status: `complete`
 - tracks: `review`
 - isolation_default: `sequential`
 

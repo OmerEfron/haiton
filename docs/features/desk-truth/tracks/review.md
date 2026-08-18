@@ -39,4 +39,4 @@ Yes/no: feature goal test in `PLAN.md` is true.
 
 ## Close notes
 
-_Not started._
+Done. Feature goal test passed on `main` @ `7952b08`: overlap OK, `cd api && npm test` 22/22, frontend lint + build exit 0, no `FROZEN_OPEN_DRAFT` / `db.facts` / `interviewPeek`, Edit/Manage calls `updateConnection`, DraftPanel save does not `discardSession`. No `must_not` violations. Feature close not started.

@@ -195,7 +195,7 @@
       "id": "review",
       "wave": "Wrev",
       "isolation": "sequential",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["qa-reviewer"],
       "branch": "main",
       "owns": [],
@@ -246,12 +246,12 @@
     {
       "id": "Wrev",
       "kind": "sequential",
-      "status": "pending",
+      "status": "complete",
       "tracks": ["review"],
       "isolation_default": "sequential"
     }
   ],
   "blockers": [],
   "open_decisions": [],
-  "last_updated": "2026-08-18T11:54:30Z"
+  "last_updated": "2026-08-18T11:59:26Z"
 }
