@@ -55,4 +55,4 @@ Yes/no: `cd ai-reporter && node --experimental-strip-types --test src/http/http.
 
 ## Close notes
 
-_Not started._
+Merged `f47a6f7` → `main` as `44c578f`. `http.test.ts` 7/7 with fakes; no live LLM.

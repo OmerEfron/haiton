@@ -51,4 +51,4 @@ Yes/no: `cd ai-reporter && node --env-file=../.env --env-file=.env --experimenta
 
 ## Close notes
 
-_Not started._
+Merged `ee0c2d0` → `main` as `20bd7aa`. `askedCount` caps follow-ups; live test 1/8 calls.

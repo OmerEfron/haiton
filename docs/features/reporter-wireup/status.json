@@ -3,7 +3,7 @@
   "feature_id": "reporter-wireup",
   "title": "Reporter desk wire-up (user-first)",
   "status": "in_progress",
-  "current_wave": "W1",
+  "current_wave": "Wint",
   "isolation_default": "worktree",
   "base_branch": "main",
   "tracks": [
@@ -47,7 +47,7 @@
       "id": "interviewer-open",
       "wave": "W1",
       "isolation": "worktree",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["reporter-engineer"],
       "branch": "agent/feature/reporter-wireup/interviewer-open",
       "owns": ["ai-reporter/src/interviewer/"],
@@ -76,7 +76,7 @@
       "id": "http-session",
       "wave": "W1",
       "isolation": "worktree",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["reporter-engineer"],
       "branch": "agent/feature/reporter-wireup/http-session",
       "owns": ["ai-reporter/src/http/"],
@@ -106,7 +106,7 @@
       "id": "desk-client",
       "wave": "W1",
       "isolation": "worktree",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["frontend-engineer"],
       "branch": "agent/feature/reporter-wireup/desk-client",
       "owns": [
@@ -206,7 +206,7 @@
     {
       "id": "W1",
       "kind": "parallel",
-      "status": "pending",
+      "status": "complete",
       "tracks": ["interviewer-open", "http-session", "desk-client"],
       "isolation_default": "worktree",
       "merge_order": ["interviewer-open", "http-session", "desk-client"]
@@ -228,5 +228,5 @@
   ],
   "blockers": [],
   "open_decisions": [],
-  "last_updated": "2026-08-18T13:21:11Z"
+  "last_updated": "2026-08-18T13:29:21Z"
 }

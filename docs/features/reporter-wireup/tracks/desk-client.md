@@ -56,4 +56,4 @@ Yes/no: `cd frontend && npm run lint` exits 0. `rg "mocks/db|interview-script" f
 
 ## Close notes
 
-_Not started._
+Merged `8eaae99` → `main` as `8a49031`. Mock imports gone; lint exit 0.

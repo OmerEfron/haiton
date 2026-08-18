@@ -107,7 +107,7 @@ Freeze routes, JSON keys, opening-turn rule, env names, Hono deps. Zero live Ope
 ### Wave W1 — Parallel slices
 - id: `W1`
 - kind: `parallel`
-- status: `pending`
+- status: `complete`
 - tracks: `interviewer-open`, `http-session`, `desk-client`
 - isolation_default: `worktree`
 
