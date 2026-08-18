@@ -49,4 +49,4 @@ Yes/no: `cd ai-reporter && npm test` exits 0. One process, ≤5 `[llm] call` lin
 
 ## Close notes
 
-_Not started._
+Done on `main` (`f22414e`). `runReporter` + live e2e; 5 `complete()` (4 interviewer + 1 writer), 3 grounded questions, intimate/feature 402 words, headline השיחה שרצה איתו. Goal test exit 0. Leftover: resets `callCount` before `writeArticle` because the writer’s frozen budget is 4.
