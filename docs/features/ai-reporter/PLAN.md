@@ -1,7 +1,7 @@
 # Feature plan — Simple AI reporter
 
 - id: `ai-reporter`
-- status: `in_progress`
+- status: `complete`
 - isolation_default: `worktree`
 - base_branch: `main`
 
@@ -160,3 +160,13 @@ Readonly `qa-reviewer` + feature goal test (re-runs e2e, ≤5 calls).
 #### Goal test
 
 The feature goal test above is true.
+
+## Close
+
+Closed 2026-08-18 after the feature goal test passed: overlap OK, `cd ai-reporter && npm test` 1/1, 5 `responses.create` calls with `[llm] call` on stdout, 3 grounded Hebrew questions (no banned needles), intimate/feature article 384 words in 6 paragraphs, `frontend/src/api/reporter/interview.ts` still imports `../../mocks/db`.
+
+What landed: `ai-reporter/` with a Responses API wrapper, a karteset-grounded interviewer (max 4 questions), a Hebrew writer that takes the user's tone and type, and `runReporter` as the live e2e. The desk mock stayed.
+
+Merge order used: W0 `contracts` on `main`; W1 `interviewer` → `writer`; then Wint `integrate`; then Wrev `review`.
+
+Follow-ups (not this close): desk still talks to the scripted mock; no HTTP `/interviews`, no swapping `frontend/src/api/reporter/`. No next product version started.

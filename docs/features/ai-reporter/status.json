@@ -2,7 +2,7 @@
   "schema_version": 1,
   "feature_id": "ai-reporter",
   "title": "Simple AI reporter",
-  "status": "in_progress",
+  "status": "complete",
   "current_wave": "Wrev",
   "isolation_default": "worktree",
   "base_branch": "main",
@@ -174,5 +174,5 @@
   ],
   "blockers": [],
   "open_decisions": [],
-  "last_updated": "2026-08-18T13:07:43Z"
+  "last_updated": "2026-08-18T13:25:38Z"
 }
