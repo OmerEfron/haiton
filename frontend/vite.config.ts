@@ -2,6 +2,22 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
+const API_TARGET = 'http://localhost:8787'
+
 export default defineConfig({
   plugins: [react()],
+  server: {
+    proxy: {
+      '/auth': API_TARGET,
+      '/editions': API_TARGET,
+      '/stories': API_TARGET,
+      '/flashes': API_TARGET,
+      '/profile': API_TARGET,
+      '/karteset': API_TARGET,
+      '/connections': API_TARGET,
+      '/invitations': API_TARGET,
+      '/readers': API_TARGET,
+      '/health': API_TARGET,
+    },
+  },
 })

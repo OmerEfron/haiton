@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "test": "node --experimental-strip-types --test src/contract.test.ts"
+    "test": "node --experimental-strip-types --test src/contract.test.ts src/app.test.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.9",
