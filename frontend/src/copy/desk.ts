@@ -4,7 +4,7 @@ export const desk = {
   liveInterview: "ראיון חי",
   reporter: "כתב",
   reporterName: "כתב העיתון",
-  reporterSubtitle: "מראיין אותך על השבוע בעבודה",
+  reporterSubtitle: "שואל שאלות המשך ומנסח ידיעה לאישור",
   angleChosen: "זווית נבחרה",
   factsLocked: (n: number) => `${n} עובדות נעולות`,
   close: "סגירה",

@@ -78,7 +78,7 @@ export function InterviewRoom() {
 
   const s = interview.data;
   // BottomNav peeks the same query key with getSession(), which is null until
-  // this page starts the mock interview. Cached null is a successful result.
+  // this page starts an interview. Cached null is a successful result.
   if (!s) return <Loading />;
   const readerName = appSession?.user.name.split(" ")[0] ?? "אתה";
   const firstInterview = s.messages.filter((m) => m.role === "reader").length === 0;
