@@ -47,4 +47,4 @@ Yes/no: that command exits 0. Stdout has `[llm] call` and at most 8 creates. Que
 
 ## Close notes
 
-_Not started._
+Done on `agent/feature/ai-reporter/interviewer` (`8d73bad`). `nextQuestion` + live test; 4/8 `complete()` calls; questions grounded, no banned needles. Goal test exit 0. Worktree `interviewer-b0dff37f` — merge with `/apply-worktree` (order: interviewer, then writer).

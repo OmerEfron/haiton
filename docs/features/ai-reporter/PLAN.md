@@ -112,7 +112,7 @@ Create `ai-reporter/` package, freeze types/labels/banned needles/word bands, wr
 ### Wave W1 — Interviewer and writer
 - id: `W1`
 - kind: `parallel`
-- status: `pending`
+- status: `complete`
 - tracks: `interviewer`, `writer`
 - isolation_default: `worktree`
 

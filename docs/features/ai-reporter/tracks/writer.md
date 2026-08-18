@@ -48,4 +48,4 @@ Yes/no: that command exits 0. Stdout has `[llm] call` and at most 4 creates. Art
 
 ## Close notes
 
-_Not started._
+Done on `agent/feature/ai-reporter/writer` (`b5a233a`). `writeArticle` + live test; 1/4 `complete()`; factual/news article 230 words, 5 paragraphs. Goal test exit 0. Leftover: committed `writer.js` / `writer.test.js` tsc emit — drop on merge. Worktree `writer-6b698da5`.

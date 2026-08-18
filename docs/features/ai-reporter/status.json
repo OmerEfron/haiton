@@ -3,7 +3,7 @@
   "feature_id": "ai-reporter",
   "title": "Simple AI reporter",
   "status": "in_progress",
-  "current_wave": "W1",
+  "current_wave": "Wint",
   "isolation_default": "worktree",
   "base_branch": "main",
   "tracks": [
@@ -41,7 +41,7 @@
       "id": "interviewer",
       "wave": "W1",
       "isolation": "worktree",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["reporter-engineer"],
       "branch": "agent/feature/ai-reporter/interviewer",
       "owns": ["ai-reporter/src/interviewer/"],
@@ -67,7 +67,7 @@
       "id": "writer",
       "wave": "W1",
       "isolation": "worktree",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["reporter-engineer"],
       "branch": "agent/feature/ai-reporter/writer",
       "owns": ["ai-reporter/src/writer/"],
@@ -152,7 +152,7 @@
     {
       "id": "W1",
       "kind": "parallel",
-      "status": "pending",
+      "status": "complete",
       "tracks": ["interviewer", "writer"],
       "isolation_default": "worktree",
       "merge_order": ["interviewer", "writer"]
@@ -174,5 +174,5 @@
   ],
   "blockers": [],
   "open_decisions": [],
-  "last_updated": "2026-08-18T12:37:00Z"
+  "last_updated": "2026-08-18T12:45:00Z"
 }
