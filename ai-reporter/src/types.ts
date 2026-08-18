@@ -64,6 +64,14 @@ export type Turn = {
   answer: string;
 };
 
+export const DEFAULT_TONE: ToneId = "intimate";
+export const DEFAULT_TYPE: ArticleTypeId = "feature";
+
+/** Reporter questions asked so far; empty question = user opened, not counted. */
+export function askedCount(turns: Turn[]): number {
+  return turns.filter((t) => t.question !== "").length;
+}
+
 export type NextQuestion = {
   question: string;
   done: boolean;

@@ -7,6 +7,8 @@
     "test": "node --env-file=../.env --env-file=.env --experimental-strip-types --test src/run.test.ts"
   },
   "dependencies": {
+    "@hono/node-server": "^1.19.9",
+    "hono": "^4.11.4",
     "openai": "^6.9.0"
   },
   "devDependencies": {
