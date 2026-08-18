@@ -117,6 +117,31 @@ test("session cookie round-trip", async () => {
   }
 });
 
+test("sign-up of an existing email signs in when the password matches", async () => {
+  const dbPath = tempDbPath();
+  try {
+    seedUser(dbPath);
+    const app = makeApp();
+    const res = await app.request("/auth/sign-up", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "עומר עפרון",
+        email: SEED_EMAIL,
+        password: SEED_PASSWORD,
+      }),
+    });
+    assert.equal(res.status, 200);
+    const session = (await res.json()) as Session;
+    assert.equal(session.user.email, SEED_EMAIL);
+    assert.ok(cookieFromResponse(res));
+  } finally {
+    resetAuthDb();
+    rmSync(join(dbPath, ".."), { recursive: true, force: true });
+    delete process.env.DATABASE_PATH;
+  }
+});
+
 test("sign-out clears session", async () => {
   const dbPath = tempDbPath();
   try {

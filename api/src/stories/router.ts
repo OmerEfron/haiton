@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { getDb } from "../db.ts";
+import { provisionUser } from "../provision.ts";
 import type { Draft, FrontPage } from "../types.ts";
 import {
   DRAFT_NOT_READY,
@@ -13,13 +14,22 @@ import {
 import { publishDraft } from "./publish.ts";
 import { requireSession, type StoriesVariables } from "./session.ts";
 
+function dbForUser(userId: string) {
+  const db = getDb();
+  const settings = db
+    .prepare("SELECT edition_name FROM edition_settings WHERE user_id = ?")
+    .get(userId) as { edition_name: string } | undefined;
+  provisionUser(db, userId, settings?.edition_name ?? "");
+  return db;
+}
+
 export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
   const app = new Hono<{ Variables: StoriesVariables }>();
   app.use("*", requireSession);
 
   app.get("/editions/current", (c) => {
     const userId = c.get("userId");
-    const db = getDb();
+    const db = dbForUser(userId);
 
     const settings = db
       .prepare("SELECT edition_name FROM edition_settings WHERE user_id = ?")
@@ -41,7 +51,7 @@ export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
     };
     const stats = db
       .prepare("SELECT drafts_in_progress FROM profile_stats WHERE user_id = ?")
-      .get(userId) as { drafts_in_progress: number };
+      .get(userId) as { drafts_in_progress: number } | undefined;
 
     const stories = db
       .prepare("SELECT * FROM stories WHERE user_id = ?")
@@ -57,7 +67,7 @@ export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
     ).map(rowToFlash);
 
     const openDraft =
-      stats.drafts_in_progress > 0
+      (stats?.drafts_in_progress ?? 0) > 0
         ? {
             title: state.open_draft_title ?? FROZEN_OPEN_DRAFT.title,
             summary: state.open_draft_summary ?? FROZEN_OPEN_DRAFT.summary,
@@ -83,10 +93,10 @@ export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
 
   app.get("/flashes", (c) => {
     const userId = c.get("userId");
-    const db = getDb();
+    const db = dbForUser(userId);
     const state = db
       .prepare("SELECT date_short FROM edition_state WHERE user_id = ?")
-      .get(userId) as { date_short: string };
+      .get(userId) as { date_short: string } | undefined;
     const flashes = (
       db
         .prepare(
@@ -95,13 +105,13 @@ export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
         .all(userId) as FlashRow[]
     ).map(rowToFlash);
 
-    return c.json({ flashes, dateShort: state.date_short });
+    return c.json({ flashes, dateShort: state?.date_short ?? "" });
   });
 
   app.get("/stories", (c) => {
     const userId = c.get("userId");
     const section = c.req.query("section");
-    const db = getDb();
+    const db = dbForUser(userId);
     const settings = db
       .prepare("SELECT edition_name FROM edition_settings WHERE user_id = ?")
       .get(userId) as { edition_name: string };
@@ -118,7 +128,7 @@ export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
   app.get("/stories/:id", (c) => {
     const userId = c.get("userId");
     const id = c.req.param("id");
-    const db = getDb();
+    const db = dbForUser(userId);
     const settings = db
       .prepare("SELECT edition_name FROM edition_settings WHERE user_id = ?")
       .get(userId) as { edition_name: string };

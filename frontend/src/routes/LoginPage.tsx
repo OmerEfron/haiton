@@ -21,7 +21,7 @@ export function LoginPage() {
   const [mode, setMode] = useState<Mode>("signIn");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("omer@example.com");
-  const [password, setPassword] = useState("••••••••");
+  const [password, setPassword] = useState("iton-dev");
 
   const from = (location.state as { from?: string } | null)?.from ?? "/";
 

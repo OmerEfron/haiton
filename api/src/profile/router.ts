@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { closeDb, getDb } from "../db.ts";
+import { provisionUser } from "../provision.ts";
 import type { EditionSettings, Profile, User } from "../types.ts";
 import { getSessionUserId } from "./session.ts";
 
@@ -79,6 +80,12 @@ export const profileRouter = new Hono()
   .get("/profile", (c) => {
     const userId = getSessionUserId(c);
     if (!userId) return unauthorized(c);
+
+    const db = getDb();
+    const settings = db
+      .prepare("SELECT edition_name FROM edition_settings WHERE user_id = ?")
+      .get(userId) as { edition_name: string } | undefined;
+    provisionUser(db, userId, settings?.edition_name ?? "");
 
     const profile = loadProfile(userId);
     if (!profile) return c.json({ message: "הפרופיל לא נמצא" }, 404);

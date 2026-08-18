@@ -31,7 +31,10 @@ export function InterviewRoom() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const threadEnd = useRef<HTMLDivElement>(null);
 
-  const interview = useQuery({ queryKey: qk.interview, queryFn: startSession });
+  const interview = useQuery({
+    queryKey: qk.interview,
+    queryFn: startSession,
+  });
 
   const refresh = () => client.invalidateQueries({ queryKey: qk.interview });
 
@@ -74,6 +77,9 @@ export function InterviewRoom() {
   if (interview.error) return <ErrorState error={interview.error} />;
 
   const s = interview.data;
+  // BottomNav peeks the same query key with getSession(), which is null until
+  // this page starts the mock interview. Cached null is a successful result.
+  if (!s) return <Loading />;
   const readerName = appSession?.user.name.split(" ")[0] ?? "אתה";
   const firstInterview = s.messages.filter((m) => m.role === "reader").length === 0;
 

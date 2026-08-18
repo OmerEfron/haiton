@@ -11,7 +11,7 @@ function cls({ isActive }: { isActive: boolean }) {
 
 /** Mobile tab bar from mockups 1b and 2c. */
 export function BottomNav() {
-  const interview = useQuery({ queryKey: qk.interview, queryFn: getSession });
+  const interview = useQuery({ queryKey: qk.interviewPeek, queryFn: getSession });
   const hasDraft = interview.data?.draft.status && interview.data.draft.status !== "empty";
 
   return (

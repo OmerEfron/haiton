@@ -4,6 +4,7 @@ import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { SESSION_COOKIE_NAME } from "../contract.ts";
 import { closeDb, getDb } from "../db.ts";
 import type { Session, User } from "../types.ts";
+import { provisionUser } from "../provision.ts";
 import { hashPassword, verifyPassword } from "./password.ts";
 
 const SIGN_IN_ERROR = "צריך דוא״ל וסיסמה כדי להיכנס";
@@ -131,8 +132,21 @@ export const authRouter = new Hono()
       db.prepare(
         `INSERT INTO edition_settings (user_id, edition_name) VALUES (?, ?)`,
       ).run(userId, editionName);
+      provisionUser(db, userId, editionName);
     } catch {
-      return badRequest(c, SIGN_UP_ERROR);
+      const existing = db
+        .prepare(
+          "SELECT id, password_hash FROM users WHERE email = ? COLLATE NOCASE",
+        )
+        .get(email) as { id: string; password_hash: string } | undefined;
+      if (!existing || !verifyPassword(password, existing.password_hash)) {
+        return badRequest(c, SIGN_UP_ERROR);
+      }
+      const existingSessionId = createSession(existing.id);
+      setSessionCookie(c, existingSessionId);
+      const existingSession = loadSession(existing.id);
+      if (!existingSession) return c.json({ message: "Session failed" }, 500);
+      return c.json(existingSession);
     }
 
     const sessionId = createSession(userId);
