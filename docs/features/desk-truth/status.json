@@ -2,7 +2,7 @@
   "schema_version": 1,
   "feature_id": "desk-truth",
   "title": "Desk truth (split-brain + bugs)",
-  "status": "in_progress",
+  "status": "complete",
   "current_wave": "Wrev",
   "isolation_default": "worktree",
   "base_branch": "main",
@@ -253,5 +253,5 @@
   ],
   "blockers": [],
   "open_decisions": [],
-  "last_updated": "2026-08-18T11:59:26Z"
+  "last_updated": "2026-08-18T12:04:06Z"
 }

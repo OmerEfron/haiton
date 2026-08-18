@@ -1,7 +1,7 @@
 # Feature plan — Desk truth (split-brain + bugs)
 
 - id: `desk-truth`
-- status: `in_progress`
+- status: `complete`
 - isolation_default: `worktree`
 - base_branch: `main`
 
@@ -143,4 +143,10 @@ The feature goal test above is true.
 
 ## Close
 
-_Not started._
+Closed 2026-08-18 after the feature goal test passed on Node 24: overlap OK, `cd api && npm test` 22/22, frontend lint + build exit 0, no `FROZEN_OPEN_DRAFT` / `db.facts` / `interviewPeek`, Circle Edit/Manage opens `EditConnectionDialog` → `updateConnection`, DraftPanel save navigates home and does not `discardSession`.
+
+What landed: live API and desk UI share the same story — no frozen open-draft copy, invitation extras in `invitation_meta`, suggested readers exclude people already in the circle, `updatedThisWeek` is a real count, seed stats match fixture row counts, duplicate sign-up Hebrew error, interview peek uses `qk.interview`, save-draft keeps the mock session.
+
+Merge order used: W0 `schema` on `main`; W1 `auth-errors` → `stories-truth` → `circle-invite` → `circle-edit` → `interview-desk`; then Wint `integrate`; then Wrev `review`.
+
+Follow-ups (not this close): reporter interview still mocked; no mention extractor for fact/connection counts on publish; dead buttons (edit profile, resend invite, share link, edit draft by hand) stay dead. No next product version started.
