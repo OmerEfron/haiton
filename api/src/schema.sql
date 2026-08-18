@@ -125,6 +125,16 @@ CREATE TABLE IF NOT EXISTS invitations (
   PRIMARY KEY (user_id, id)
 );
 
+CREATE TABLE IF NOT EXISTS invitation_meta (
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  invitation_id TEXT NOT NULL,
+  relation TEXT NOT NULL DEFAULT 'friend',
+  section TEXT NOT NULL DEFAULT 'friends',
+  note TEXT,
+  settings_json TEXT NOT NULL DEFAULT '{}',
+  PRIMARY KEY (user_id, invitation_id)
+);
+
 CREATE TABLE IF NOT EXISTS readers (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
