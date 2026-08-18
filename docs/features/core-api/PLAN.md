@@ -1,7 +1,7 @@
 # Feature plan — Core API (un-mock the newspaper)
 
 - id: `core-api`
-- status: `planned`
+- status: `complete`
 - isolation_default: `worktree`
 - base_branch: `main`
 
@@ -161,3 +161,13 @@ Readonly `qa-reviewer` + feature goal test.
 #### Goal test
 
 The feature goal test above is true.
+
+## Close
+
+Closed 2026-08-18 after the feature goal test passed on Node 24 (`.nvmrc`): overlap OK, `cd api && npm test` 4/4, frontend lint + build exit 0, no `mocks` imports under `frontend/src/api/core/`, reporter interview still on the mock store.
+
+What landed: a Hono + SQLite API in `api/` for the frozen route table; `frontend/src/api/core/` now calls `request()` instead of the in-memory mock. Reporter interviewing and the UI screens stayed out of this feature.
+
+Merge order used: W0 `contracts` on `main`; W1 `auth` → `profile` → `karteset` → `circle` → `stories`; then Wint `integrate`; then Wrev `review`.
+
+Follow-ups (not this close): reporter still mocked; `cff9f27` already patched `BottomNav.tsx`, `InterviewRoom.tsx`, and `LoginPage.tsx` after Wint so first real use does not crash. No next product version started.

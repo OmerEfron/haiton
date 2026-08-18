@@ -2,7 +2,7 @@
   "schema_version": 1,
   "feature_id": "core-api",
   "title": "Core API (un-mock the newspaper)",
-  "status": "in_progress",
+  "status": "complete",
   "current_wave": "Wrev",
   "isolation_default": "worktree",
   "base_branch": "main",
@@ -257,5 +257,5 @@
   ],
   "blockers": [],
   "open_decisions": [],
-  "last_updated": "2026-08-18T11:17:07Z"
+  "last_updated": "2026-08-18T11:22:46Z"
 }
