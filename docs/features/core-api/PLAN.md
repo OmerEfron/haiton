@@ -150,7 +150,7 @@ In-process Hono `app.request(...)` (no listen) hits `/health` and one route per 
 ### Wave Wrev — Review
 - id: `Wrev`
 - kind: `sequential`
-- status: `pending`
+- status: `complete`
 - tracks: `review`
 - isolation_default: `sequential`
 

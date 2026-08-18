@@ -39,4 +39,4 @@ Yes/no: feature goal test in `PLAN.md` is true.
 
 ## Close notes
 
-_Not started._
+Feature goal test is true on this checkout (Node 24): overlap OK, `cd api && npm test` 4/4, frontend lint + build exit 0, no `mocks` imports under `frontend/src/api/core/`, reporter interview still on the mock store. Readonly reviewer sandbox failed `npm run build` with EPERM under `node_modules`; parent re-ran it writable and it passed. Flagged leftover: `cff9f27` edited `BottomNav.tsx`, `InterviewRoom.tsx`, and `LoginPage.tsx` (crash/login fixes) after Wint. Do not close the feature here.
