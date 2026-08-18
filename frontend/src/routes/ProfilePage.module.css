@@ -1,0 +1,80 @@
+.wrap {
+  padding: 26px var(--gutter);
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 32px;
+  align-items: start;
+}
+.identity {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--rule);
+}
+.name { margin: 6px 0 0; font: 900 34px/1.15 var(--serif); color: var(--ink); }
+.meta { margin: 7px 0 0; font: 400 14.5px/1.6 var(--sans); color: var(--ink-2); }
+.identityActions { margin-top: 12px; display: flex; gap: 9px; flex-wrap: wrap; }
+.stats { margin-top: 20px; }
+
+.block { margin-top: 24px; }
+.blockTitle { margin: 0 0 12px; font: 700 20px/1 var(--serif); color: var(--ink); }
+.listBox { display: flex; flex-direction: column; border: 1px solid var(--rule); }
+.listRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--rule);
+}
+.listRow:last-child { border-bottom: 0; }
+.listLabel { font: 500 14px/1 var(--sans); }
+.listValue { font: 400 12px/1 var(--sans); color: var(--ink-2); }
+
+.settingRow { padding: 13px 14px; }
+.settingTitle { display: block; font: 500 14px/1.3 var(--sans); }
+.settingDetail { display: block; margin-top: 2px; font: 400 12px/1.5 var(--sans); color: var(--ink-2); }
+.settingValue { font: 500 13px/1 var(--sans); color: var(--paper-red); flex: none; }
+.settingValueMuted { color: var(--ink-2); }
+.signOut { margin: 14px 0 0; }
+
+/* Right rail */
+.card { border: 1px solid var(--rule); padding: 16px; }
+.cardHead { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.cardTitle { margin: 0 0 4px; font: 700 17px/1 var(--serif); color: var(--paper-red); }
+.cardSub { margin: 0; font: 400 12px/1.5 var(--sans); color: var(--ink-2); }
+.people { display: flex; flex-direction: column; gap: 10px; }
+.person { display: flex; gap: 10px; align-items: center; }
+.personName { display: block; font: 500 13.5px/1.3 var(--sans); }
+.personMeta { display: block; font: 400 11.5px/1.4 var(--sans); color: var(--ink-2); }
+.chipsRow { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.personChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--rule);
+  padding: 7px 11px 7px 7px;
+  font: 500 12.5px/1 var(--sans);
+  color: var(--ink);
+}
+.addChip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px dashed var(--paper-red);
+  padding: 7px 12px;
+  font: 700 12.5px/1 var(--sans);
+  color: var(--paper-red);
+}
+
+.archive { margin-top: 18px; border: 1px solid var(--rule); background: var(--tint); padding: 16px; }
+.archiveKicker { margin: 0 0 4px; font: 700 11px/1 var(--sans); letter-spacing: var(--track-sm); color: var(--paper-red); }
+.archiveIntro { margin: 0 0 10px; font: 400 12.5px/1.6 var(--sans); color: var(--ink-2); }
+
+@media (max-width: 900px) {
+  .wrap { display: block; padding: 18px var(--gutter-sm) 24px; }
+  .name { font-size: 26px; }
+  .identity { flex-direction: column; gap: 12px; }
+  .card { margin-top: 24px; }
+}

@@ -1,0 +1,137 @@
+.room {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+}
+
+.bar {
+  background: var(--ink);
+  color: var(--white);
+  padding: 11px var(--gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex: none;
+}
+.barStart { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.logo { font: 900 24px/1 var(--serif); color: var(--white); }
+.logo:hover { color: var(--white); opacity: 0.85; }
+.sep { width: 1px; height: 20px; background: rgba(255, 255, 255, 0.25); flex: none; }
+.roomName { font: 700 15px/1 var(--serif); color: var(--white); white-space: nowrap; }
+.barEnd {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font: 500 12.5px/1 var(--sans);
+  color: rgba(255, 255, 255, 0.7);
+}
+.close {
+  color: var(--white);
+  padding: 7px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  white-space: nowrap;
+}
+.close:hover { color: var(--white); background: rgba(255, 255, 255, 0.12); }
+
+.split {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1px 520px;
+  background: var(--white);
+  min-height: 0;
+}
+.divider { background: var(--rule); }
+
+.chat { display: flex; flex-direction: column; min-height: 0; }
+.chatHead {
+  padding: 16px var(--gutter);
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex: none;
+}
+.chatWho { margin: 0; font: 700 17px/1.2 var(--serif); color: var(--paper-red); }
+.chatSub { margin: 3px 0 0; font: 400 12px/1 var(--sans); color: var(--ink-2); }
+.chatTags { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.thread {
+  flex: 1;
+  padding: 20px var(--gutter);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  min-height: 320px;
+}
+
+/* First-interview hero (1f) */
+.cold {
+  background: var(--white);
+  padding: 20px 16px;
+  border-bottom: 1px solid var(--rule);
+  text-align: center;
+}
+.coldTitle { margin: 12px 0 0; font: 900 26px/1.2 var(--serif); color: var(--ink); }
+.coldBody { margin: 10px auto 0; max-width: 46ch; font: 400 14.5px/1.7 var(--sans); color: var(--ink-2); }
+.openers { display: flex; flex-direction: column; gap: 8px; }
+.openersLabel { margin: 0; font: 500 11.5px/1 var(--sans); color: var(--ink-2); }
+.opener {
+  padding: 12px 14px;
+  border: 1px solid var(--rule);
+  background: var(--tint);
+  font: 500 13.5px/1.4 var(--sans);
+  color: var(--ink);
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+  text-align: start;
+  width: 100%;
+}
+.opener:hover { border-color: var(--paper-red); color: var(--paper-red); }
+
+.roomNameShort { display: none; }
+.roomNameFull { display: inline; }
+
+/* Mobile draft toggle */
+.draftToggle { display: none; }
+.mobileDraft { display: none; }
+
+@media (max-width: 900px) {
+  .bar { padding: 11px var(--gutter-sm); }
+  .logo { display: none; }
+  .sep { display: none; }
+  .roomName { font-size: 14.5px; }
+  .roomNameShort { display: inline; }
+  .roomNameFull { display: none; }
+  .close { border: 0; padding: 7px 0; color: rgba(255, 255, 255, 0.8); }
+  .barEnd { gap: 10px; font-size: 11.5px; }
+  .barMeta { display: none; }
+
+  .split { display: block; }
+  .divider { display: none; }
+  .chatHead { padding: 12px var(--gutter-sm); }
+  .chatTags { display: none; }
+  .thread { padding: 16px var(--gutter-sm); }
+
+  /* The side panel becomes a sheet the reader opens deliberately (1f has none). */
+  .desktopDraft { display: none; }
+  .draftToggle {
+    display: flex;
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+  }
+  .mobileDraft {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: var(--tint);
+    overflow-y: auto;
+  }
+  .mobileDraft > * { min-height: 100dvh; }
+}

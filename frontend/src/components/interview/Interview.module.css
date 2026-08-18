@@ -1,0 +1,100 @@
+/* ---- Chat bubbles (1e / 1f) -------------------------------------------- */
+.bubble { max-width: 78%; padding: 13px 16px; animation: hai-fade-in 0.2s ease-out; }
+.reporter {
+  border: 1px solid rgba(181, 18, 27, 0.3);
+  border-inline-start: 3px solid var(--paper-red);
+  background: var(--white);
+}
+.reader {
+  align-self: flex-end;
+  background: var(--tint);
+  border: 1px solid var(--rule);
+}
+.who {
+  margin: 0 0 5px;
+  font: 700 11px/1 var(--sans);
+  letter-spacing: var(--track);
+  color: var(--ink-2);
+}
+.reporter .who { color: var(--paper-red); }
+.text { margin: 0; font: 400 15px/1.7 var(--sans); color: var(--ink); }
+.suggestions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+.stamp {
+  align-self: center;
+  padding: 4px 12px;
+  background: var(--ph);
+  font: 500 11px/1 var(--sans);
+  color: var(--ink-2);
+}
+
+/* ---- Typing indicator --------------------------------------------------- */
+.typing {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 14px;
+  border: 1px dashed var(--dash);
+  background: var(--tint);
+  max-width: 290px;
+}
+.dots { display: flex; gap: 3px; }
+.dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--paper-red);
+  animation: hai-dot 1s infinite;
+}
+.dots span:nth-child(2) { animation-delay: 0.15s; }
+.dots span:nth-child(3) { animation-delay: 0.3s; }
+.typingLabel { font: 500 12.5px/1 var(--sans); color: var(--ink-2); }
+
+/* ---- Composer ----------------------------------------------------------- */
+.composer { border-top: 1px solid var(--rule); padding: 16px var(--gutter); background: var(--white); }
+.composerActions { margin-top: 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.consent { margin-inline-start: auto; font: 400 11.5px/1.5 var(--sans); color: var(--ink-2); }
+
+/* ---- Draft panel -------------------------------------------------------- */
+.draft { background: var(--tint); display: flex; flex-direction: column; min-height: 0; }
+.draftHead {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.draftTitle { margin: 0; font: 700 19px/1 var(--serif); color: var(--paper-red); }
+.draftBody { flex: 1; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+.fieldLabel { margin: 0 0 5px; font: 500 12.5px/1 var(--sans); color: var(--ink-2); }
+.box { padding: 10px 13px; background: var(--white); border: 1px solid var(--rule); font: 400 14px/1.6 var(--sans); color: var(--ink); }
+.boxLive { border-color: var(--paper-red); }
+.boxHeadline { font: 700 21px/1.28 var(--serif); padding: 11px 13px; }
+.boxAngle { font: 500 13.5px/1.5 var(--sans); padding: 9px 12px; }
+.boxBody { display: flex; flex-direction: column; gap: 9px; line-height: 1.75; padding: 12px 13px; }
+.pending { color: var(--muted); }
+.empty { color: var(--muted); font-style: normal; }
+
+.checks { border: 1px solid var(--rule); background: var(--white); padding: 12px 13px; }
+.checksTitle { margin: 0 0 8px; font: 700 11px/1 var(--sans); letter-spacing: var(--track-sm); color: var(--ink-2); }
+.checkList { display: flex; flex-direction: column; gap: 6px; font: 400 12.5px/1.5 var(--sans); color: var(--ink); }
+.check { display: flex; gap: 8px; }
+.checkOff { color: var(--ink-2); }
+.mark { color: var(--paper-red); font-weight: 700; }
+.markOff { color: var(--muted); font-weight: 700; }
+
+.sectionRow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.sectionLabel { font: 500 12.5px/1 var(--sans); color: var(--ink-2); }
+
+.draftFoot {
+  border-top: 1px solid var(--rule);
+  background: var(--white);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.footRow { display: flex; gap: 9px; }
+.footNote { margin: 0; text-align: center; font: 400 11px/1.5 var(--sans); color: var(--ink-2); }

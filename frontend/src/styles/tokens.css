@@ -1,0 +1,37 @@
+/* Palette, type and metrics lifted from the Haiton design mockups.
+   Every value here appears verbatim in Haiton.dc.html. */
+:root {
+  /* Ink & paper */
+  --paper-red: #b5121b;
+  --paper-red-dark: #8e0e15;
+  --ink: #1a1a1a;
+  --ink-2: #555;
+  --rule: #e0e0e0;
+  --rule-soft: #eee;
+  --tint: #fafafa;
+  --footer: #f5f5f5;
+  --canvas: #efece6;
+  --white: #fff;
+
+  /* Placeholders & muted marks */
+  --ph: #f0eee9;
+  --ph-ink: #8a8578;
+  --muted: #a9a49a;
+  --dash: #d5d0c6;
+  --ghost: #bdb8ad;
+  --dot: #ccc;
+
+  /* Type */
+  --serif: "Frank Ruhl Libre", Georgia, serif;
+  --sans: Heebo, system-ui, -apple-system, sans-serif;
+
+  /* Metrics */
+  --shell: 1120px;
+  --gutter: 24px;
+  --gutter-sm: 14px;
+  --tap: 44px;
+
+  /* Tracking used on kickers and section labels */
+  --track: 0.08em;
+  --track-sm: 0.06em;
+}

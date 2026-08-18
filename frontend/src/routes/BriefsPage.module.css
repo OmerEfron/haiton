@@ -1,0 +1,11 @@
+.wrap { padding: 24px var(--gutter) 32px; }
+.head { padding-bottom: 16px; border-bottom: 1px solid var(--rule); }
+.title { margin: 0; font: 900 40px/1.1 var(--serif); color: var(--paper-red); }
+.intro { margin: 10px 0 0; max-width: 56ch; font: 400 15px/1.7 var(--sans); color: var(--ink-2); }
+.list { margin-top: 8px; }
+.day { margin: 20px 0 6px; font: 700 12px/1 var(--sans); letter-spacing: var(--track-sm); color: var(--ink-2); }
+
+@media (max-width: 900px) {
+  .wrap { padding: 18px var(--gutter-sm) 24px; }
+  .title { font-size: 30px; }
+}

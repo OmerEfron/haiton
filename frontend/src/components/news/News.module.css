@@ -1,0 +1,112 @@
+/* ---- Lead story (1a / 1b) ---------------------------------------------- */
+.leadMeta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+.bullet { width: 4px; height: 4px; background: var(--dot); border-radius: 50%; flex: none; }
+.editionName { font: 500 11.5px/1 var(--sans); color: var(--ink-2); }
+.leadHeadline {
+  margin: 0;
+  font: 900 50px/1.08 var(--serif);
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+}
+.leadHeadline a { color: inherit; }
+.leadHeadline a:hover { color: var(--paper-red); }
+.leadStandfirst {
+  margin: 14px 0 0;
+  font: 400 19px/1.6 var(--sans);
+  color: var(--ink-2);
+  max-width: 44ch;
+  text-wrap: pretty;
+}
+.leadImage { margin-top: 18px; }
+.leadByline {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 400 12px/1 var(--sans);
+  color: var(--ink-2);
+  flex-wrap: wrap;
+}
+
+/* ---- Secondary cards (1a "כותרות משנה") -------------------------------- */
+.cardGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.card { border-inline-start: 3px solid var(--paper-red); padding-inline-start: 12px; }
+.cardMeta { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; flex-wrap: wrap; }
+.cardHeadline {
+  margin: 0 0 8px;
+  font: 700 21px/1.28 var(--serif);
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.cardHeadline a { color: inherit; }
+.cardHeadline a:hover { color: var(--paper-red); }
+.cardTime { display: block; margin-top: 7px; font: 400 11.5px/1 var(--sans); color: var(--ink-2); }
+
+/* ---- List rows (1a "כל הידיעות") --------------------------------------- */
+.listRow { display: block; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+.listRow:last-child { border-bottom: 0; }
+.listMeta { display: block; font: 400 11.5px/1.4 var(--sans); color: var(--ink-2); }
+.listHeadline {
+  display: block;
+  margin-top: 2px;
+  font: 700 17px/1.35 var(--serif);
+  color: var(--ink);
+}
+.listRow:hover .listHeadline { color: var(--paper-red); }
+
+/* ---- Mobile "עוד במהדורה" rows (1b) ------------------------------------ */
+.thumbRow {
+  display: flex;
+  gap: 11px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--rule);
+  align-items: flex-start;
+}
+.thumbRow:last-child { border-bottom: 0; }
+.thumb { flex: none; width: 72px; height: 56px; background: var(--ph); border: 1px solid var(--rule); }
+.thumbHeadline {
+  display: block;
+  font: 700 15.5px/1.32 var(--serif);
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+/* ---- Flashes panel ------------------------------------------------------ */
+.flashItem {
+  display: flex;
+  gap: 9px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.flashItem:last-child { border-bottom: 0; }
+.flashTime { flex: none; font: 700 11px/1.5 var(--sans); color: var(--paper-red); }
+.flashText { font: 500 13.5px/1.5 var(--sans); color: var(--ink); }
+a.flashText:hover { color: var(--paper-red); }
+
+/* ---- Draft teaser (1a sidebar) ----------------------------------------- */
+.teaser { margin-top: 20px; border: 1px solid var(--rule); background: var(--tint); padding: 16px; }
+.teaserKicker { margin: 0 0 4px; font: 700 11px/1 var(--sans); letter-spacing: var(--track); color: var(--paper-red); }
+.teaserTitle { margin: 0 0 10px; font: 700 16px/1.35 var(--serif); color: var(--ink); }
+.teaserBody { margin: 0 0 12px; font: 400 12.5px/1.6 var(--sans); color: var(--ink-2); }
+
+/* ---- Mobile reporter prompt (1b) --------------------------------------- */
+.prompt { border: 1px solid var(--paper-red); padding: 13px; display: flex; gap: 12px; align-items: flex-start; }
+.promptKicker { margin: 0 0 3px; font: 700 11px/1 var(--sans); letter-spacing: var(--track-sm); color: var(--paper-red); }
+.promptBody { margin: 0 0 10px; font: 400 13px/1.55 var(--sans); color: var(--ink); }
+
+/* ---- Digest columns ---------------------------------------------------- */
+.digestTitle {
+  margin: 0 0 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--rule);
+  font: 700 16px/1 var(--serif);
+}
+.digestLinks { display: flex; flex-direction: column; gap: 7px; font: 500 13.5px/1.45 var(--sans); }
+
+@media (max-width: 900px) {
+  .leadHeadline { font-size: 30px; line-height: 1.13; }
+  .leadStandfirst { font-size: 15px; margin-top: 10px; max-width: none; }
+  .cardGrid { grid-template-columns: 1fr; gap: 18px; }
+  .cardHeadline { font-size: 19px; }
+}

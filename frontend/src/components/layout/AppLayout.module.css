@@ -1,0 +1,17 @@
+.shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  max-width: var(--shell);
+  margin: 0 auto;
+  border-inline: 1px solid var(--rule);
+}
+.main { flex: 1; }
+
+/* The interview room is a full-bleed dark app screen, not a newspaper page. */
+.bare { max-width: none; border-inline: 0; }
+
+@media (max-width: 900px) {
+  .shell { border-inline: 0; }
+}

@@ -1,0 +1,132 @@
+/* --- LiveDot: the blinking broadcast dot --------------------------------- */
+.dot {
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--paper-red);
+  animation: hai-blink 1.4s infinite;
+  flex: none;
+}
+.dotLight { background: var(--white); animation-duration: 1.2s; }
+
+/* --- LivePill: bordered "שולחן העורכים פתוח" / "חי" chip ----------------- */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--rule);
+  font: 500 11.5px/1 var(--sans);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.pillRed {
+  background: var(--paper-red);
+  border-color: var(--paper-red);
+  color: var(--white);
+  font-weight: 700;
+  letter-spacing: var(--track-sm);
+  font-size: 11px;
+}
+.pillOutlineRed { border-color: var(--paper-red); color: var(--paper-red); font-weight: 700; letter-spacing: var(--track-sm); font-size: 11px; }
+
+/* --- Kicker: red uppercase-ish section label ---------------------------- */
+.kicker {
+  font: 700 11px/1 var(--sans);
+  letter-spacing: var(--track);
+  color: var(--paper-red);
+}
+
+/* --- Avatar: square initial tile ---------------------------------------- */
+.avatar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ph);
+  border: 1px solid var(--rule);
+  color: var(--paper-red);
+  font-family: var(--serif);
+  font-weight: 700;
+  line-height: 1;
+}
+.avatarSolid {
+  background: var(--paper-red);
+  border-color: var(--paper-red);
+  color: var(--white);
+  font-weight: 900;
+}
+.avatarOnTint { background: var(--white); }
+
+/* --- Placeholder: the "מקום לתמונה" block ------------------------------- */
+.placeholder {
+  background: var(--ph);
+  border: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+  font: 400 13px/1.5 var(--sans);
+  color: var(--ph-ink);
+}
+.placeholderSub { font-size: 11.5px; }
+
+/* --- Toggle: the pill switch from 1g / 2b ------------------------------- */
+.toggle {
+  flex: none;
+  display: inline-flex;
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background: var(--rule);
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 3px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+.toggleOn { background: var(--paper-red); justify-content: flex-start; }
+.knob {
+  width: 16px;
+  height: 16px;
+  background: var(--white);
+  border-radius: 50%;
+}
+
+/* --- StatGrid: the hairline-separated number tiles ---------------------- */
+.stats {
+  display: grid;
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+.stat { background: var(--white); padding: 14px; }
+.statValue { font: 900 28px/1 var(--serif); color: var(--paper-red); }
+.statLabel { margin-top: 5px; font: 400 12px/1.4 var(--sans); color: var(--ink-2); }
+
+/* --- Rule: the red-underlined section heading --------------------------- */
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 2px solid var(--paper-red);
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+.sectionHeadTitle { font: 700 19px/1 var(--serif); color: var(--paper-red); margin: 0; }
+
+/* --- Spinner / states --------------------------------------------------- */
+.state {
+  padding: 48px 24px;
+  text-align: center;
+  font: 400 14px/1.7 var(--sans);
+  color: var(--ink-2);
+}
+.stateError { color: var(--paper-red); font-weight: 500; }
+
+@media (max-width: 900px) {
+  .stats { grid-template-columns: repeat(2, 1fr) !important; }
+  .statValue { font-size: 24px; }
+}

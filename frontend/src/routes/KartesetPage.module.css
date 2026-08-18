@@ -1,0 +1,60 @@
+.wrap { padding: 24px var(--gutter); }
+.head { padding-bottom: 16px; border-bottom: 1px solid var(--rule); }
+.title { margin: 0; font: 900 40px/1.1 var(--serif); color: var(--paper-red); }
+.intro { margin: 10px 0 0; max-width: 56ch; font: 400 15px/1.7 var(--sans); color: var(--ink-2); }
+.filters { margin-top: 14px; }
+
+.composer { margin-top: 18px; border: 1px solid var(--paper-red); padding: 16px; }
+.composerRow { display: flex; gap: 9px; align-items: stretch; }
+.composerRow > div:first-child { flex: 1; }
+.composerCats { margin-top: 10px; }
+.error { margin: 8px 0 0; font: 500 12px/1.5 var(--sans); color: var(--paper-red); }
+
+.list { margin-top: 22px; border-top: 1px solid var(--rule); }
+.row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.rowTint { background: var(--tint); padding-inline: 12px; }
+.cat {
+  flex: none;
+  padding: 4px 8px;
+  background: var(--tint);
+  border: 1px solid var(--rule);
+  font: 500 11px/1.4 var(--sans);
+  color: var(--ink-2);
+}
+.rowTint .cat { background: var(--white); }
+.factText { flex: 1; font: 400 15.5px/1.6 var(--sans); color: var(--ink); }
+.factMeta { display: block; margin-top: 5px; font: 400 11.5px/1.4 var(--sans); color: var(--ink-2); }
+.rowActions { display: flex; gap: 7px; flex: none; }
+
+.editRow { padding: 15px 0; border-bottom: 1px solid var(--rule); }
+.editCat { display: inline-block; margin-bottom: 9px; }
+.editActions { margin-top: 9px; display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Empty state (1i) */
+.emptyIntro { margin: 10px 0 18px; font: 400 14.5px/1.7 var(--sans); color: var(--ink-2); }
+.startersTitle { margin: 18px 0 8px; font: 700 12px/1 var(--sans); letter-spacing: var(--track-sm); color: var(--ink-2); }
+.starters { display: flex; flex-direction: column; gap: 8px; }
+.starter {
+  padding: 11px 13px;
+  border: 1px dashed var(--dash);
+  font: 400 13.5px/1.5 var(--sans);
+  color: var(--ph-ink);
+  text-align: start;
+  width: 100%;
+}
+.starter:hover { border-color: var(--paper-red); color: var(--paper-red); }
+
+@media (max-width: 900px) {
+  .wrap { padding: 18px var(--gutter-sm) 24px; }
+  .title { font-size: 30px; }
+  .composerRow { flex-direction: column; }
+  .row { flex-wrap: wrap; gap: 10px; }
+  .factText { flex-basis: 100%; order: 2; }
+  .rowActions { order: 3; margin-inline-start: auto; }
+}

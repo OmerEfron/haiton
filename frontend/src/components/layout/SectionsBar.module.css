@@ -1,0 +1,42 @@
+.bar {
+  background: var(--paper-red);
+  color: var(--white);
+  border-bottom: 1px solid var(--rule);
+}
+.inner {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 8px var(--gutter);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 400 13px/1 var(--sans);
+}
+.label { font-weight: 700; flex: none; }
+.divider { opacity: 0.5; flex: none; }
+.items {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.items::-webkit-scrollbar { display: none; }
+.item {
+  padding: 5px 9px;
+  color: var(--white);
+  white-space: nowrap;
+  border: 0;
+}
+.item:hover { color: var(--white); background: rgba(255, 255, 255, 0.12); }
+.active { background: rgba(255, 255, 255, 0.18); font-weight: 700; }
+
+/* Breadcrumb variant used on the story page */
+.crumbs { font-size: 12px; padding-block: 6px; }
+.crumbs .sep { opacity: 0.6; }
+.crumbs .muted { opacity: 0.8; }
+
+@media (max-width: 900px) {
+  .inner { padding: 7px var(--gutter-sm); font-size: 12.5px; }
+  .label, .divider { display: none; }
+  .item { min-height: 34px; display: flex; align-items: center; }
+}

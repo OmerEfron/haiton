@@ -1,0 +1,76 @@
+.grid {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 26px var(--gutter) 8px;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 36px;
+  align-items: start;
+}
+.rail { border-inline-start: 1px solid var(--rule); padding-inline-start: 22px; }
+
+.band {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 20px var(--gutter) 26px;
+  border-bottom: 1px solid var(--rule);
+}
+.bandTitle {
+  margin: 0 0 14px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--rule);
+  font: 700 18px/1 var(--serif);
+  color: var(--ink);
+}
+
+.lower {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 24px var(--gutter);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px;
+}
+.lowerTitle { margin: 0 0 12px; font: 700 20px/1 var(--serif); color: var(--paper-red); }
+.lowerTitlePlain { margin: 0 0 12px; font: 700 20px/1 var(--serif); color: var(--ink); }
+.digestGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+/* Mobile-only blocks lifted from 1b */
+.mobileOnly { display: none; }
+.flashBlock {
+  background: var(--tint);
+  border-block: 1px solid var(--rule);
+  padding: 14px;
+}
+.flashHead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.flashHeadTitle { margin: 0; font: 700 17px/1 var(--serif); color: var(--paper-red); }
+.promptBlock { padding: 14px; }
+.moreBlock { padding: 0 var(--gutter-sm) 14px; }
+.moreTitle {
+  margin: 0 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rule);
+  font: 700 17px/1 var(--serif);
+}
+
+/* Empty edition (1c) */
+.tomorrow { padding: 18px var(--gutter); }
+.tomorrowLabel { margin: 0 0 10px; font: 700 12px/1 var(--sans); letter-spacing: var(--track-sm); color: var(--ink-2); }
+.tomorrowGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.tomorrowCard { border: 1px dashed var(--dash); padding: 12px; background: var(--white); }
+.tomorrowKicker { font: 700 10.5px/1 var(--sans); color: var(--paper-red); }
+.tomorrowText { margin: 6px 0 0; font: 700 15px/1.3 var(--serif); color: var(--ghost); }
+.emptyFlashes { background: var(--tint); padding: 18px var(--gutter); border-bottom: 1px solid var(--rule); }
+.emptyFlashesTitle { margin: 0 0 8px; font: 700 16px/1 var(--serif); color: var(--paper-red); }
+.emptyFlashesBody { margin: 0; font: 400 13px/1.6 var(--sans); color: var(--ink-2); }
+
+@media (max-width: 900px) {
+  .grid { display: block; padding: 16px var(--gutter-sm) 12px; }
+  .rail { display: none; }
+  .mobileOnly { display: block; }
+  .band { padding: 0 var(--gutter-sm) 14px; border-bottom: 0; }
+  .bandTitle { display: none; }
+  .lower { display: none; }
+  .tomorrow { padding: 18px var(--gutter-sm); }
+  .tomorrowGrid { grid-template-columns: 1fr; }
+}

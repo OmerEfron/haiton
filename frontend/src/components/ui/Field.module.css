@@ -1,0 +1,29 @@
+.field { display: block; }
+.label {
+  display: block;
+  margin-bottom: 6px;
+  font: 500 12.5px/1 var(--sans);
+  color: var(--ink);
+}
+.control {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--rule);
+  background: var(--white);
+  padding: 11px 13px;
+  font: 400 14.5px/1.5 var(--sans);
+  color: var(--ink);
+  border-radius: 0;
+}
+.control::placeholder { color: var(--muted); }
+.control:focus {
+  outline: none;
+  border-color: var(--paper-red);
+}
+.area { resize: vertical; min-height: 64px; line-height: 1.6; }
+.ltr { direction: ltr; text-align: left; }
+.error { margin-top: 6px; font: 500 11.5px/1.5 var(--sans); color: var(--paper-red); }
+
+@media (max-width: 900px) {
+  .control { min-height: var(--tap); font-size: 16px; }
+}

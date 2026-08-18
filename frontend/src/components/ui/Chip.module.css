@@ -1,0 +1,51 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: var(--white);
+  border: 1px solid var(--rule);
+  color: var(--ink-2);
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background-color 0.12s, color 0.12s, border-color 0.12s;
+}
+button.chip { cursor: pointer; }
+button.chip:hover { border-color: var(--paper-red); color: var(--paper-red); }
+
+.active {
+  background: var(--paper-red);
+  border-color: var(--paper-red);
+  color: var(--white);
+  font-weight: 700;
+}
+button.active:hover { background: var(--paper-red-dark); border-color: var(--paper-red-dark); color: var(--white); }
+
+/* Outlined-red state used for the "ממתינים" filter */
+.flagged { border-color: var(--paper-red); color: var(--paper-red); }
+
+.tint { background: var(--tint); }
+.plain { background: var(--ph); border-color: transparent; color: var(--ink-2); font-size: 10.5px; padding: 2px 6px; }
+
+.count { opacity: 0.75; font-weight: 400; }
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.scroll {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.scroll::-webkit-scrollbar { display: none; }
+
+@media (max-width: 900px) {
+  button.chip { min-height: 38px; }
+}
