@@ -1,0 +1,76 @@
+import { resetCallCount, getCallCount } from "./llm.js";
+import { nextQuestion } from "./interviewer/interviewer.js";
+import type {
+  Article,
+  ArticleTypeId,
+  FactInput,
+  ToneId,
+  Turn,
+} from "./types.js";
+import { MAX_QUESTIONS } from "./types.js";
+import { writeArticle } from "./writer/writer.js";
+
+type RunReporterInput = {
+  facts: FactInput[];
+  answers: string[];
+  tone: ToneId;
+  type: ArticleTypeId;
+};
+
+type RunReporterResult = {
+  questions: string[];
+  article: Article;
+  llmCalls: number;
+};
+
+export async function runReporter({
+  facts,
+  answers,
+  tone,
+  type,
+}: RunReporterInput): Promise<RunReporterResult> {
+  resetCallCount();
+
+  const questions: string[] = [];
+  const turns: Turn[] = [];
+  let answerIdx = 0;
+
+  while (true) {
+    const result = await nextQuestion(facts, turns);
+
+    if (result.done && !result.question) {
+      break;
+    }
+
+    questions.push(result.question);
+
+    if (result.done) {
+      break;
+    }
+
+    if (answerIdx >= answers.length) {
+      break;
+    }
+
+    turns.push({
+      question: result.question,
+      answer: answers[answerIdx]!,
+    });
+    answerIdx += 1;
+
+    if (questions.length >= MAX_QUESTIONS || turns.length >= MAX_QUESTIONS) {
+      break;
+    }
+  }
+
+  const interviewerCalls = getCallCount();
+  resetCallCount();
+
+  const article = await writeArticle({ facts, turns, tone, type });
+
+  return {
+    questions,
+    article,
+    llmCalls: interviewerCalls + getCallCount(),
+  };
+}

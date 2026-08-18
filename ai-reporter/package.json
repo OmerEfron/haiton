@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "test": "node --experimental-strip-types -e \"process.exit(0)\""
+    "test": "node --env-file=../.env --env-file=.env --experimental-strip-types --test src/run.test.ts"
   },
   "dependencies": {
     "openai": "^6.9.0"
