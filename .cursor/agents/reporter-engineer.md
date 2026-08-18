@@ -1,6 +1,6 @@
 ---
 name: reporter-engineer
-description: Implements Haiton AI reporter tracks (OpenAI interviewer/writer + live tests). Use for docs/features write tracks that own ai-reporter/.
+description: Implements Haiton AI reporter tracks (OpenAI interviewer/writer, HTTP session in ai-reporter/, live tests). Use for docs/features write tracks that own ai-reporter/.
 model: composer-2.5[]
 ---
 

@@ -1,0 +1,232 @@
+{
+  "schema_version": 1,
+  "feature_id": "reporter-wireup",
+  "title": "Reporter desk wire-up (user-first)",
+  "status": "planned",
+  "current_wave": "W0",
+  "isolation_default": "worktree",
+  "base_branch": "main",
+  "tracks": [
+    {
+      "id": "contracts",
+      "wave": "W0",
+      "isolation": "sequential",
+      "status": "pending",
+      "owner_agents": ["reporter-engineer"],
+      "branch": "main",
+      "owns": [
+        "ai-reporter/src/contract.ts",
+        "ai-reporter/src/contract.test.ts",
+        "ai-reporter/src/types.ts",
+        "ai-reporter/package.json",
+        "ai-reporter/package-lock.json",
+        "ai-reporter/.env.example",
+        "frontend/.env.example"
+      ],
+      "reads": [
+        "docs/features/reporter-wireup/PLAN.md",
+        "frontend/src/api/types.ts",
+        "frontend/src/mocks/fixtures/interview-script.ts",
+        "api/src/app.ts"
+      ],
+      "must_not": [
+        "ai-reporter/src/interviewer/",
+        "ai-reporter/src/writer/",
+        "ai-reporter/src/http/",
+        "ai-reporter/src/run.ts",
+        "ai-reporter/src/run.test.ts",
+        "ai-reporter/src/llm.ts",
+        "ai-reporter/src/fixtures/",
+        "frontend/src/api/",
+        "frontend/src/routes/",
+        "frontend/package.json",
+        "api/"
+      ]
+    },
+    {
+      "id": "interviewer-open",
+      "wave": "W1",
+      "isolation": "worktree",
+      "status": "pending",
+      "owner_agents": ["reporter-engineer"],
+      "branch": "agent/feature/reporter-wireup/interviewer-open",
+      "owns": ["ai-reporter/src/interviewer/"],
+      "reads": [
+        "docs/features/reporter-wireup/PLAN.md",
+        "ai-reporter/src/types.ts",
+        "ai-reporter/src/llm.ts",
+        "ai-reporter/src/fixtures/persona.ts",
+        "ai-reporter/src/fixtures/week-answers.ts"
+      ],
+      "must_not": [
+        "ai-reporter/src/types.ts",
+        "ai-reporter/src/llm.ts",
+        "ai-reporter/src/fixtures/",
+        "ai-reporter/src/writer/",
+        "ai-reporter/src/http/",
+        "ai-reporter/src/contract.ts",
+        "ai-reporter/src/run.ts",
+        "ai-reporter/package.json",
+        "ai-reporter/package-lock.json",
+        "frontend/",
+        "api/"
+      ]
+    },
+    {
+      "id": "http-session",
+      "wave": "W1",
+      "isolation": "worktree",
+      "status": "pending",
+      "owner_agents": ["reporter-engineer"],
+      "branch": "agent/feature/reporter-wireup/http-session",
+      "owns": ["ai-reporter/src/http/"],
+      "reads": [
+        "docs/features/reporter-wireup/PLAN.md",
+        "ai-reporter/src/contract.ts",
+        "ai-reporter/src/types.ts",
+        "ai-reporter/src/interviewer/interviewer.ts",
+        "ai-reporter/src/writer/writer.ts",
+        "frontend/src/api/types.ts"
+      ],
+      "must_not": [
+        "ai-reporter/src/contract.ts",
+        "ai-reporter/src/types.ts",
+        "ai-reporter/src/llm.ts",
+        "ai-reporter/src/interviewer/",
+        "ai-reporter/src/writer/",
+        "ai-reporter/src/run.ts",
+        "ai-reporter/src/fixtures/",
+        "ai-reporter/package.json",
+        "ai-reporter/package-lock.json",
+        "frontend/",
+        "api/"
+      ]
+    },
+    {
+      "id": "desk-client",
+      "wave": "W1",
+      "isolation": "worktree",
+      "status": "pending",
+      "owner_agents": ["frontend-engineer"],
+      "branch": "agent/feature/reporter-wireup/desk-client",
+      "owns": [
+        "frontend/src/api/reporter/",
+        "frontend/src/routes/InterviewRoom.tsx",
+        "frontend/src/copy/desk.ts"
+      ],
+      "reads": [
+        "docs/features/reporter-wireup/PLAN.md",
+        "frontend/src/api/types.ts",
+        "frontend/src/api/client.ts",
+        "frontend/src/api/core/karteset.ts",
+        "frontend/src/api/core/stories.ts"
+      ],
+      "must_not": [
+        "frontend/src/api/types.ts",
+        "frontend/src/api/client.ts",
+        "frontend/src/api/core/",
+        "frontend/src/mocks/",
+        "frontend/src/router.tsx",
+        "frontend/src/components/",
+        "frontend/package.json",
+        "frontend/vite.config.ts",
+        "frontend/.env.example",
+        "ai-reporter/",
+        "api/"
+      ]
+    },
+    {
+      "id": "integrate",
+      "wave": "Wint",
+      "isolation": "sequential",
+      "status": "pending",
+      "owner_agents": ["reporter-engineer"],
+      "branch": "main",
+      "owns": [
+        "ai-reporter/src/run.ts",
+        "ai-reporter/src/run.test.ts",
+        "ai-reporter/package.json",
+        "frontend/vite.config.ts"
+      ],
+      "reads": [
+        "docs/features/reporter-wireup/PLAN.md",
+        "ai-reporter/src/types.ts",
+        "ai-reporter/src/interviewer/",
+        "ai-reporter/src/writer/",
+        "ai-reporter/src/http/",
+        "ai-reporter/src/contract.ts",
+        "ai-reporter/src/fixtures/",
+        "frontend/src/api/reporter/interview.ts"
+      ],
+      "must_not": [
+        "ai-reporter/src/interviewer/",
+        "ai-reporter/src/writer/",
+        "ai-reporter/src/http/",
+        "ai-reporter/src/types.ts",
+        "ai-reporter/src/llm.ts",
+        "ai-reporter/src/fixtures/",
+        "ai-reporter/src/contract.ts",
+        "ai-reporter/package-lock.json",
+        "frontend/src/api/reporter/",
+        "frontend/src/api/types.ts",
+        "frontend/src/routes/",
+        "api/"
+      ]
+    },
+    {
+      "id": "review",
+      "wave": "Wrev",
+      "isolation": "sequential",
+      "status": "pending",
+      "owner_agents": ["qa-reviewer"],
+      "branch": "main",
+      "owns": [],
+      "reads": [
+        "docs/features/reporter-wireup/",
+        "ai-reporter/",
+        "frontend/src/api/reporter/",
+        "frontend/src/routes/InterviewRoom.tsx"
+      ],
+      "must_not": [
+        "ai-reporter/",
+        "frontend/",
+        "api/",
+        "docs/features/reporter-wireup/status.json"
+      ]
+    }
+  ],
+  "waves": [
+    {
+      "id": "W0",
+      "kind": "sequential",
+      "status": "pending",
+      "tracks": ["contracts"],
+      "isolation_default": "sequential"
+    },
+    {
+      "id": "W1",
+      "kind": "parallel",
+      "status": "pending",
+      "tracks": ["interviewer-open", "http-session", "desk-client"],
+      "isolation_default": "worktree",
+      "merge_order": ["interviewer-open", "http-session", "desk-client"]
+    },
+    {
+      "id": "Wint",
+      "kind": "sequential",
+      "status": "pending",
+      "tracks": ["integrate"],
+      "isolation_default": "sequential"
+    },
+    {
+      "id": "Wrev",
+      "kind": "sequential",
+      "status": "pending",
+      "tracks": ["review"],
+      "isolation_default": "sequential"
+    }
+  ],
+  "blockers": [],
+  "open_decisions": [],
+  "last_updated": "2026-08-18T13:10:00Z"
+}

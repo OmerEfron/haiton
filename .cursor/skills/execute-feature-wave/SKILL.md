@@ -16,11 +16,13 @@ Checks (from `docs/features/<id>/MAP.md`):
 - frontend lint: `cd frontend && npm run lint`
 - frontend build: `cd frontend && npm run build` (Wint/Wrev)
 - api tests: `cd api && npm test` (after W0 if the wave says so)
-- ai-reporter live: `cd ai-reporter && npm test` (Wint/Wrev of `ai-reporter`; needs `OPENAI_API_KEY`; honor PLAN call caps; do not also run W1 module live tests)
+- ai-reporter live: `cd ai-reporter && npm test` (Wint/Wrev of `ai-reporter` or `reporter-wireup`; needs `OPENAI_API_KEY`; honor PLAN call caps; do not also run W1 module live tests)
+- ai-reporter contract: `cd ai-reporter && node --experimental-strip-types --test src/contract.test.ts` (W0 of `reporter-wireup`)
+- ai-reporter http: `cd ai-reporter && node --experimental-strip-types --test src/http/http.test.ts` (W1 `http-session`; zero live LLM)
 
 ## 1. Select
 
-Feature id is given (`/execute-feature-wave desk-truth`) or the only feature with status `planned` / `in_progress`. If several, ask once.
+Feature id is given (`/execute-feature-wave reporter-wireup`) or the only feature with status `planned` / `in_progress`. If several (e.g. leftover `ai-reporter` + new `reporter-wireup`), ask once — do not pick silently.
 
 Read `docs/features/<id>/status.json` and `PLAN.md`.
 
