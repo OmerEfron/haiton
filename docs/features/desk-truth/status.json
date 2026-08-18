@@ -1,0 +1,257 @@
+{
+  "schema_version": 1,
+  "feature_id": "desk-truth",
+  "title": "Desk truth (split-brain + bugs)",
+  "status": "planned",
+  "current_wave": "W0",
+  "isolation_default": "worktree",
+  "base_branch": "main",
+  "tracks": [
+    {
+      "id": "schema",
+      "wave": "W0",
+      "isolation": "sequential",
+      "status": "pending",
+      "owner_agents": ["backend-engineer"],
+      "branch": "main",
+      "owns": ["api/src/schema.sql"],
+      "reads": [
+        "docs/features/desk-truth/PLAN.md",
+        "api/src/circle/router.ts"
+      ],
+      "must_not": [
+        "api/src/circle/",
+        "api/src/db.ts",
+        "api/src/contract.ts",
+        "api/src/types.ts",
+        "api/package.json",
+        "frontend/"
+      ]
+    },
+    {
+      "id": "auth-errors",
+      "wave": "W1",
+      "isolation": "worktree",
+      "status": "pending",
+      "owner_agents": ["backend-engineer"],
+      "branch": "agent/feature/desk-truth/auth-errors",
+      "owns": ["api/src/auth/"],
+      "reads": [
+        "docs/features/desk-truth/PLAN.md",
+        "api/src/contract.ts",
+        "frontend/src/routes/LoginPage.tsx"
+      ],
+      "must_not": [
+        "api/src/db.ts",
+        "api/src/contract.ts",
+        "api/src/types.ts",
+        "api/src/schema.sql",
+        "api/package.json",
+        "frontend/"
+      ]
+    },
+    {
+      "id": "circle-invite",
+      "wave": "W1",
+      "isolation": "worktree",
+      "status": "pending",
+      "owner_agents": ["backend-engineer"],
+      "branch": "agent/feature/desk-truth/circle-invite",
+      "owns": ["api/src/circle/"],
+      "reads": [
+        "docs/features/desk-truth/PLAN.md",
+        "api/src/schema.sql",
+        "frontend/src/api/core/connections.ts",
+        "frontend/src/components/circle/AddConnectionDialog.tsx"
+      ],
+      "must_not": [
+        "api/src/schema.sql",
+        "api/src/db.ts",
+        "api/src/contract.ts",
+        "api/src/types.ts",
+        "api/package.json",
+        "frontend/"
+      ]
+    },
+    {
+      "id": "stories-truth",
+      "wave": "W1",
+      "isolation": "worktree",
+      "status": "pending",
+      "owner_agents": ["backend-engineer"],
+      "branch": "agent/feature/desk-truth/stories-truth",
+      "owns": ["api/src/stories/"],
+      "reads": [
+        "docs/features/desk-truth/PLAN.md",
+        "api/src/schema.sql",
+        "frontend/src/api/types.ts"
+      ],
+      "must_not": [
+        "api/src/schema.sql",
+        "api/src/db.ts",
+        "api/src/contract.ts",
+        "api/src/types.ts",
+        "api/src/seed.ts",
+        "api/package.json",
+        "frontend/"
+      ]
+    },
+    {
+      "id": "interview-desk",
+      "wave": "W1",
+      "isolation": "worktree",
+      "status": "pending",
+      "owner_agents": ["frontend-engineer"],
+      "branch": "agent/feature/desk-truth/interview-desk",
+      "owns": [
+        "frontend/src/api/reporter/",
+        "frontend/src/routes/InterviewRoom.tsx",
+        "frontend/src/routes/FrontPage.tsx",
+        "frontend/src/routes/ProfilePage.tsx",
+        "frontend/src/components/interview/",
+        "frontend/src/components/layout/BottomNav.tsx",
+        "frontend/src/lib/queryKeys.ts"
+      ],
+      "reads": [
+        "docs/features/desk-truth/PLAN.md",
+        "frontend/src/api/core/karteset.ts",
+        "frontend/src/api/core/stories.ts",
+        "frontend/src/api/core/profile.ts",
+        "frontend/src/copy/desk.ts",
+        "frontend/src/mocks/db.ts"
+      ],
+      "must_not": [
+        "frontend/src/mocks/db.ts",
+        "frontend/src/mocks/fixtures/",
+        "frontend/src/api/types.ts",
+        "frontend/src/api/client.ts",
+        "frontend/src/api/core/",
+        "frontend/src/router.tsx",
+        "frontend/package.json",
+        "api/"
+      ]
+    },
+    {
+      "id": "circle-edit",
+      "wave": "W1",
+      "isolation": "worktree",
+      "status": "pending",
+      "owner_agents": ["frontend-engineer"],
+      "branch": "agent/feature/desk-truth/circle-edit",
+      "owns": [
+        "frontend/src/routes/CirclePage.tsx",
+        "frontend/src/components/circle/EditConnectionDialog.tsx"
+      ],
+      "reads": [
+        "docs/features/desk-truth/PLAN.md",
+        "frontend/src/api/core/connections.ts",
+        "frontend/src/components/circle/AddConnectionDialog.tsx",
+        "frontend/src/copy/circle.ts",
+        "frontend/src/copy/common.ts"
+      ],
+      "must_not": [
+        "frontend/src/components/circle/AddConnectionDialog.tsx",
+        "frontend/src/api/types.ts",
+        "frontend/src/api/core/",
+        "frontend/src/router.tsx",
+        "frontend/package.json",
+        "api/"
+      ]
+    },
+    {
+      "id": "integrate",
+      "wave": "Wint",
+      "isolation": "sequential",
+      "status": "pending",
+      "owner_agents": ["backend-engineer"],
+      "branch": "main",
+      "owns": [
+        "api/src/seed.ts",
+        "api/package.json",
+        "api/src/app.integration.test.ts",
+        "frontend/src/mocks/fixtures/profile.ts"
+      ],
+      "reads": [
+        "docs/features/desk-truth/PLAN.md",
+        "api/src/auth/",
+        "api/src/stories/",
+        "api/src/circle/",
+        "frontend/src/mocks/fixtures/stories.ts",
+        "frontend/src/mocks/fixtures/flashes.ts",
+        "frontend/src/mocks/fixtures/facts.ts"
+      ],
+      "must_not": [
+        "api/src/auth/",
+        "api/src/stories/",
+        "api/src/circle/",
+        "api/src/schema.sql",
+        "frontend/src/api/",
+        "frontend/src/routes/",
+        "frontend/src/components/",
+        "reporter/"
+      ]
+    },
+    {
+      "id": "review",
+      "wave": "Wrev",
+      "isolation": "sequential",
+      "status": "pending",
+      "owner_agents": ["qa-reviewer"],
+      "branch": "main",
+      "owns": [],
+      "reads": ["docs/features/desk-truth/", "api/", "frontend/src/"],
+      "must_not": [
+        "api/",
+        "frontend/",
+        "reporter/",
+        "docs/features/desk-truth/status.json"
+      ]
+    }
+  ],
+  "waves": [
+    {
+      "id": "W0",
+      "kind": "sequential",
+      "status": "pending",
+      "tracks": ["schema"],
+      "isolation_default": "sequential"
+    },
+    {
+      "id": "W1",
+      "kind": "parallel",
+      "status": "pending",
+      "tracks": [
+        "auth-errors",
+        "circle-invite",
+        "stories-truth",
+        "interview-desk",
+        "circle-edit"
+      ],
+      "isolation_default": "worktree",
+      "merge_order": [
+        "auth-errors",
+        "stories-truth",
+        "circle-invite",
+        "circle-edit",
+        "interview-desk"
+      ]
+    },
+    {
+      "id": "Wint",
+      "kind": "sequential",
+      "status": "pending",
+      "tracks": ["integrate"],
+      "isolation_default": "sequential"
+    },
+    {
+      "id": "Wrev",
+      "kind": "sequential",
+      "status": "pending",
+      "tracks": ["review"],
+      "isolation_default": "sequential"
+    }
+  ],
+  "blockers": [],
+  "open_decisions": [],
+  "last_updated": "2026-08-18T11:27:00Z"
+}
