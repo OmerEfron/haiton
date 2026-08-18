@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "test": "node --env-file=../.env --env-file=.env --experimental-strip-types --test src/run.test.ts"
+    "test": "node --env-file=../.env --env-file=.env --experimental-strip-types --test src/run.test.ts",
+    "dev": "node --env-file=../.env --env-file=.env --experimental-strip-types src/http/listen.ts",
+    "start": "node --env-file=../.env --env-file=.env --experimental-strip-types src/http/listen.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.9",

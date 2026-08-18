@@ -7,7 +7,7 @@ import type {
   ToneId,
   Turn,
 } from "./types.js";
-import { MAX_QUESTIONS } from "./types.js";
+import { MAX_QUESTIONS, askedCount } from "./types.js";
 import { writeArticle } from "./writer/writer.js";
 
 type RunReporterInput = {
@@ -31,9 +31,14 @@ export async function runReporter({
 }: RunReporterInput): Promise<RunReporterResult> {
   resetCallCount();
 
+  const opening = answers[0]?.trim();
+  if (!opening) {
+    throw new Error("answers[0] is required as the user's opening report");
+  }
+
   const questions: string[] = [];
-  const turns: Turn[] = [];
-  let answerIdx = 0;
+  const turns: Turn[] = [{ question: "", answer: opening }];
+  let answerIdx = 1;
 
   while (true) {
     const result = await nextQuestion(facts, turns);
@@ -58,7 +63,7 @@ export async function runReporter({
     });
     answerIdx += 1;
 
-    if (questions.length >= MAX_QUESTIONS || turns.length >= MAX_QUESTIONS) {
+    if (askedCount(turns) >= MAX_QUESTIONS) {
       break;
     }
   }

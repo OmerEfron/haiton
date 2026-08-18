@@ -68,7 +68,7 @@ describe("runReporter live e2e", () => {
       type: "feature",
     });
 
-    const priorAnswers: string[] = [];
+    const priorAnswers: string[] = [weekAnswers[0]!];
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i]!;
       assert.ok(!hasGenericNeedle(q), `generic needle in question: ${q}`);
@@ -76,8 +76,9 @@ describe("runReporter live e2e", () => {
         isGrounded(q, personaFacts, priorAnswers),
         `question not grounded: ${q}`,
       );
-      if (i < weekAnswers.length) {
-        priorAnswers.push(weekAnswers[i]!);
+      const reply = weekAnswers[i + 1];
+      if (reply !== undefined) {
+        priorAnswers.push(reply);
       }
     }
 
