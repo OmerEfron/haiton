@@ -54,18 +54,18 @@ export function InterviewRoom() {
   const publish = useMutation({
     mutationFn: publishStory,
     onSuccess: async (story) => {
+      await discardSession();
       await client.invalidateQueries();
       navigate(`/story/${story.id}`);
     },
   });
 
-  const discard = useMutation({
-    mutationFn: discardSession,
-    onSuccess: async () => {
-      await client.invalidateQueries();
-      navigate("/");
-    },
-  });
+  const saveDraft = () => {
+    client.invalidateQueries({ queryKey: qk.interview });
+    client.invalidateQueries({ queryKey: qk.frontPage });
+    client.invalidateQueries({ queryKey: qk.profile });
+    navigate("/");
+  };
 
   const busy = send.isPending || draftIt.isPending;
 
@@ -95,7 +95,7 @@ export function InterviewRoom() {
       onSection={(section) => chooseSection.mutate(section)}
       onPublish={() => publish.mutate(s.draft)}
       publishing={publish.isPending}
-      onDiscard={() => discard.mutate()}
+      onSave={saveDraft}
     />
   );
 

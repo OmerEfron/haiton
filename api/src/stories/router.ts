@@ -4,7 +4,6 @@ import { provisionUser } from "../provision.ts";
 import type { Draft, FrontPage } from "../types.ts";
 import {
   DRAFT_NOT_READY,
-  FROZEN_OPEN_DRAFT,
   STORY_NOT_FOUND,
   rowToFlash,
   rowToStory,
@@ -49,10 +48,6 @@ export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
       open_draft_title: string | null;
       open_draft_summary: string | null;
     };
-    const stats = db
-      .prepare("SELECT drafts_in_progress FROM profile_stats WHERE user_id = ?")
-      .get(userId) as { drafts_in_progress: number } | undefined;
-
     const stories = db
       .prepare("SELECT * FROM stories WHERE user_id = ?")
       .all(userId) as StoryRow[];
@@ -67,10 +62,10 @@ export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
     ).map(rowToFlash);
 
     const openDraft =
-      (stats?.drafts_in_progress ?? 0) > 0
+      state.open_draft_title != null
         ? {
-            title: state.open_draft_title ?? FROZEN_OPEN_DRAFT.title,
-            summary: state.open_draft_summary ?? FROZEN_OPEN_DRAFT.summary,
+            title: state.open_draft_title,
+            summary: state.open_draft_summary ?? "",
           }
         : null;
 

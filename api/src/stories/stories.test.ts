@@ -32,6 +32,9 @@ function seedBaseUser(): void {
   db.prepare(
     "INSERT INTO profile_stats (user_id, stories_published, flashes, drafts_in_progress) VALUES (?, 2, 1, 0)",
   ).run(USER_ID);
+  db.prepare(
+    "INSERT INTO profile_meta (user_id, section_counts_json, archive_json) VALUES (?, '[]', '[]')",
+  ).run(USER_ID);
 }
 
 function insertStory(
@@ -85,6 +88,17 @@ test("GET /stories?section= filters by section", async () => {
   assert.ok(!stories.some((s) => s.id === "11"));
 });
 
+test("GET /editions/current returns null openDraft when title column is null", async () => {
+  getDb()
+    .prepare("UPDATE profile_stats SET drafts_in_progress = 1 WHERE user_id = ?")
+    .run(USER_ID);
+
+  const res = await app.request("/editions/current", { headers: { Cookie: COOKIE } });
+  assert.equal(res.status, 200);
+  const page = (await res.json()) as { openDraft: unknown };
+  assert.equal(page.openDraft, null);
+});
+
 test("POST /stories demotes lead and increments edition", async () => {
   closeDb();
   process.env.DATABASE_PATH = join(dbDir, "publish.sqlite");
@@ -132,4 +146,23 @@ test("POST /stories demotes lead and increments edition", async () => {
     .get(USER_ID) as { text: string; story_id: string };
   assert.equal(flash.text, "כותרת חדשה");
   assert.equal(flash.story_id, story.id);
+
+  const digests = db
+    .prepare("SELECT digests_json FROM edition_state WHERE user_id = ?")
+    .get(USER_ID) as { digests_json: string };
+  const parsedDigests = JSON.parse(digests.digests_json) as {
+    section: string;
+    items: { headline: string }[];
+  }[];
+  assert.ok(
+    parsedDigests.some((digest) =>
+      digest.items.some((item) => item.headline === "כותרת חדשה"),
+    ),
+  );
+
+  const meta = db
+    .prepare("SELECT section_counts_json FROM profile_meta WHERE user_id = ?")
+    .get(USER_ID) as { section_counts_json: string };
+  const sectionCounts = JSON.parse(meta.section_counts_json) as unknown[];
+  assert.ok(sectionCounts.length > 0);
 });

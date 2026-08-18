@@ -12,5 +12,4 @@ export const qk = {
   suggestedConnections: ["suggested-connections"] as const,
   readerSearch: (q: string) => ["reader-search", q] as const,
   interview: ["interview"] as const,
-  interviewPeek: ["interview", "peek"] as const,
 };

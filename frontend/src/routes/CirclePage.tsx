@@ -4,11 +4,12 @@ import styles from "./CirclePage.module.css";
 import { PageHeader } from "../components/layout/PageHeader";
 import { Footer } from "../components/layout/Footer";
 import { AddConnectionDialog } from "../components/circle/AddConnectionDialog";
+import { EditConnectionDialog } from "../components/circle/EditConnectionDialog";
 import { Avatar, ErrorState, Kicker, Loading, StatGrid } from "../components/ui/Bits";
 import { Button } from "../components/ui/Button";
 import { Chip, ChipRow } from "../components/ui/Chip";
 import { EmptyState } from "../components/ui/EmptyState";
-import type { RelationKind } from "../api/types";
+import type { Connection, RelationKind } from "../api/types";
 import {
   cancelInvitation,
   getCircleSummary,
@@ -28,6 +29,7 @@ export function CirclePage() {
   const client = useQueryClient();
   const [filter, setFilter] = useState<Filter>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<Connection | null>(null);
 
   const connections = useQuery({ queryKey: qk.connections, queryFn: listConnections });
   const invitations = useQuery({ queryKey: qk.invitations, queryFn: listInvitations });
@@ -203,7 +205,7 @@ export function CirclePage() {
                   </span>
                   <span className={styles.relation}>{c.sectionName}</span>
                   <span className={styles.actions}>
-                    <Button variant="quiet" size="sm">
+                    <Button variant="quiet" size="sm" onClick={() => setEditing(c)}>
                       {common.edit}
                     </Button>
                     <Button variant="quiet" size="sm" onClick={() => drop.mutate(c.id)}>
@@ -309,7 +311,7 @@ export function CirclePage() {
                   {c.relationLabel} · {c.storyCount} ידיעות במהדורה שלו
                 </span>
               </span>
-              <Button variant="link" size="sm">
+              <Button variant="link" size="sm" onClick={() => setEditing(c)}>
                 {circle.manage}
               </Button>
             </div>
@@ -318,6 +320,9 @@ export function CirclePage() {
       )}
 
       {dialogOpen && <AddConnectionDialog onClose={() => setDialogOpen(false)} />}
+      {editing && (
+        <EditConnectionDialog connection={editing} onClose={() => setEditing(null)} />
+      )}
       <Footer />
     </>
   );

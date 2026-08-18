@@ -9,6 +9,7 @@ import { hashPassword, verifyPassword } from "./password.ts";
 
 const SIGN_IN_ERROR = "צריך דוא״ל וסיסמה כדי להיכנס";
 const SIGN_UP_ERROR = "צריך שם, דוא״ל וסיסמה כדי לפתוח מהדורה";
+const SIGN_UP_EMAIL_EXISTS_ERROR = "הדוא״ל הזה כבר רשום";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const SESSION_MAX_AGE = Math.floor(SESSION_TTL_MS / 1000);
 
@@ -139,8 +140,9 @@ export const authRouter = new Hono()
           "SELECT id, password_hash FROM users WHERE email = ? COLLATE NOCASE",
         )
         .get(email) as { id: string; password_hash: string } | undefined;
-      if (!existing || !verifyPassword(password, existing.password_hash)) {
-        return badRequest(c, SIGN_UP_ERROR);
+      if (!existing) return badRequest(c, SIGN_UP_ERROR);
+      if (!verifyPassword(password, existing.password_hash)) {
+        return badRequest(c, SIGN_UP_EMAIL_EXISTS_ERROR);
       }
       const existingSessionId = createSession(existing.id);
       setSessionCookie(c, existingSessionId);

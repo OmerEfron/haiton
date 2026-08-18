@@ -10,11 +10,6 @@ export const SECTION_NAMES: Record<SectionId, string> = {
   flashes: "מבזקים",
 };
 
-export const FROZEN_OPEN_DRAFT = {
-  title: "צומת קריירה: ניהול או חזרה ל-backend",
-  summary: "טיוטה אחת ממתינה לאישור שלך. שלוש עובדות נעולות, זווית נבחרה.",
-} as const;
-
 export const BYLINE = "כתב העיתון | שולחן העורכים";
 export const STORY_NOT_FOUND = "הידיעה לא נמצאה בארכיון";
 export const DRAFT_NOT_READY = "הטיוטה עדיין לא מוכנה לפרסום";

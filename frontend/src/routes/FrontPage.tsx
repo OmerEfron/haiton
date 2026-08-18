@@ -18,6 +18,7 @@ import { ButtonLink } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
 import { getFrontPage } from "../api/core/stories";
 import { getProfile } from "../api/core/profile";
+import { getSession } from "../api/reporter/interview";
 import { qk } from "../lib/queryKeys";
 import { common } from "../copy/common";
 import { desk } from "../copy/desk";
@@ -25,6 +26,7 @@ import { desk } from "../copy/desk";
 export function FrontPage() {
   const front = useQuery({ queryKey: qk.frontPage, queryFn: getFrontPage });
   const profile = useQuery({ queryKey: qk.profile, queryFn: getProfile });
+  const interview = useQuery({ queryKey: qk.interview, queryFn: getSession });
 
   if (front.isPending) return <Loading />;
   if (front.error) return <ErrorState error={front.error} />;
@@ -32,6 +34,15 @@ export function FrontPage() {
   const page = front.data;
   const showTag = profile.data?.settings.showEditionTag ?? true;
   const empty = !page.lead && page.secondary.length === 0 && page.list.length === 0;
+  const openDraft =
+    page.openDraft ??
+    (() => {
+      const draft = interview.data?.draft;
+      if (!draft || draft.status === "empty") return null;
+      const title = draft.headline ?? draft.angle;
+      if (!title) return null;
+      return { title, summary: draft.standfirst ?? "" };
+    })();
 
   return (
     <>
@@ -72,8 +83,8 @@ export function FrontPage() {
                     <div style={{ flex: 1 }}>
                       <p className={newsStyles.promptKicker}>{desk.waitingTitle}</p>
                       <p className={newsStyles.promptBody}>
-                        {page.openDraft
-                          ? `יש טיוטה אחת בעריכה: «${page.openDraft.title}».`
+                        {openDraft
+                          ? `יש טיוטה אחת בעריכה: «${openDraft.title}».`
                           : "הכתב מוכן לשאלה הראשונה על היום שלך."}
                       </p>
                       <ButtonLink to="/interview" size="lg">
@@ -98,11 +109,11 @@ export function FrontPage() {
                 <FlashItem key={flash.id} flash={flash} />
               ))}
 
-              {page.openDraft && (
+              {openDraft && (
                 <div className={newsStyles.teaser}>
                   <p className={newsStyles.teaserKicker}>{common.inEditing}</p>
-                  <p className={newsStyles.teaserTitle}>{page.openDraft.title}</p>
-                  <p className={newsStyles.teaserBody}>{page.openDraft.summary}</p>
+                  <p className={newsStyles.teaserTitle}>{openDraft.title}</p>
+                  <p className={newsStyles.teaserBody}>{openDraft.summary}</p>
                   <ButtonLink to="/interview" variant="outline" size="md">
                     {desk.continueDraft}
                   </ButtonLink>

@@ -7,6 +7,7 @@
 
 import type { Draft, InterviewMessage, InterviewSession, SectionId } from "../types";
 import { ApiError, clone, delay, nextId } from "../client";
+import { listFacts } from "../core/karteset";
 import { db } from "../../mocks/db";
 import {
   afterScript,
@@ -42,7 +43,8 @@ export async function startSession(): Promise<InterviewSession> {
   if (db.interview) return clone(db.interview);
 
   // A cold karteset gets the first-interview opener from mockup 1f.
-  const cold = db.facts.length === 0;
+  const facts = await listFacts();
+  const cold = facts.length === 0;
   db.interviewBeat = 0;
   db.interview = {
     id: nextId("iv"),
@@ -92,7 +94,6 @@ export async function sendMessage(text: string): Promise<InterviewSession> {
   session.draft = { ...session.draft, ...beat.draft };
   session.elapsedLabel = `${db.interviewBeat * 2} דקות`;
   session.reporterTyping = false;
-  db.profile.stats.draftsInProgress = session.draft.status === "empty" ? 0 : 1;
 
   return clone(session);
 }
@@ -115,7 +116,6 @@ export async function requestDraft(): Promise<InterviewSession> {
   session.draft.status = "ready";
   session.reporterTyping = false;
   session.messages.push(message("reporter", last.reporter.text));
-  db.profile.stats.draftsInProgress = 1;
 
   return clone(session);
 }
@@ -133,5 +133,4 @@ export async function discardSession(): Promise<void> {
   await delay(200);
   db.interview = null;
   db.interviewBeat = 0;
-  db.profile.stats.draftsInProgress = 0;
 }

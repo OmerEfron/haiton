@@ -11,13 +11,13 @@ export function DraftPanel({
   onSection,
   onPublish,
   publishing,
-  onDiscard,
+  onSave,
 }: {
   draft: Draft;
   onSection: (section: SectionId) => void;
   onPublish: () => void;
   publishing: boolean;
-  onDiscard: () => void;
+  onSave: () => void;
 }) {
   const ready = draft.status === "ready" && Boolean(draft.section);
 
@@ -104,7 +104,7 @@ export function DraftPanel({
           <Button variant="outline" size="md" block disabled>
             {desk.editManually}
           </Button>
-          <Button variant="quiet" size="md" block onClick={onDiscard}>
+          <Button variant="quiet" size="md" block onClick={onSave}>
             {desk.saveDraft}
           </Button>
         </div>

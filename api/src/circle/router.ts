@@ -1,13 +1,8 @@
 import { Hono } from "hono";
 import { getDb } from "../db.ts";
 import type { Connection, RelationKind, SectionId } from "../types.ts";
-import {
-  DEFAULT_ACCEPT_SETTINGS,
-  SECTION_NAMES,
-  SUGGESTED_FROM_INTERVIEWS,
-  UPDATED_THIS_WEEK,
-} from "./constants.ts";
-import { nextId, rowToConnection, rowToInvitation } from "./rows.ts";
+import { DEFAULT_ACCEPT_SETTINGS, SECTION_NAMES } from "./constants.ts";
+import { nextId, parseSettings, rowToConnection, rowToInvitation } from "./rows.ts";
 import { requireUser } from "./session.ts";
 
 export function createCircleRouter(): Hono {
@@ -43,17 +38,42 @@ export function createCircleRouter(): Hono {
       .prepare(`SELECT COUNT(*) AS n FROM invitations WHERE user_id = ?`)
       .get(userId) as { n: number };
 
+    const updated = getDb()
+      .prepare(
+        `SELECT COUNT(*) AS n FROM connections
+         WHERE user_id = ? AND last_published IS NOT NULL`,
+      )
+      .get(userId) as { n: number };
+
     return c.json({
       connections: connected.n,
       pending: pending.n,
-      updatedThisWeek: UPDATED_THIS_WEEK,
+      updatedThisWeek: updated.n,
     });
   });
 
   app.get("/connections/suggested", (c) => {
-    const auth = requireUser(c);
-    if (auth instanceof Response) return auth;
-    return c.json(SUGGESTED_FROM_INTERVIEWS);
+    const userId = requireUser(c);
+    if (userId instanceof Response) return userId;
+
+    const connections = getDb()
+      .prepare(`SELECT name, connected_user_id FROM connections WHERE user_id = ?`)
+      .all(userId) as { name: string; connected_user_id: string | null }[];
+
+    const connectedNames = new Set(connections.map((row) => row.name));
+    const connectedIds = new Set(
+      connections.flatMap((row) => (row.connected_user_id ? [row.connected_user_id] : [])),
+    );
+
+    const readers = getDb()
+      .prepare(`SELECT id, name, initial, detail FROM readers`)
+      .all() as { id: string; name: string; initial: string; detail: string }[];
+
+    const suggested = readers.filter(
+      (reader) => !connectedNames.has(reader.name) && !connectedIds.has(reader.id),
+    );
+
+    return c.json(suggested);
   });
 
   app.get("/invitations", (c) => {
@@ -113,6 +133,11 @@ export function createCircleRouter(): Hono {
       direction: "outgoing" as const,
     };
 
+    const relation = body.relation ?? "friend";
+    const section = body.section ?? "friends";
+    const note = body.note?.trim() || null;
+    const settings = body.settings ?? DEFAULT_ACCEPT_SETTINGS;
+
     getDb()
       .prepare(
         `INSERT INTO invitations
@@ -128,6 +153,18 @@ export function createCircleRouter(): Hono {
         invitation.detail,
         invitation.direction,
       );
+
+    getDb()
+      .prepare(
+        `INSERT INTO invitation_meta (user_id, invitation_id, relation, section, note, settings_json)
+         VALUES (?, ?, ?, ?, ?, ?)
+         ON CONFLICT(user_id, invitation_id) DO UPDATE SET
+           relation = excluded.relation,
+           section = excluded.section,
+           note = excluded.note,
+           settings_json = excluded.settings_json`,
+      )
+      .run(userId, id, relation, section, note, JSON.stringify(settings));
 
     return c.json(invitation);
   });
@@ -150,11 +187,27 @@ export function createCircleRouter(): Hono {
 
     if (!row) return c.json({ message: "ההזמנה לא נמצאה" }, 404);
 
+    const meta = getDb()
+      .prepare(
+        `SELECT relation, section, settings_json
+         FROM invitation_meta WHERE user_id = ? AND invitation_id = ?`,
+      )
+      .get(userId, invitationId) as
+      | { relation: RelationKind; section: SectionId; settings_json: string }
+      | undefined;
+
+    getDb()
+      .prepare(`DELETE FROM invitation_meta WHERE user_id = ? AND invitation_id = ?`)
+      .run(userId, invitationId);
+
     getDb()
       .prepare(`DELETE FROM invitations WHERE user_id = ? AND id = ?`)
       .run(userId, invitationId);
 
     if (body.accept && row.direction === "incoming") {
+      const relation = meta?.relation ?? "friend";
+      const section = meta?.section ?? "friends";
+      const settings = meta ? parseSettings(meta.settings_json) : DEFAULT_ACCEPT_SETTINGS;
       const connectionId = nextId("c");
       getDb()
         .prepare(
@@ -169,10 +222,10 @@ export function createCircleRouter(): Hono {
           row.name,
           row.initial,
           "חדש במעגל",
-          "friend",
-          "friends",
-          SECTION_NAMES.friends,
-          JSON.stringify(DEFAULT_ACCEPT_SETTINGS),
+          relation,
+          section,
+          SECTION_NAMES[section] ?? SECTION_NAMES.friends,
+          JSON.stringify(settings),
         );
     }
 
@@ -183,9 +236,14 @@ export function createCircleRouter(): Hono {
     const userId = requireUser(c);
     if (userId instanceof Response) return userId;
 
+    const invitationId = c.req.param("id");
+    getDb()
+      .prepare(`DELETE FROM invitation_meta WHERE user_id = ? AND invitation_id = ?`)
+      .run(userId, invitationId);
+
     getDb()
       .prepare(`DELETE FROM invitations WHERE user_id = ? AND id = ?`)
-      .run(userId, c.req.param("id"));
+      .run(userId, invitationId);
 
     return c.body(null, 204);
   });

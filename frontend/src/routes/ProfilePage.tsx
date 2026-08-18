@@ -11,6 +11,7 @@ import { Chip, ChipRow } from "../components/ui/Chip";
 import type { Profile } from "../api/types";
 import { getProfile, updateEditionSettings } from "../api/core/profile";
 import { getCircleSummary, listConnections } from "../api/core/connections";
+import { getSession } from "../api/reporter/interview";
 import { qk } from "../lib/queryKeys";
 import { useSession } from "../lib/session";
 import { common } from "../copy/common";
@@ -25,6 +26,7 @@ export function ProfilePage() {
   const profile = useQuery({ queryKey: qk.profile, queryFn: getProfile });
   const connections = useQuery({ queryKey: qk.connections, queryFn: listConnections });
   const summary = useQuery({ queryKey: qk.circleSummary, queryFn: getCircleSummary });
+  const interview = useQuery({ queryKey: qk.interview, queryFn: getSession });
 
   // Write the response straight into the cache: a settings toggle should not
   // wait out a second round trip just to show its own new state.
@@ -58,6 +60,8 @@ export function ProfilePage() {
 
   const p = profile.data;
   const people = (connections.data ?? []).filter((c) => c.status === "connected");
+  const draftsInProgress =
+    interview.data?.draft.status !== "empty" ? 1 : p.stats.draftsInProgress;
 
   return (
     <>
@@ -92,7 +96,7 @@ export function ProfilePage() {
                 { value: p.stats.storiesPublished, label: profileCopy.stats.storiesPublished },
                 { value: p.stats.flashes, label: profileCopy.stats.flashes },
                 { value: p.stats.facts, label: profileCopy.stats.facts },
-                { value: p.stats.draftsInProgress, label: profileCopy.stats.draftsInProgress },
+                { value: draftsInProgress, label: profileCopy.stats.draftsInProgress },
               ]}
             />
           </div>
