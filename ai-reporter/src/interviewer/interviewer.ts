@@ -1,6 +1,6 @@
 import { complete } from "../llm.js";
 import type { FactInput, NextQuestion, Turn } from "../types.js";
-import { MAX_QUESTIONS } from "../types.js";
+import { MAX_QUESTIONS, askedCount } from "../types.js";
 
 const BUDGET = 8;
 
@@ -9,7 +9,8 @@ const INSTRUCTIONS = `אתה עיתונאי בעיתון "העיתון". קרא�
 המשימה: לצוד סיפור אחד. שאלה אחת בכל פעם, בעברית.
 
 כללים:
-- כל שאלה חייבת להכיל מילה קונקרטית מהכרטיסייה או מתשובה קודמת (שם, מקום, תפקיד, מספר, שם עצם).
+- אם יש דיווח פתיחה — הקורא כבר סיפר מה הוא רוצה בעיתון. שאל המשך על **אותו** סיפור. אל תפתח בברכה, "מה נשמע", או "מה קרה השבוע".
+- כל שאלה חייבת להכיל מילה קונקרטית מהכרטיסייה, מהדיווח הפתיחה, או מתשובה קודמת (שם, מקום, תפקיד, מספר, שם עצם).
 - אסור שאלות כלליות: "מה נשמע", "איך היה השבוע", "ספר על עצמך", "מה חדש", "איך אתה מרגיש" ודומות.
 - אל תחזור על מה שכבר נאמר. חפור לעומק — מה קרה, למי, מתי, איפה, מה ההימור.
 - אם כבר יש במסלול התשובות מה/מי/מתי/איפה או הימור אנושי ברור — החזר {"question": "", "done": true}.
@@ -17,16 +18,31 @@ const INSTRUCTIONS = `אתה עיתונאי בעיתון "העיתון". קרא�
 
 החזר JSON בלבד: {"question": "...", "done": false}`;
 
+function formatTranscript(turns: Turn[]): string {
+  if (turns.length === 0) {
+    return "(עדיין אין שיחה)";
+  }
+
+  const parts: string[] = [];
+  let qNum = 0;
+
+  for (const t of turns) {
+    if (t.question === "") {
+      parts.push(`דיווח פתיחה של הקורא:\n${t.answer}`);
+    } else {
+      qNum += 1;
+      parts.push(`ש${qNum}: ${t.question}\nת${qNum}: ${t.answer}`);
+    }
+  }
+
+  return parts.join("\n\n");
+}
+
 function buildInput(facts: FactInput[], turns: Turn[]): string {
   const karteset = facts.map((f) => `- ${f.text}`).join("\n");
-  const transcript =
-    turns.length === 0
-      ? "(עדיין אין שיחה — זו השאלה הראשונה)"
-      : turns
-          .map((t, i) => `ש${i + 1}: ${t.question}\nת${i + 1}: ${t.answer}`)
-          .join("\n\n");
+  const transcript = formatTranscript(turns);
 
-  return `כרטיסייה:\n${karteset}\n\nשיחה עד כה:\n${transcript}\n\nמספר שאלות שכבר נשאלו: ${turns.length}/${MAX_QUESTIONS}`;
+  return `כרטיסייה:\n${karteset}\n\nשיחה עד כה:\n${transcript}\n\nמספר שאלות שכבר נשאלו: ${askedCount(turns)}/${MAX_QUESTIONS}`;
 }
 
 function parseResponse(text: string): NextQuestion {
@@ -48,7 +64,7 @@ export async function nextQuestion(
   facts: FactInput[],
   turns: Turn[],
 ): Promise<NextQuestion> {
-  if (turns.length >= MAX_QUESTIONS) {
+  if (askedCount(turns) >= MAX_QUESTIONS) {
     return { question: "", done: true };
   }
 

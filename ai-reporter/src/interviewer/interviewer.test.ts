@@ -20,6 +20,10 @@ function tokens(text: string): string[] {
     .filter((token) => token.length >= 2);
 }
 
+function hasHebrew(text: string): boolean {
+  return /[\u0590-\u05FF]/.test(text);
+}
+
 function hasGenericNeedle(question: string): boolean {
   const normalized = question.toLowerCase();
   return GENERIC_QUESTION_NEEDLES.some((needle) =>
@@ -30,11 +34,11 @@ function hasGenericNeedle(question: string): boolean {
 function isGrounded(
   question: string,
   facts: typeof personaFacts,
-  priorAnswers: string[],
+  openingReport: string,
 ): boolean {
   const questionTokens = tokens(question);
   const corpusTokens = new Set(
-    tokens([...facts.map((f) => f.text), ...priorAnswers].join(" ")),
+    tokens([...facts.map((f) => f.text), openingReport].join(" ")),
   );
 
   return questionTokens.some((qt) =>
@@ -44,58 +48,53 @@ function isGrounded(
   );
 }
 
+function openingHasFullStory(text: string): boolean {
+  const lower = text.toLowerCase();
+  const hasWho = /מפתח|מנהל|עומר|מיכל|צוות/.test(lower);
+  const hasWhat = /משוב|שיח|דדליין|ריצ|התקשר/.test(lower);
+  const hasWhen = /השבוע|מחר|אתמול|ערב|אחרי/.test(lower);
+  const hasWhere = /אד|טק|בת גלים|חיפה|בית חולים/.test(lower);
+  const hasStake = /לא בטוח|בגידה|מרגיש|הימור|חשוב/.test(lower);
+
+  const w5w = [hasWho, hasWhat, hasWhen, hasWhere].filter(Boolean).length;
+  return w5w >= 4 || (w5w >= 3 && hasStake);
+}
+
 describe("interviewer live", () => {
-  it("asks 1–4 grounded Hebrew questions", async () => {
+  it("asks a grounded follow-up after the reader's opening report", async () => {
     if (!process.env.OPENAI_API_KEY) {
       assert.fail("OPENAI_API_KEY is required for live interviewer test");
     }
 
-    const turns: Array<{ question: string; answer: string }> = [];
-    const questions: string[] = [];
-    let answerIdx = 0;
+    const opening = weekAnswers[0]!;
+    const result = await nextQuestion(personaFacts, [
+      { question: "", answer: opening },
+    ]);
 
-    while (true) {
-      const result = await nextQuestion(personaFacts, turns);
+    console.log(`Q1: ${result.question || "(done)"}`);
 
-      if (result.done && !result.question) {
-        break;
-      }
-
-      assert.ok(result.question, "expected a question when not done-without-question");
-      questions.push(result.question);
-      console.log(`Q${questions.length}: ${result.question}`);
-
+    if (result.done && !result.question) {
+      assert.ok(
+        openingHasFullStory(opening),
+        "interviewer finished without a question but opening lacks a full story",
+      );
+    } else {
+      assert.ok(result.question, "expected a follow-up question");
+      assert.ok(hasHebrew(result.question), "question should be in Hebrew");
       assert.ok(
         !hasGenericNeedle(result.question),
         `generic needle in question: ${result.question}`,
       );
       assert.ok(
-        isGrounded(
-          result.question,
-          personaFacts,
-          turns.map((t) => t.answer),
-        ),
-        `question not grounded in facts or prior answers: ${result.question}`,
+        isGrounded(result.question, personaFacts, opening),
+        `question not grounded in facts or opening: ${result.question}`,
       );
-
-      if (result.done) {
-        break;
-      }
-
       assert.ok(
-        answerIdx < weekAnswers.length,
-        "ran out of canned answers before interviewer finished",
+        result.done === false || openingHasFullStory(opening),
+        "expected done=false unless opening already tells a full story",
       );
-      turns.push({
-        question: result.question,
-        answer: weekAnswers[answerIdx]!,
-      });
-      answerIdx += 1;
     }
 
-    assert.ok(questions.length >= 1 && questions.length <= 4, {
-      message: `expected 1–4 questions, got ${questions.length}`,
-    });
     assert.ok(getCallCount() <= 8, `LLM budget exceeded: ${getCallCount()} calls`);
   });
 });
