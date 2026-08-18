@@ -3,7 +3,7 @@
   "feature_id": "core-api",
   "title": "Core API (un-mock the newspaper)",
   "status": "in_progress",
-  "current_wave": "Wint",
+  "current_wave": "Wrev",
   "isolation_default": "worktree",
   "base_branch": "main",
   "tracks": [
@@ -180,7 +180,7 @@
       "id": "integrate",
       "wave": "Wint",
       "isolation": "sequential",
-      "status": "pending",
+      "status": "complete",
       "owner_agents": ["backend-engineer"],
       "branch": "main",
       "owns": [
@@ -243,7 +243,7 @@
     {
       "id": "Wint",
       "kind": "sequential",
-      "status": "pending",
+      "status": "complete",
       "tracks": ["integrate"],
       "isolation_default": "sequential"
     },
@@ -257,5 +257,5 @@
   ],
   "blockers": [],
   "open_decisions": [],
-  "last_updated": "2026-08-18T09:04:00Z"
+  "last_updated": "2026-08-18T09:20:00Z"
 }

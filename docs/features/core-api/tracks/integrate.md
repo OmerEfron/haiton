@@ -58,4 +58,4 @@ Yes/no: `cd api && npm test` includes the app-level smoke. `cd frontend && npm r
 
 ## Close notes
 
-_Not started._
+Mounted W1 routers in `createApp()` with CORS + credentials, fixture seed (no interview), Vite proxy, and in-process `/health` + one GET per module. `listSuggestedConnections` got an explicit `Promise<ReaderSearchResult[]>` so `npm run build` passes; CirclePage untouched. Wrev not started.
