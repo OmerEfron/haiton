@@ -1,0 +1,91 @@
+---
+name: execute-feature-wave
+description: Execute the next wave of a planned feature (parallel tracks in one message). Use only when the user runs /execute-feature-wave.
+disable-model-invocation: true
+---
+
+# Execute feature wave
+
+Run **one** wave from `docs/features/<id>/`. Default id: `core-api`. Do not auto-start the next wave. Do not start vite or the API listen loop.
+
+This repo uses **Cursor models only** (Grok 4.6, Grok 4.5, Composer 2.5). Do not pin Claude, GPT, or Gemini.
+
+Checks (from `docs/features/core-api/MAP.md`):
+
+- overlap: `python3 scripts/check_feature_tracks.py docs/features/<id>/status.json`
+- frontend lint: `cd frontend && npm run lint`
+- frontend build: `cd frontend && npm run build` (Wint/Wrev)
+- api tests: `cd api && npm test` (after W0)
+
+## 1. Select
+
+Feature id is given (`/execute-feature-wave core-api`) or the only feature with status `planned` / `in_progress`. If several, ask once.
+
+Read `docs/features/<id>/status.json` and `PLAN.md`.
+
+Stop if `open_decisions` is non-empty or status is `blocked_decision`. Tell the human to decide, then re-run.
+
+Stop if status is `complete`.
+
+W1 worktrees need a git commit on `main`. If HEAD is unborn, stop and ask the human to commit (do not commit unless they asked).
+
+## 2. Guard
+
+```bash
+python3 scripts/check_feature_tracks.py docs/features/<id>/status.json
+```
+
+Exit 0 required. Overlaps are a planning bug — do not "just run it."
+
+Confirm Cursor Task/worktree APIs with Context7 `/websites/cursor` if the launch method is unclear.
+
+## 3. Launch
+
+**tech-lead** (`grok-4.6` / Task `cursor-grok-4.6-high-fast`) assigns from track briefs. Does not write product code.
+
+Current wave = `current_wave` whose status is `pending` (or the in-progress wave if resuming).
+
+### sequential
+
+One team in the current checkout. Follow the single track brief. Implementer: `backend-engineer` (`composer-2.5[]` / Task `composer-2.5-fast`). Wrev: `qa-reviewer` readonly (`grok-4.5` / Task `cursor-grok-4.5-high-fast`).
+
+### parallel
+
+Launch **every** track in this wave in **one** parent message (multiple Task tool calls).
+
+Per track, copy the brief verbatim into the Task prompt: `owns`, `reads`, `must_not`, goal test, existing check command. Subagents have no chat history.
+
+| isolation | Task |
+|---|---|
+| `worktree` | `subagent_type: best-of-n-runner` (own branch + worktree). Branch `agent/feature/<id>/<track-id>`. Model `composer-2.5-fast` |
+| `cloud` | `environment: cloud`, `cloud_base_branch` from status.json `base_branch` |
+| `checkout` | `backend-engineer`; only if owns stay disjoint |
+
+In Multitask Mode set `run_in_background: true`.
+
+Each implementer:
+
+- Writes only `owns`
+- Reads `reads`
+- Never edits `must_not` or freeze files
+- Runs the track goal test
+- Returns: files changed, goal test evidence, leftover risk
+- Does not start servers
+
+Optional test-engineer per track if tests live inside `owns` — same Composer pin.
+
+## 4. Collect
+
+When all tracks return:
+
+- Fail the wave if any track goal test failed. Resume that agent id if available.
+- Do not `/apply-worktree` / merge cloud branches unless the human asked. Print merge order from PLAN.md (`auth`, `profile`, `karteset`, `circle`, `stories`).
+- qa-reviewer only on `Wrev` (readonly).
+
+Update `status.json`: completed tracks `complete`; wave `complete` only if every track in it is complete; point `current_wave` at the next pending wave but **do not start it**.
+
+## 5. Stop
+
+- Do not start the next wave
+- Do not start the app
+- Commit only if the human asked

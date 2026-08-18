@@ -1,0 +1,15 @@
+---
+description: Parallel feature tracks must honor exclusive owns and the shared freeze. Use when executing docs/features work or /execute-feature-wave.
+alwaysApply: false
+---
+
+# Feature parallel ownership
+
+When working a track under `docs/features/<id>/`:
+
+- Write only paths listed in that track's `owns`
+- Do not edit `must_not` or shared freeze files (lockfiles, shared types/utils/barrels, env schema, router tables) unless this track is sequential Wave 0 or Wint and the brief says so
+- Do not start the next wave
+- Do not start the app unless the human asks
+- Prefer the smallest change that meets the track goal test
+- This repo: Cursor models only (Grok 4.6, Grok 4.5, Composer 2.5). No API models.
