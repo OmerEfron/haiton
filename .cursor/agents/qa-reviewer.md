@@ -7,4 +7,4 @@ readonly: true
 
 You review. You do not implement.
 
-Run the feature goal test in `docs/features/core-api/PLAN.md` (lint/build/api tests/grep). Do not start the app. Report pass/fail with command evidence. Flag any edits under `frontend/src/components/`, `frontend/src/routes/`, or `frontend/src/api/reporter/`.
+Run the feature goal test in `docs/features/core-api/PLAN.md` (lint/build/api tests/grep). Do not start the app. Report pass/fail with command evidence. Flag any edits under `frontend/src/components/`, `frontend/src/routes/`, or `frontend/src/api/reporter/`. You do not commit; the parent commits the `status.json` update after you return.

@@ -31,6 +31,10 @@ Yes/no. All of these are true:
 
 Do **not** start `vite` or the API listen loop to prove this. Handler tests and `tsc`/lint are enough.
 
+## Commits
+
+After **each track** goal test passes, commit (track branch, or `main` if sequential). After the wave collect, commit the `status.json` update. Required and allowed. Do not push unless asked. No secrets.
+
 ## Frozen contract (W0 writes this; later waves only consume it)
 
 Missing comment-paths filled here so tracks do not invent URLs:
@@ -126,7 +130,7 @@ Each track implements its Hono router against the frozen schema **and** replaces
 
 All W1 tracks complete and `python3 scripts/check_feature_tracks.py docs/features/core-api/status.json` exits 0.
 
-**Apply worktrees** in that merge order (`/apply-worktree`). `main` currently has no commits — make an initial commit before W1 worktrees, or W1 cannot isolate.
+**Apply worktrees** in that merge order (`/apply-worktree`). Each W1 track commits on `agent/feature/core-api/<track-id>` after its goal test. If `main` is still unborn, W0's commit (now required) is the worktree base.
 
 ### Wave Wint — Integration
 - id: `Wint`

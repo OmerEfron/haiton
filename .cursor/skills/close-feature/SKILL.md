@@ -38,4 +38,4 @@ Append close notes to PLAN.md (what landed, merge order used, follow-ups). Do no
 
 ## 4. Stop
 
-Do not start another feature. Do not `/execute-feature-wave`. Commit only if asked.
+Commit the close (`status.json` + PLAN notes) on `main`. Do not start another feature. Do not `/execute-feature-wave`. Do not push unless asked.

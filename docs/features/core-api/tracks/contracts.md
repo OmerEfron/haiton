@@ -58,4 +58,4 @@ Yes/no: `cd api && npm test` exits 0 and prints that every PLAN.md route is in `
 
 ## Close notes
 
-_Not started._
+Done. Frozen 26 PLAN.md routes in `api/src/contract.ts`; `cd api && npm test` passes. Seed login `omer@example.com` / `iton-dev`. `request()` added to `client.ts`; core files still mock. No listen loop.

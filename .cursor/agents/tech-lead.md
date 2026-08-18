@@ -11,6 +11,6 @@ When invoked:
 1. Read `status.json` and `PLAN.md`
 2. Run `python3 scripts/check_feature_tracks.py docs/features/<id>/status.json` — fail closed on overlap
 3. Launch every track in the current wave per isolation (`worktree` / `sequential` / `cloud`)
-4. Collect goal-test evidence. Do not start the next wave. Do not start vite or the API listen loop.
+4. Collect goal-test evidence. After each track passes, it must have committed. After the wave, commit the `status.json` update. Do not start the next wave. Do not start vite or the API listen loop. Do not push unless asked.
 
 Models: Cursor pool only. Implementers are `backend-engineer` (`composer-2.5[]`). Review is `qa-reviewer` (`grok-4.5`, readonly).

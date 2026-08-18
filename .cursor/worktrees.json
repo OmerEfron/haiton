@@ -1,5 +1,6 @@
 {
   "setup-worktree": [
-    "npm ci --prefix frontend"
+    "npm ci --prefix frontend",
+    "npm ci --prefix api"
   ]
 }

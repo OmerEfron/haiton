@@ -27,7 +27,7 @@ Stop if `open_decisions` is non-empty or status is `blocked_decision`. Tell the 
 
 Stop if status is `complete`.
 
-W1 worktrees need a git commit on `main`. If HEAD is unborn, stop and ask the human to commit (do not commit unless they asked).
+Worktree waves need a commit on `base_branch`. If HEAD is unborn (or the previous sequential track never committed), **commit the current checkout first**, then launch. Commits after each track are required and allowed.
 
 ## 2. Guard
 
@@ -69,7 +69,8 @@ Each implementer:
 - Reads `reads`
 - Never edits `must_not` or freeze files
 - Runs the track goal test
-- Returns: files changed, goal test evidence, leftover risk
+- **Commits** on the track branch (or `main` if sequential) after the goal test passes. One commit per track. Message: why this track, not a file list. HEREDOC; do not skip hooks; do not commit secrets (`.env`, credentials). `.env.example` is fine. Do not push unless the human asked.
+- Returns: files changed, commit hash, goal test evidence, leftover risk
 - Does not start servers
 
 Optional test-engineer per track if tests live inside `owns` — same Composer pin.
@@ -84,8 +85,10 @@ When all tracks return:
 
 Update `status.json`: completed tracks `complete`; wave `complete` only if every track in it is complete; point `current_wave` at the next pending wave but **do not start it**.
 
+Then **commit** that status update on `main` (or the integration checkout). Sequential waves: track commit then status commit is fine if they are the same checkout — squash to one commit if nothing else changed. Parallel waves: each worktree already committed; parent commits only `status.json` (and PLAN close notes if any) on `main`.
+
 ## 5. Stop
 
 - Do not start the next wave
 - Do not start the app
-- Commit only if the human asked
+- Do not push unless asked

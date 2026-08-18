@@ -13,5 +13,6 @@ Rules:
 - Hebrew `ApiError` messages stay as the mock
 - Reporter API (`frontend/src/api/reporter/`, `reporter/`) is out of scope
 - Do not start vite or `api` listen. Prove work with `node --test` / `npm test` and `tsc`/lint
+- After the track goal test passes, commit on this track's branch (sequential tracks: `main`). Required and allowed. Do not skip hooks. Do not commit `.env`. Do not push unless asked.
 - Context7 Hono before using a Hono API you have not already confirmed in this repo
 - Cursor models only — do not switch to Claude/GPT/Gemini
