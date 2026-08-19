@@ -92,6 +92,45 @@ export const profileRouter = new Hono()
     if (!profile) return c.json({ message: "הפרופיל לא נמצא" }, 404);
     return c.json(profile);
   })
+  .patch("/profile", async (c) => {
+    const userId = getSessionUserId(c);
+    if (!userId) return unauthorized(c);
+
+    const body = (await c.req.json()) as {
+      name?: string;
+      city?: string;
+      headline?: string;
+    };
+    const db = getDb();
+    const existing = db
+      .prepare("SELECT name, city, headline FROM users WHERE id = ?")
+      .get(userId) as
+      | { name: string; city: string | null; headline: string | null }
+      | undefined;
+    if (!existing) return c.json({ message: "הפרופיל לא נמצא" }, 404);
+
+    let name = existing.name;
+    if (body.name !== undefined) {
+      name = body.name.trim();
+      if (!name) return c.json({ message: "אי אפשר לשמור שם ריק" }, 400);
+    }
+    const initial = [...name][0] ?? name.charAt(0);
+    const city = body.city !== undefined ? body.city.trim() || null : existing.city;
+    const headline =
+      body.headline !== undefined ? body.headline.trim() || null : existing.headline;
+
+    db.prepare("UPDATE users SET name = ?, initial = ?, city = ?, headline = ? WHERE id = ?").run(
+      name,
+      initial,
+      city,
+      headline,
+      userId,
+    );
+
+    const profile = loadProfile(userId);
+    if (!profile) return c.json({ message: "הפרופיל לא נמצא" }, 404);
+    return c.json(profile);
+  })
   .patch("/profile/edition-settings", async (c) => {
     const userId = getSessionUserId(c);
     if (!userId) return unauthorized(c);

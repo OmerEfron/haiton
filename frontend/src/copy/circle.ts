@@ -79,6 +79,11 @@ export const profileCopy = {
   kicker: "כתב הבית",
   editDetails: "עריכת פרטים",
   updateKarteset: "עדכון רקע בכרטסת",
+  fields: {
+    name: "שם",
+    city: "עיר",
+    headline: "שורת תיאור",
+  },
   stats: {
     storiesPublished: "ידיעות שפורסמו",
     flashes: "מבזקים",
@@ -98,6 +103,7 @@ export const profileCopy = {
   reminderValue: (at: string | null) => (at ? `כל יום ב-${at}` : "כבוי"),
   archive: "ארכיון",
   archiveIntro: "ראיונות קודמים והידיעות שנוסחו — לקריאה בלבד.",
+  archiveEmpty: "עוד אין ידיעות בארכיון",
 } as const;
 
 export const authCopy = {

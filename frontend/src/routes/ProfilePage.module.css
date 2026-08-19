@@ -37,7 +37,25 @@
 .settingDetail { display: block; margin-top: 2px; font: 400 12px/1.5 var(--sans); color: var(--ink-2); }
 .settingValue { font: 500 13px/1 var(--sans); color: var(--paper-red); flex: none; }
 .settingValueMuted { color: var(--ink-2); }
+.settingInput {
+  font: 500 13px/1.4 var(--sans);
+  color: var(--paper-red);
+  border: 1px solid var(--rule);
+  background: var(--white);
+  padding: 6px 8px;
+  min-width: 0;
+  max-width: 200px;
+  flex: none;
+}
+.settingInput:focus {
+  outline: none;
+  border-color: var(--paper-red);
+}
 .signOut { margin: 14px 0 0; }
+
+.dialogFields { display: flex; flex-direction: column; gap: 12px; }
+.dialogActions { margin-top: 6px; display: flex; gap: 9px; align-items: center; }
+.dialogError { margin: 10px 0 0; text-align: center; font: 500 12px/1.5 var(--sans); color: var(--paper-red); }
 
 /* Right rail */
 .card { border: 1px solid var(--rule); padding: 16px; }

@@ -5,11 +5,13 @@ import styles from "./ProfilePage.module.css";
 import { PageHeader } from "../components/layout/PageHeader";
 import { Footer } from "../components/layout/Footer";
 import { AddConnectionDialog } from "../components/circle/AddConnectionDialog";
+import { EditDetailsDialog } from "../components/profile/EditDetailsDialog";
 import { Avatar, ErrorState, Kicker, Loading, StatGrid, Toggle } from "../components/ui/Bits";
 import { Button, ButtonLink } from "../components/ui/Button";
 import type { Profile } from "../api/types";
 import { getProfile, updateEditionSettings } from "../api/core/profile";
 import { listInterviews } from "../api/core/desk";
+import { listStories } from "../api/core/stories";
 import { getCircleSummary, listConnections } from "../api/core/connections";
 import { getSession } from "../api/reporter/interview";
 import { qk } from "../lib/queryKeys";
@@ -18,17 +20,23 @@ import { common } from "../copy/common";
 import { circle, profileCopy } from "../copy/circle";
 import { desk } from "../copy/desk";
 
+function formatWhen(iso: string): string {
+  return new Date(iso).toLocaleDateString("he-IL", { day: "numeric", month: "long" });
+}
+
 export function ProfilePage() {
   const client = useQueryClient();
   const navigate = useNavigate();
   const { signOut } = useSession();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   const profile = useQuery({ queryKey: qk.profile, queryFn: getProfile });
   const connections = useQuery({ queryKey: qk.connections, queryFn: listConnections });
   const summary = useQuery({ queryKey: qk.circleSummary, queryFn: getCircleSummary });
   const interview = useQuery({ queryKey: qk.interview, queryFn: getSession });
-  const archive = useQuery({ queryKey: qk.deskInterviews, queryFn: listInterviews });
+  const interviewsQuery = useQuery({ queryKey: qk.deskInterviews, queryFn: listInterviews });
+  const storiesQuery = useQuery({ queryKey: ["stories"], queryFn: () => listStories() });
 
   // Write the response straight into the cache: a settings toggle should not
   // wait out a second round trip just to show its own new state.
@@ -65,6 +73,21 @@ export function ProfilePage() {
   const draftsInProgress =
     interview.data?.draft.status !== "empty" ? 1 : p.stats.draftsInProgress;
 
+  const interviews = interviewsQuery.data ?? [];
+  const interviewsMapped = interviews.map((item) => ({
+    id: item.id,
+    to: `/interview/${item.id}`,
+    headline: item.headline || desk.archivedInterview,
+    when: formatWhen(item.startedAt),
+  }));
+  const storiesMapped = (storiesQuery.data ?? []).map((item) => ({
+    id: item.id,
+    to: `/story/${item.id}`,
+    headline: item.headline,
+    when: formatWhen(item.publishedAt),
+  }));
+  const archiveItems = interviews.length ? interviewsMapped : storiesMapped;
+
   return (
     <>
       <PageHeader />
@@ -81,7 +104,7 @@ export function ProfilePage() {
                   .join(" · ")}
               </p>
               <div className={styles.identityActions}>
-                <Button variant="outline" size="md">
+                <Button variant="outline" size="md" onClick={() => setEditOpen(true)}>
                   {profileCopy.editDetails}
                 </Button>
                 <ButtonLink to="/karteset" variant="quiet" size="md">
@@ -115,7 +138,10 @@ export function ProfilePage() {
                     {profileCopy.settings.editionName.detail}
                   </span>
                 </span>
-                <span className={styles.settingValue}>{p.settings.editionName}</span>
+                <EditionNameInput
+                  value={p.settings.editionName}
+                  onSave={(editionName) => setSettings.mutate({ editionName })}
+                />
               </div>
 
               <div className={`${styles.listRow} ${styles.settingRow}`}>
@@ -132,26 +158,6 @@ export function ProfilePage() {
                   checked={p.settings.showEditionTag}
                   onChange={(next) => setSettings.mutate({ showEditionTag: next })}
                 />
-              </div>
-
-              <div className={`${styles.listRow} ${styles.settingRow}`}>
-                <span>
-                  <span className={styles.settingTitle}>{profileCopy.settings.reminder.title}</span>
-                  <span className={styles.settingDetail}>
-                    {profileCopy.settings.reminder.detail}
-                  </span>
-                </span>
-                <button
-                  type="button"
-                  className={`${styles.settingValue} ${styles.settingValueMuted}`}
-                  onClick={() =>
-                    setSettings.mutate({
-                      interviewReminderAt: p.settings.interviewReminderAt ? null : "21:00",
-                    })
-                  }
-                >
-                  {profileCopy.reminderValue(p.settings.interviewReminderAt)}
-                </button>
               </div>
             </div>
 
@@ -222,21 +228,14 @@ export function ProfilePage() {
           <div className={styles.archive}>
             <p className={styles.archiveKicker}>{profileCopy.archive}</p>
             <p className={styles.archiveIntro}>{profileCopy.archiveIntro}</p>
-            {archive.data && archive.data.length === 0 && (
-              <p className={styles.archiveIntro}>{desk.archiveEmpty}</p>
+            {archiveItems.length === 0 && (
+              <p className={styles.archiveIntro}>{profileCopy.archiveEmpty}</p>
             )}
             <div className={styles.archiveList}>
-              {(archive.data ?? []).map((item) => (
-                <Link key={item.id} to={`/interview/${item.id}`} className={styles.archiveItem}>
-                  <span className={styles.archiveHeadline}>
-                    {item.headline || desk.archivedInterview}
-                  </span>
-                  <span className={styles.archiveWhen}>
-                    {new Date(item.startedAt).toLocaleDateString("he-IL", {
-                      day: "numeric",
-                      month: "long",
-                    })}
-                  </span>
+              {archiveItems.map((item) => (
+                <Link key={item.id} to={item.to} className={styles.archiveItem}>
+                  <span className={styles.archiveHeadline}>{item.headline}</span>
+                  <span className={styles.archiveWhen}>{item.when}</span>
                 </Link>
               ))}
             </div>
@@ -245,7 +244,37 @@ export function ProfilePage() {
       </div>
 
       {dialogOpen && <AddConnectionDialog onClose={() => setDialogOpen(false)} />}
+      {editOpen && <EditDetailsDialog user={p.user} onClose={() => setEditOpen(false)} />}
       <Footer />
     </>
+  );
+}
+
+function EditionNameInput({
+  value,
+  onSave,
+}: {
+  value: string;
+  onSave: (editionName: string) => void;
+}) {
+  const [draft, setDraft] = useState(value);
+  return (
+    <input
+      className={styles.settingInput}
+      aria-label={profileCopy.settings.editionName.title}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={() => {
+        const next = draft.trim();
+        if (!next) {
+          setDraft(value);
+          return;
+        }
+        if (next !== value) onSave(next);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") e.currentTarget.blur();
+      }}
+    />
   );
 }
