@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import styles from "./InterviewRoom.module.css";
 import interviewStyles from "../components/interview/Interview.module.css";
 import { ChatBubble, TimeStamp, TypingIndicator } from "../components/interview/ChatBubble";
 import { DraftPanel } from "../components/interview/DraftPanel";
 import { ArticleFormChips } from "../components/interview/ArticleFormChips";
-import { Avatar, ErrorState, LivePill, Loading } from "../components/ui/Bits";
+import { heDate, InterviewBar } from "../components/interview/InterviewBar";
+import { Avatar, ErrorState, Loading } from "../components/ui/Bits";
 import { Button, ButtonLink } from "../components/ui/Button";
 import { Chip } from "../components/ui/Chip";
 import { TextArea } from "../components/ui/Field";
@@ -26,7 +27,6 @@ import {
 import { publishStory } from "../api/core/stories";
 import { qk } from "../lib/queryKeys";
 import { useSession } from "../lib/session";
-import { brand, common } from "../copy/common";
 import { desk } from "../copy/desk";
 
 export function InterviewRoom() {
@@ -66,6 +66,16 @@ export function InterviewRoom() {
       await discardSession();
       await client.invalidateQueries();
       navigate(`/story/${story.id}`);
+    },
+  });
+
+  const drop = useMutation({
+    mutationFn: discardSession,
+    onSuccess: async () => {
+      publish.reset();
+      await client.invalidateQueries({ queryKey: qk.interview });
+      await client.invalidateQueries({ queryKey: qk.frontPage });
+      await client.invalidateQueries({ queryKey: qk.profile });
     },
   });
 
@@ -109,6 +119,7 @@ export function InterviewRoom() {
   const closed = s.exhausted || s.draft.status === "ready";
   const writingNow =
     draftIt.isPending || (send.isPending && readerTurns >= MAX_INTERVIEW_MESSAGES - 1);
+  const canDrop = closed || Boolean(publish.error);
 
   function submit(e: FormEvent) {
     e.preventDefault();
@@ -118,8 +129,9 @@ export function InterviewRoom() {
 
   const draftPanel = (
     <DraftPanel
+      key={`${s.draft.id}-${s.draft.status}`}
       draft={s.draft}
-      onPublish={() => publish.mutate(s.draft)}
+      onPublish={(d) => publish.mutate(d)}
       publishing={publish.isPending}
       onSave={saveDraft}
     />
@@ -127,32 +139,7 @@ export function InterviewRoom() {
 
   return (
     <div className={styles.room}>
-      <div className={styles.bar}>
-        <div className={styles.barStart}>
-          <Link to="/" className={styles.logo}>
-            {brand.name}
-          </Link>
-          <span className={styles.sep} />
-          <span className={styles.roomName}>
-            <span className={styles.roomNameFull}>{desk.interviewRoomFull}</span>
-            <span className={styles.roomNameShort}>{desk.interviewRoom}</span>
-          </span>
-          <LivePill tone="red">
-            <span className={styles.roomNameFull}>{desk.liveInterview}</span>
-            <span className={styles.roomNameShort}>{common.live}</span>
-          </LivePill>
-        </div>
-        <div className={styles.barEnd}>
-          <span className={styles.barMeta}>
-            {s.startedAt} · {s.elapsedLabel}
-          </span>
-          <span className={styles.barMeta}>עובדות שנרשמו: {s.factsLocked}</span>
-          <Link to="/" className={styles.close}>
-            <span className={styles.roomNameFull}>{desk.closeAndReturn}</span>
-            <span className={styles.roomNameShort}>{desk.close}</span>
-          </Link>
-        </div>
-      </div>
+      <InterviewBar startedAt={s.startedAt} elapsedLabel={s.elapsedLabel} factsLocked={s.factsLocked} closed={closed} />
 
       <div className={styles.split}>
         <div className={styles.chat}>
@@ -176,7 +163,7 @@ export function InterviewRoom() {
           )}
 
           <div className={styles.thread}>
-            <TimeStamp>{`היום, ${s.startedAt}`}</TimeStamp>
+            <TimeStamp>{`היום, ${heDate(s.startedAt)}`}</TimeStamp>
 
             {s.messages.map((message) => (
               <ChatBubble
@@ -187,7 +174,7 @@ export function InterviewRoom() {
               />
             ))}
 
-            {firstInterview && (
+            {firstInterview && !closed && (
               <div className={styles.openers}>
                 <p className={styles.openersLabel}>{desk.suggestedOpeners}</p>
                 {s.openers.map((opener) => (
@@ -195,7 +182,7 @@ export function InterviewRoom() {
                     key={opener}
                     type="button"
                     className={styles.opener}
-                    onClick={() => !busy && !closed && send.mutate(opener)}
+                    onClick={() => !busy && send.mutate(opener)}
                   >
                     {opener}
                   </button>
@@ -203,11 +190,7 @@ export function InterviewRoom() {
               </div>
             )}
 
-            {busy && (
-              <TypingIndicator
-                label={writingNow ? desk.writingDraft : "הכתב מקליד…"}
-              />
-            )}
+            {busy && <TypingIndicator label={writingNow ? desk.writingDraft : "הכתב מקליד…"} />}
             <div ref={threadEnd} />
           </div>
 
@@ -235,10 +218,20 @@ export function InterviewRoom() {
                 <Button
                   variant="outline"
                   size="lg"
-                  onClick={() => !busy && draftIt.mutate()}
-                  disabled={busy}
+                  onClick={() => draftIt.mutate()}
+                  disabled={busy || readerTurns === 0}
                 >
                   {desk.writeDraft}
+                </Button>
+              )}
+              {canDrop && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => drop.mutate()}
+                  disabled={drop.isPending}
+                >
+                  {desk.startOver}
                 </Button>
               )}
               <span className={interviewStyles.consent}>
@@ -251,7 +244,6 @@ export function InterviewRoom() {
             </div>
           </form>
 
-          {/* Mobile: the draft lives behind a toggle instead of a side panel. */}
           <div className={styles.draftToggle}>
             <Button
               variant="quiet"
@@ -285,7 +277,19 @@ export function InterviewRoom() {
       )}
 
       {(send.error || draftIt.error || publish.error) && (
-        <ErrorState error={send.error || draftIt.error || publish.error} />
+        <div className={styles.errorBar}>
+          <ErrorState error={send.error || draftIt.error || publish.error} />
+          {publish.error && (
+            <>
+              <Button size="md" onClick={() => publish.mutate(publish.variables ?? s.draft)}>
+                {desk.retry}
+              </Button>
+              <Button variant="outline" size="md" onClick={() => drop.mutate()} disabled={drop.isPending}>
+                {desk.discard}
+              </Button>
+            </>
+          )}
+        </div>
       )}
     </div>
   );

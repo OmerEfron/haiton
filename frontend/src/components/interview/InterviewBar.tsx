@@ -1,0 +1,57 @@
+import { Link } from "react-router";
+import styles from "../../routes/InterviewRoom.module.css";
+import { LivePill } from "../ui/Bits";
+import { brand, common } from "../../copy/common";
+import { desk } from "../../copy/desk";
+
+export function heDate(raw: string) {
+  const d = new Date(raw);
+  return Number.isNaN(d.getTime()) ? raw : d.toLocaleString("he-IL");
+}
+
+export function InterviewBar({
+  startedAt,
+  elapsedLabel,
+  factsLocked,
+  closed,
+}: {
+  startedAt: string;
+  elapsedLabel: string;
+  factsLocked: number;
+  closed: boolean;
+}) {
+  const started = heDate(startedAt);
+  return (
+    <div className={styles.bar}>
+      <div className={styles.barStart}>
+        <Link to="/" className={styles.logo}>
+          {brand.name}
+        </Link>
+        <span className={styles.sep} />
+        <span className={styles.roomName}>
+          <span className={styles.roomNameFull}>{desk.interviewRoomFull}</span>
+          <span className={styles.roomNameShort}>{desk.interviewRoom}</span>
+        </span>
+        <LivePill tone={closed ? "outlineRed" : "red"}>
+          {closed ? (
+            desk.interviewEnded
+          ) : (
+            <>
+              <span className={styles.roomNameFull}>{desk.liveInterview}</span>
+              <span className={styles.roomNameShort}>{common.live}</span>
+            </>
+          )}
+        </LivePill>
+      </div>
+      <div className={styles.barEnd}>
+        <span className={styles.barMeta}>
+          {started} · {elapsedLabel}
+        </span>
+        <span className={styles.barMeta}>עובדות שנרשמו: {factsLocked}</span>
+        <Link to="/" className={styles.close}>
+          {desk.close}
+        </Link>
+      </div>
+    </div>
+  );
+}

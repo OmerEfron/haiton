@@ -12,6 +12,7 @@ const {
   ERROR_INVALID_FORM,
   ERROR_LLM,
   ERROR_NO_OPEN_INTERVIEW,
+  ERROR_NO_TRANSCRIPT,
   ERROR_STATUS,
 } = await import("../contract.js");
 const { createApp } = await import("./app.js");
@@ -194,6 +195,21 @@ describe("http session", () => {
     assert.equal(body.message, ERROR_INTERVIEW_NOT_FOUND);
   });
 
+  it("rejects empty-chat draft", async () => {
+    const app = createApp(fakeDeps());
+    const createRes = await app.request("/interviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ facts: FACTS }),
+    });
+    const { id } = await createRes.json();
+
+    const res = await app.request(`/interviews/${id}/draft`, { method: "POST" });
+    assert.equal(res.status, ERROR_STATUS.noTranscript);
+    const body = await res.json();
+    assert.equal(body.message, ERROR_NO_TRANSCRIPT);
+  });
+
   it("requestDraft maps headline", async () => {
     const app = createApp(fakeDeps());
     const createRes = await app.request("/interviews", {
@@ -296,6 +312,11 @@ describe("http session", () => {
     const { id, subjectName } = await createRes.json();
     assert.equal(subjectName, undefined);
 
+    await app.request(`/interviews/${id}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "פתיחה" }),
+    });
     await app.request(`/interviews/${id}/draft`, { method: "POST" });
     assert.equal(seenName, "עומר");
   });
@@ -362,7 +383,7 @@ describe("http session", () => {
     };
     const app = createApp({
       ...fakeDeps(),
-      nextQuestion: async () => ({ question: "", done: true }),
+      nextQuestion: async () => ({ question: "מה קרה?", done: false }),
       writeArticle,
     });
     const createRes = await app.request("/interviews", {
@@ -376,6 +397,11 @@ describe("http session", () => {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ type: "news" }),
+    });
+    await app.request(`/interviews/${id}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "פתיחה" }),
     });
 
     const res = await app.request(`/interviews/${id}/draft`, { method: "POST" });
@@ -394,6 +420,11 @@ describe("http session", () => {
       body: JSON.stringify({ facts: FACTS }),
     });
     const { id } = await createRes.json();
+    await app.request(`/interviews/${id}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "פתיחה" }),
+    });
     await app.request(`/interviews/${id}/draft`, { method: "POST" });
 
     const res = await app.request(`/interviews/${id}/form`, {
@@ -492,7 +523,7 @@ describe("http session", () => {
     const app = createApp({
       ...fakeDeps(),
       writeArticle,
-      nextQuestion: async () => ({ question: "", done: true }),
+      nextQuestion: async () => ({ question: "מה קרה?", done: false }),
     });
     const createRes = await app.request("/interviews", {
       method: "POST",
@@ -500,6 +531,11 @@ describe("http session", () => {
       body: JSON.stringify({ facts: FACTS }),
     });
     const { id } = await createRes.json();
+    await app.request(`/interviews/${id}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "פתיחה" }),
+    });
     const res = await app.request(`/interviews/${id}/draft`, { method: "POST" });
     assert.equal(res.status, 200);
     const payload = parseSseJson(await res.text()) as { message?: string; id?: string };
