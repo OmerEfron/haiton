@@ -135,3 +135,11 @@
   }
   .mobileDraft > * { min-height: 100dvh; }
 }
+
+.errorBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 0 var(--gutter) 16px;
+}

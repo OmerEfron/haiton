@@ -71,6 +71,7 @@ export const SESSION_OPENERS = [
 /** Hebrew error messages — exact copy from PLAN.md. */
 export const ERROR_NO_OPEN_INTERVIEW = "אין ראיון פתוח";
 export const ERROR_EMPTY_MESSAGE = "אי אפשר לשלוח הודעה ריקה";
+export const ERROR_NO_TRANSCRIPT = "אין תמליל — ספרו לכתב מה קרה קודם";
 export const ERROR_INTERVIEW_NOT_FOUND = "ראיון לא נמצא";
 export const ERROR_INTERVIEW_CLOSED = "הראיון הסתיים";
 export const ERROR_INVALID_FORM = "בחירה לא חוקית";
@@ -83,6 +84,7 @@ export const ERROR_INTERNAL = "משהו השתבש בשולחן העורכים";
 export const ERROR_STATUS = {
   noOpenInterview: 409,
   emptyMessage: 400,
+  noTranscript: 400,
   interviewNotFound: 404,
   interviewClosed: 409,
   invalidForm: 400,

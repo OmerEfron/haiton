@@ -6,6 +6,7 @@ import {
   ERROR_INTERVIEW_NOT_FOUND,
   ERROR_INVALID_FORM,
   ERROR_NO_OPEN_INTERVIEW,
+  ERROR_NO_TRANSCRIPT,
   ERROR_RATE_LIMIT,
   ERROR_STATUS,
   ERROR_UNAUTHORIZED,
@@ -220,6 +221,10 @@ export function createApp(deps?: AppDeps): Hono<AppEnv> {
     const id = c.req.param("id");
     const { error, state } = requireCurrent(c.get("userId"), id);
     if (error) return error;
+
+    if (readerCount(state!) === 0) {
+      return jsonError(ERROR_NO_TRANSCRIPT, ERROR_STATUS.noTranscript);
+    }
 
     const { writeArticle, saveInterview } = await getDeps();
     const cookie = cookieOf(c);
