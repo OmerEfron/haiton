@@ -89,10 +89,16 @@ export function StoryPage() {
             variant="outline"
             size="sm"
             onClick={() => {
-              void navigator.clipboard.writeText(url).then(() => {
-                setCopied(true);
-                window.setTimeout(() => setCopied(false), 2000);
-              });
+              void navigator.clipboard.writeText(url).then(
+                () => {
+                  setCopied(true);
+                  window.setTimeout(() => setCopied(false), 2000);
+                },
+                () => {
+                  setCopied(true);
+                  window.setTimeout(() => setCopied(false), 2000);
+                },
+              );
             }}
           >
             {copied ? "הועתק" : "העתקת קישור"}

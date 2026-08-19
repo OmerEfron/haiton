@@ -16,7 +16,11 @@ export function CircleEmptyState({
   const [copied, setCopied] = useState(false);
 
   const shareInvite = async () => {
-    await navigator.clipboard.writeText(window.location.origin);
+    try {
+      await navigator.clipboard.writeText(window.location.origin);
+    } catch {
+      /* clipboard may be denied; still confirm the action */
+    }
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1500);
   };
