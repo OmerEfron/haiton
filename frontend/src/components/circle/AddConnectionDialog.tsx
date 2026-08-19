@@ -54,7 +54,6 @@ export function AddConnectionDialog({ onClose }: { onClose: () => void }) {
   const settingRows = [
     { key: "seesMyEdition", copy: circle.dialog.settings.seesMyEdition },
     { key: "showsFullName", copy: circle.dialog.settings.showsFullName },
-    { key: "notifyOnPublish", copy: circle.dialog.settings.notifyOnPublish },
   ] as const;
 
   return (
@@ -149,7 +148,7 @@ export function AddConnectionDialog({ onClose }: { onClose: () => void }) {
           size="xl"
           block
           onClick={() => send.mutate()}
-          disabled={send.isPending || !(chosenName || term.trim())}
+          disabled={send.isPending || !(chosenId || term.includes("@"))}
         >
           {send.isPending ? "שולח…" : circle.dialog.send}
         </Button>

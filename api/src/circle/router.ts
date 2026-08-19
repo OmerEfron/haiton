@@ -108,20 +108,23 @@ export function createCircleRouter(): Hono {
     let targetUserId: string | null = null;
 
     if (body.readerId) {
-      const reader = getDb()
-        .prepare(`SELECT id, name, initial FROM readers WHERE id = ?`)
+      const user = getDb()
+        .prepare(`SELECT id, name, initial FROM users WHERE id = ?`)
         .get(body.readerId) as { id: string; name: string; initial: string } | undefined;
-      if (reader) {
-        targetUserId = reader.id;
+      if (user) {
+        targetUserId = user.id;
         if (!name) {
-          name = reader.name;
-          initial = reader.initial;
+          name = user.name;
+          initial = user.initial;
         }
       }
     }
 
     if (!name) {
       return c.json({ message: "צריך לבחור קורא או להזין שם" }, 400);
+    }
+    if (!targetUserId && !name.includes("@")) {
+      return c.json({ message: "צריך לבחור קורא או להזין דוא״ל" }, 400);
     }
 
     const id = nextId("i");
@@ -325,18 +328,20 @@ export function createCircleRouter(): Hono {
   });
 
   app.get("/readers", (c) => {
-    const auth = requireUser(c);
-    if (auth instanceof Response) return auth;
+    const userId = requireUser(c);
+    if (userId instanceof Response) return userId;
 
     const q = (c.req.query("q") ?? "").trim();
     if (!q) return c.json([]);
 
     const rows = getDb()
-      .prepare(`SELECT id, name, initial, detail FROM readers`)
-      .all() as { id: string; name: string; initial: string; detail: string }[];
+      .prepare(
+        `SELECT id, name, initial, email AS detail FROM users
+         WHERE email = ? COLLATE NOCASE AND id != ?`,
+      )
+      .all(q, userId);
 
-    const matches = rows.filter((r) => r.name.includes(q) || r.detail.includes(q));
-    return c.json(matches);
+    return c.json(rows);
   });
 
   return app;
