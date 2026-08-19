@@ -45,11 +45,15 @@ export const desk = {
   waitingTitle: "הכתב ממתין לך",
   continueDraft: "המשך לטיוטה",
   openInterviewRoom: "פתחו את חדר הראיונות",
+  openInterview: "ראיון פתוח",
 
   emptyEditionKicker: "שולחן העורכים ממתין לראיון הראשון",
   emptyEditionTitle: "המהדורה הראשונה שלך עוד לא נכתבה",
   emptyEditionBody:
     "אין כאן ידיעות כי עוד לא סיפרת כלום. ספר לכתב מה קרה השבוע — הוא ישאל, יבחר זווית, ויחזיר טיוטה לאישור שלך.",
+  emptyEditionDraftTitle: "יש טיוטה בעריכה",
+  emptyEditionDraftBody: (title: string) =>
+    `«${title}» מחכה בחדר הראיונות. המשיכו משם במקום להתחיל ראיון חדש.`,
   startFirstInterview: "התחילו ראיון ראשון",
   fillKarteset: "מלאו רקע בכרטסת",
   quotaTitle: "הגעתם לשתי ידיעות להיום",

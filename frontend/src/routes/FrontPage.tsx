@@ -36,11 +36,13 @@ export function FrontPage() {
   const openDraft =
     page.openDraft ??
     (() => {
-      const draft = interview.data?.draft;
-      if (!draft || draft.status === "empty") return null;
-      const title = draft.headline ?? draft.angle;
-      if (!title) return null;
-      return { title, summary: draft.standfirst ?? "" };
+      const session = interview.data;
+      if (!session) return null;
+      const draft = session.draft;
+      return {
+        title: draft.headline ?? draft.angle ?? desk.openInterview,
+        summary: draft.standfirst ?? "",
+      };
     })();
 
   return (
@@ -54,7 +56,7 @@ export function FrontPage() {
       <SectionsBar />
       {!empty && <Ticker items={page.ticker} />}
 
-      {empty ? <EmptyEdition /> : (
+      {empty ? <EmptyEdition openDraft={openDraft} /> : (
         <>
           <div className={styles.grid}>
             <div>
@@ -80,7 +82,9 @@ export function FrontPage() {
                   <div className={newsStyles.prompt}>
                     <Avatar initial="כ" size={34} tone="solid" />
                     <div style={{ flex: 1 }}>
-                      <p className={newsStyles.promptKicker}>{desk.waitingTitle}</p>
+                      <p className={newsStyles.promptKicker}>
+                        {openDraft ? desk.continueDraft : desk.waitingTitle}
+                      </p>
                       <p className={newsStyles.promptBody}>
                         {openDraft
                           ? `יש טיוטה אחת בעריכה: «${openDraft.title}».`
@@ -150,23 +154,28 @@ export function FrontPage() {
   );
 }
 
-/** Mockup 1c — the edition before the first interview. */
-function EmptyEdition() {
+function EmptyEdition({ openDraft }: { openDraft: { title: string; summary: string } | null }) {
   return (
     <>
       <EmptyState
-        badge={<LivePill>{desk.emptyEditionKicker}</LivePill>}
-        title={desk.emptyEditionTitle}
-        body={desk.emptyEditionBody}
+        badge={<LivePill>{openDraft ? common.inEditing : desk.emptyEditionKicker}</LivePill>}
+        title={openDraft ? desk.emptyEditionDraftTitle : desk.emptyEditionTitle}
+        body={openDraft ? desk.emptyEditionDraftBody(openDraft.title) : desk.emptyEditionBody}
         actions={
-          <>
+          openDraft ? (
             <ButtonLink to="/interview" size="lg">
-              {desk.startFirstInterview}
+              {desk.continueDraft}
             </ButtonLink>
-            <ButtonLink to="/karteset" variant="outline" size="lg">
-              {desk.fillKarteset}
-            </ButtonLink>
-          </>
+          ) : (
+            <>
+              <ButtonLink to="/interview" size="lg">
+                {desk.startFirstInterview}
+              </ButtonLink>
+              <ButtonLink to="/karteset" variant="outline" size="lg">
+                {desk.fillKarteset}
+              </ButtonLink>
+            </>
+          )
         }
       />
       <div className={styles.emptyFlashes}>
