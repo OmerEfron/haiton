@@ -39,9 +39,7 @@ export function BriefsPage() {
         <div className={styles.wrap}>
           <div className={styles.head}>
             <h1 className={styles.title}>{common.flashes}</h1>
-            <p className={styles.intro}>
-              כל הרגעים הקטנים שנרשמו במהדורה — לפי שעה. מבזק שנולד מידיעה מלאה מוביל אליה.
-            </p>
+            <p className={styles.intro}>מבזקים לפי שעה.</p>
           </div>
           <p className={styles.day}>{data.dateShort}</p>
           <div className={styles.list}>
