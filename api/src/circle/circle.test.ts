@@ -69,6 +69,66 @@ test("searchReaders returns [] for blank q", async () => {
   assert.deepEqual(await res.json(), []);
 });
 
+test("searchReaders matches exact email and excludes the current user", async () => {
+  getDb()
+    .prepare(
+      `INSERT INTO users (id, name, email, password_hash, initial, publishing_since)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+    )
+    .run("u_other", "נועה", "noa@example.com", "x", "נ", "2026");
+
+  const app = createCircleRouter();
+  const hit = await app.request("/readers?q=NOA@example.com", { headers: cookieHeader() });
+  assert.equal(hit.status, 200);
+  assert.deepEqual(await hit.json(), [
+    { id: "u_other", name: "נועה", initial: "נ", detail: "noa@example.com" },
+  ]);
+
+  const self = await app.request("/readers?q=test@example.com", { headers: cookieHeader() });
+  assert.deepEqual(await self.json(), []);
+
+  const byName = await app.request(`/readers?q=${encodeURIComponent("נועה")}`, {
+    headers: cookieHeader(),
+  });
+  assert.deepEqual(await byName.json(), []);
+});
+
+test("sendInvitation looks up users by readerId and rejects names without @", async () => {
+  getDb()
+    .prepare(
+      `INSERT INTO users (id, name, email, password_hash, initial, publishing_since)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+    )
+    .run("u_other", "נועה", "noa@example.com", "x", "נ", "2026");
+
+  const app = createCircleRouter();
+  const headers = { ...cookieHeader(), "Content-Type": "application/json" };
+
+  const nameless = await app.request("/invitations", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ name: "דוד כהן", relation: "friend" }),
+  });
+  assert.equal(nameless.status, 400);
+
+  const byId = await app.request("/invitations", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ readerId: "u_other", relation: "friend" }),
+  });
+  assert.equal(byId.status, 200);
+  const invited = (await byId.json()) as { name: string; initial: string };
+  assert.equal(invited.initial, "נ");
+  assert.ok(invited.name.includes("נועה"));
+
+  const unknown = await app.request("/invitations", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ readerId: "missing", name: "new@example.com" }),
+  });
+  assert.equal(unknown.status, 200);
+});
+
 test("sendInvitation returns 400 when name missing and no reader", async () => {
   const app = createCircleRouter();
   const res = await app.request("/invitations", {
@@ -92,7 +152,7 @@ test("accept incoming invitation uses meta from POST invitation", async () => {
     method: "POST",
     headers: { ...cookieHeader(), "Content-Type": "application/json" },
     body: JSON.stringify({
-      name: "דוד כהן",
+      name: "david@example.com",
       relation: "family",
       section: "family",
       settings: { seesMyEdition: true, showsFullName: false, notifyOnPublish: true },

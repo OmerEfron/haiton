@@ -4,11 +4,11 @@ import styles from "./CirclePage.module.css";
 import { PageHeader } from "../components/layout/PageHeader";
 import { Footer } from "../components/layout/Footer";
 import { AddConnectionDialog } from "../components/circle/AddConnectionDialog";
+import { CircleEmptyState } from "../components/circle/CircleEmptyState";
 import { EditConnectionDialog } from "../components/circle/EditConnectionDialog";
 import { Avatar, ErrorState, Kicker, Loading, StatGrid } from "../components/ui/Bits";
 import { Button } from "../components/ui/Button";
 import { Chip, ChipRow } from "../components/ui/Chip";
-import { EmptyState } from "../components/ui/EmptyState";
 import type { Connection, RelationKind } from "../api/types";
 import {
   cancelInvitation,
@@ -91,40 +91,7 @@ export function CirclePage() {
       </div>
 
       {empty ? (
-        <>
-          <EmptyState
-            mark="+"
-            title={circle.emptyTitle}
-            body={circle.emptyBody}
-            compact
-            actions={
-              <>
-                <Button size="lg" block onClick={() => setDialogOpen(true)}>
-                  {circle.emptyCta}
-                </Button>
-                <Button variant="link" size="md">
-                  {circle.shareLink}
-                </Button>
-              </>
-            }
-          />
-          <div className={styles.suggested}>
-            <p className={styles.suggestedTitle}>{circle.suggestedTitle}</p>
-            <div className={styles.suggestedList}>
-              {(suggested.data ?? []).map((s) => (
-                <div key={s.id} className={styles.suggestedRow}>
-                  <Avatar initial={s.initial} size={32} />
-                  <span className={styles.suggestedName}>
-                    {s.name} — {s.detail}
-                  </span>
-                  <Button variant="link" size="sm" onClick={() => setDialogOpen(true)}>
-                    {circle.invite}
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div>
-        </>
+        <CircleEmptyState suggested={suggested.data} onAdd={() => setDialogOpen(true)} />
       ) : (
         <div className={styles.wrap}>
           <div className={styles.head}>
@@ -136,9 +103,6 @@ export function CirclePage() {
             <div className={styles.headActions}>
               <Button size="lg" onClick={() => setDialogOpen(true)}>
                 {circle.add}
-              </Button>
-              <Button variant="quiet" size="lg">
-                {circle.sentInvitations}
               </Button>
             </div>
           </div>
@@ -252,19 +216,14 @@ export function CirclePage() {
                           </Button>
                         </>
                       ) : (
-                        <>
-                          <Button variant="quiet" size="md">
-                            {circle.resend}
-                          </Button>
-                          <Button
-                            variant="quiet"
-                            size="md"
-                            onClick={() => cancel.mutate(inv.id)}
-                            disabled={cancel.isPending}
-                          >
-                            {common.cancel}
-                          </Button>
-                        </>
+                        <Button
+                          variant="quiet"
+                          size="md"
+                          onClick={() => cancel.mutate(inv.id)}
+                          disabled={cancel.isPending}
+                        >
+                          {common.cancel}
+                        </Button>
                       )}
                     </span>
                   </div>
