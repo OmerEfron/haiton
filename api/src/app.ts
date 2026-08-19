@@ -14,7 +14,10 @@ export function createApp(): Hono {
   app.use(
     "*",
     cors({
-      origin: process.env.FRONTEND_ORIGIN?.trim() || DEFAULT_ORIGIN,
+      origin: (process.env.FRONTEND_ORIGIN || DEFAULT_ORIGIN)
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean),
       credentials: true,
     }),
   );

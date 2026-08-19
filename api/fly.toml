@@ -7,7 +7,6 @@ primary_region = "fra"
 [env]
   PORT = "8080"
   DATABASE_PATH = "/data/iton.sqlite"
-  COOKIE_SAMESITE = "None"
 
 [http_service]
   internal_port = 8080

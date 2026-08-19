@@ -1,10 +1,34 @@
 {
   "name": "iton",
-  "account_id": "fc378dbb7b4ca6490f99a50cd1562f09",
+  "account_id": "198546f24865cf6f2afaafe632007196",
   "workers_dev": true,
   "compatibility_date": "2026-08-19",
+  "main": "worker.ts",
+  "routes": [
+    { "pattern": "itonai.io", "custom_domain": true },
+    { "pattern": "www.itonai.io", "custom_domain": true }
+  ],
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application"
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/auth/*",
+      "/health",
+      "/editions/*",
+      "/stories",
+      "/stories/*",
+      "/flashes",
+      "/karteset/*",
+      "/connections",
+      "/connections/*",
+      "/invitations",
+      "/invitations/*",
+      "/readers",
+      "/profile",
+      "/profile/*",
+      "/interviews",
+      "/interviews/*"
+    ]
   }
 }

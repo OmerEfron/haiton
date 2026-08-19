@@ -65,7 +65,7 @@ function cookieOpts() {
     httpOnly: true,
     path: "/",
     sameSite: (crossSite ? "None" : "Lax") as "None" | "Lax",
-    secure: crossSite,
+    secure: crossSite || process.env.NODE_ENV === "production",
     maxAge: SESSION_MAX_AGE,
   };
 }
