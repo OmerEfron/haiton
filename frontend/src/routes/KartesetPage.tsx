@@ -71,7 +71,10 @@ export function KartesetPage() {
   }
 
   const all = facts.data;
-  const visible = filter === "all" ? all : all.filter((f) => f.category === filter);
+  const visible =
+    filter === "all"
+      ? all
+      : all.filter((f) => f.category === filter || f.id === editingId);
   const empty = all.length === 0;
 
   function submit(e: FormEvent) {
@@ -86,7 +89,7 @@ export function KartesetPage() {
         <div className={styles.head}>
           <h1 className={styles.title}>{karteset.title}</h1>
           <p className={empty ? styles.emptyIntro : styles.intro}>
-            {empty ? karteset.emptyIntro : karteset.intro}
+            {empty ? karteset.emptyIntro : karteset.introShort}
           </p>
           {!empty && (
             <div className={styles.filters}>
@@ -148,7 +151,7 @@ export function KartesetPage() {
                   key={starter}
                   type="button"
                   className={styles.starter}
-                  onClick={() => setDraftText(`${starter}: `)}
+                  onClick={() => setDraftText(starter)}
                 >
                   {starter}
                 </button>
@@ -157,6 +160,9 @@ export function KartesetPage() {
           </>
         ) : (
           <div className={styles.list}>
+            {filter !== "all" && visible.length === 0 && (
+              <p className={styles.intro}>{karteset.filterEmpty}</p>
+            )}
             {visible.map((fact) =>
               editingId === fact.id ? (
                 <div key={fact.id} className={styles.editRow}>
