@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import styles from "./StoryPage.module.css";
@@ -5,15 +6,17 @@ import { PageHeader } from "../components/layout/PageHeader";
 import { CrumbBar } from "../components/layout/SectionsBar";
 import crumbStyles from "../components/layout/SectionsBar.module.css";
 import { Footer } from "../components/layout/Footer";
-import { ErrorState, Kicker, Loading, Placeholder } from "../components/ui/Bits";
+import { ErrorState, Kicker, Loading } from "../components/ui/Bits";
+import { Button } from "../components/ui/Button";
 import { getStory, listStories } from "../api/core/stories";
 import { getProfile } from "../api/core/profile";
 import { qk } from "../lib/queryKeys";
-import { common } from "../copy/common";
+import { brand, common } from "../copy/common";
 import { desk } from "../copy/desk";
 
 export function StoryPage() {
   const { storyId = "" } = useParams();
+  const [copied, setCopied] = useState(false);
   const story = useQuery({ queryKey: qk.story(storyId), queryFn: () => getStory(storyId) });
   const profile = useQuery({ queryKey: qk.profile, queryFn: getProfile });
   const siblings = useQuery({
@@ -21,6 +24,15 @@ export function StoryPage() {
     queryFn: () => listStories(),
     enabled: Boolean(story.data),
   });
+
+  useEffect(() => {
+    const headline = story.data?.headline;
+    if (!headline) return;
+    document.title = headline;
+    return () => {
+      document.title = brand.name;
+    };
+  }, [story.data?.headline]);
 
   if (story.isPending) {
     return (
@@ -43,6 +55,8 @@ export function StoryPage() {
   const s = story.data;
   const showTag = profile.data?.settings.showEditionTag ?? true;
   const more = (siblings.data ?? []).filter((x) => x.id !== s.id).slice(0, 3);
+  const url = window.location.href;
+  const waHref = `https://wa.me/?text=${encodeURIComponent(`${s.headline} ${url}`)}`;
 
   return (
     <>
@@ -50,7 +64,7 @@ export function StoryPage() {
       <CrumbBar>
         <span style={{ fontWeight: 700 }}>ראשי</span>
         <span className={crumbStyles.sep}>›</span>
-        <span className={crumbStyles.muted}>ידיעה {s.id}</span>
+        <span className={crumbStyles.muted}>{s.headline}</span>
       </CrumbBar>
 
       <article className={styles.article}>
@@ -68,13 +82,25 @@ export function StoryPage() {
           )}
           <span className={styles.bullet} />
           <time>{s.publishedAt}</time>
-          {s.angle && <span className={styles.angle}>זווית: {s.angle}</span>}
         </div>
 
-        <Placeholder height={340} sub={common.placeholderSuffix} />
-        <p className={styles.caption}>
-          כתובית תמונה תופיע כאן — placeholder עד שתעלה תמונה אמיתית.
-        </p>
+        <div className={styles.share}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              void navigator.clipboard.writeText(url).then(() => {
+                setCopied(true);
+                window.setTimeout(() => setCopied(false), 2000);
+              });
+            }}
+          >
+            {copied ? "הועתק" : "העתקת קישור"}
+          </Button>
+          <a href={waHref} target="_blank" rel="noopener noreferrer">
+            וואטסאפ
+          </a>
+        </div>
 
         <div className={styles.body}>
           {s.body.map((block, i) =>
