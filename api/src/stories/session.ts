@@ -1,11 +1,11 @@
 import type { Context, Next } from "hono";
 import { getCookie } from "hono/cookie";
-import { SESSION_COOKIE_NAME } from "../contract.ts";
+import { ERROR_UNAUTHORIZED, SESSION_COOKIE_NAME } from "../contract.ts";
 import { getDb } from "../db.ts";
 
 export type StoriesVariables = { userId: string };
 
-const UNAUTHORIZED = { message: "יש להתחבר כדי להמשיך" };
+const UNAUTHORIZED = { message: ERROR_UNAUTHORIZED };
 
 /** Require a valid session cookie; sets `userId` on context. */
 export async function requireSession(

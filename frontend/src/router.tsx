@@ -5,6 +5,7 @@ import { FrontPage } from "./routes/FrontPage";
 import { StoryPage } from "./routes/StoryPage";
 import { BriefsPage } from "./routes/BriefsPage";
 import { InterviewRoom } from "./routes/InterviewRoom";
+import { InterviewArchivePage } from "./routes/InterviewArchivePage";
 import { KartesetPage } from "./routes/KartesetPage";
 import { CirclePage } from "./routes/CirclePage";
 import { ProfilePage } from "./routes/ProfilePage";
@@ -24,6 +25,7 @@ export const router = createBrowserRouter([
       { path: "story/:storyId", element: guarded(<StoryPage />) },
       { path: "briefs", element: guarded(<BriefsPage />) },
       { path: "interview", element: guarded(<InterviewRoom />) },
+      { path: "interview/:id", element: guarded(<InterviewArchivePage />) },
       { path: "karteset", element: guarded(<KartesetPage />) },
       { path: "circle", element: guarded(<CirclePage />) },
       { path: "profile", element: guarded(<ProfilePage />) },

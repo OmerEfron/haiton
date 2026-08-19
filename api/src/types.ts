@@ -153,3 +153,36 @@ export interface Session {
   user: User;
   editionName: string;
 }
+
+export interface Quota {
+  limit: number;
+  used: number;
+  remaining: number;
+  resetsAt: string;
+}
+
+export interface InterviewListItem {
+  id: string;
+  startedAt: string;
+  headline: string | null;
+  exhausted: boolean;
+}
+
+/** Snapshot the reporter upserts; same wire shape as InterviewSession. */
+export interface InterviewSnapshot {
+  id: string;
+  startedAt: string;
+  elapsedLabel?: string;
+  factsLocked?: number;
+  angleChosen?: boolean;
+  messages: { id?: string; role: string; text: string; at?: string }[];
+  reporterTyping?: boolean;
+  draft?: {
+    headline?: string | null;
+    status?: string;
+  };
+  openers?: string[];
+  exhausted?: boolean;
+  type?: string | null;
+  tone?: string | null;
+}

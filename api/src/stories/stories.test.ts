@@ -47,8 +47,8 @@ function insertStory(
     .prepare(
       `INSERT INTO stories (
         id, user_id, section, section_name, edition_label, headline, standfirst,
-        body_json, angle, byline, published_at, placement
-      ) VALUES (?, ?, ?, ?, ?, ?, '', '[]', '', 'כתב', '01.01.26, 10:00', ?)`,
+        body_json, angle, byline, published_at, placement, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, '', '[]', '', 'כתב', '01.01.26, 10:00', ?, '2020-01-01T00:00:00.000Z')`,
     )
     .run(id, USER_ID, section, "עבודה", "המהדורה של בדיקה", headline, placement);
 }
@@ -171,4 +171,41 @@ test("POST /stories demotes lead and increments edition", async () => {
     .get(USER_ID) as { section_counts_json: string };
   const sectionCounts = JSON.parse(meta.section_counts_json) as unknown[];
   assert.ok(sectionCounts.length > 0);
+});
+
+test("third POST /stories in a day is 429", async () => {
+  closeDb();
+  process.env.DATABASE_PATH = join(dbDir, "quota.sqlite");
+  seedBaseUser();
+  app = createStoriesRouter();
+
+  const draft = {
+    id: "d1",
+    status: "ready" as const,
+    angle: "זווית",
+    headline: "ידיעה",
+    standfirst: "משנה",
+    paragraphs: ["פסקה"],
+    pendingParagraph: null,
+    checks: [],
+    section: null,
+  };
+
+  for (let i = 0; i < 2; i++) {
+    const res = await app.request("/stories", {
+      method: "POST",
+      headers: { Cookie: COOKIE, "Content-Type": "application/json" },
+      body: JSON.stringify({ ...draft, headline: `ידיעה ${i + 1}` }),
+    });
+    assert.equal(res.status, 201);
+  }
+
+  const third = await app.request("/stories", {
+    method: "POST",
+    headers: { Cookie: COOKIE, "Content-Type": "application/json" },
+    body: JSON.stringify({ ...draft, headline: "ידיעה 3" }),
+  });
+  assert.equal(third.status, 429);
+  const body = (await third.json()) as { message: string };
+  assert.equal(body.message, "הגעתם לשתי ידיעות להיום. מחר הכתב מחכה שוב.");
 });

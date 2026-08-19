@@ -71,3 +71,14 @@ export type NextQuestionFn = (
   facts: FactInput[],
   turns: Turn[],
 ) => Promise<import("../types.js").NextQuestion>;
+
+export type GetUserIdFn = (cookie: string) => Promise<string | null>;
+
+export type SaveInterviewResult =
+  | { ok: true }
+  | { ok: false; status: number; message: string };
+
+export type SaveInterviewFn = (
+  cookie: string,
+  session: InterviewSession,
+) => Promise<SaveInterviewResult>;

@@ -9,11 +9,13 @@ export function DraftPanel({
   onPublish,
   publishing,
   onSave,
+  readOnly,
 }: {
   draft: Draft;
-  onPublish: () => void;
-  publishing: boolean;
-  onSave: () => void;
+  onPublish?: () => void;
+  publishing?: boolean;
+  onSave?: () => void;
+  readOnly?: boolean;
 }) {
   const ready = draft.status === "ready";
 
@@ -81,6 +83,7 @@ export function DraftPanel({
         )}
       </div>
 
+      {!readOnly && (
       <div className={styles.draftFoot}>
         <Button size="xl" block onClick={onPublish} disabled={!ready || publishing}>
           {publishing ? "מפרסם…" : desk.publish}
@@ -95,6 +98,7 @@ export function DraftPanel({
         </div>
         <p className={styles.footNote}>{desk.publishNote}</p>
       </div>
+      )}
     </div>
   );
 }

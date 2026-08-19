@@ -17,6 +17,13 @@ function applySchema(database: DatabaseSync): void {
   const schemaPath = join(__dirname, "schema.sql");
   const sql = readFileSync(schemaPath, "utf8");
   database.exec(sql);
+  try {
+    database.exec(
+      "ALTER TABLE stories ADD COLUMN created_at TEXT NOT NULL DEFAULT (datetime('now'))",
+    );
+  } catch {
+    /* column already exists on fresh schema */
+  }
 }
 
 /** Open (or return) the shared SQLite database; applies schema.sql on first open. */

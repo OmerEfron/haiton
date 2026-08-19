@@ -9,6 +9,7 @@ const API_EXACT = new Set([
   "/invitations",
   "/readers",
   "/profile",
+  "/quota",
 ]);
 
 const API_PREFIXES = [
@@ -19,6 +20,7 @@ const API_PREFIXES = [
   "/connections/",
   "/invitations/",
   "/profile/",
+  "/desk/",
 ];
 
 function originFor(pathname: string): string | null {

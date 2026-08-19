@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 import { getCookie } from "hono/cookie";
-import { SESSION_COOKIE_NAME } from "../contract.ts";
+import { ERROR_UNAUTHORIZED, SESSION_COOKIE_NAME } from "../contract.ts";
 import { getDb } from "../db.ts";
 
 export function resolveUserId(c: Context): string | null {
@@ -19,6 +19,6 @@ export function resolveUserId(c: Context): string | null {
 
 export function requireUser(c: Context): string | Response {
   const userId = resolveUserId(c);
-  if (!userId) return c.json({ message: "צריך להיכנס לחשבון" }, 401);
+  if (!userId) return c.json({ message: ERROR_UNAUTHORIZED }, 401);
   return userId;
 }

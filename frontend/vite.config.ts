@@ -20,6 +20,8 @@ export default defineConfig({
       '/invitations': API_TARGET,
       '/readers': API_TARGET,
       '/health': API_TARGET,
+      '/quota': API_TARGET,
+      '/desk': API_TARGET,
     },
   },
 })

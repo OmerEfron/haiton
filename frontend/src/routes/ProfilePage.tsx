@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import styles from "./ProfilePage.module.css";
 import { PageHeader } from "../components/layout/PageHeader";
@@ -7,15 +7,16 @@ import { Footer } from "../components/layout/Footer";
 import { AddConnectionDialog } from "../components/circle/AddConnectionDialog";
 import { Avatar, ErrorState, Kicker, Loading, StatGrid, Toggle } from "../components/ui/Bits";
 import { Button, ButtonLink } from "../components/ui/Button";
-import { Chip, ChipRow } from "../components/ui/Chip";
 import type { Profile } from "../api/types";
 import { getProfile, updateEditionSettings } from "../api/core/profile";
+import { listInterviews } from "../api/core/desk";
 import { getCircleSummary, listConnections } from "../api/core/connections";
 import { getSession } from "../api/reporter/interview";
 import { qk } from "../lib/queryKeys";
 import { useSession } from "../lib/session";
 import { common } from "../copy/common";
 import { circle, profileCopy } from "../copy/circle";
+import { desk } from "../copy/desk";
 
 export function ProfilePage() {
   const client = useQueryClient();
@@ -27,6 +28,7 @@ export function ProfilePage() {
   const connections = useQuery({ queryKey: qk.connections, queryFn: listConnections });
   const summary = useQuery({ queryKey: qk.circleSummary, queryFn: getCircleSummary });
   const interview = useQuery({ queryKey: qk.interview, queryFn: getSession });
+  const archive = useQuery({ queryKey: qk.deskInterviews, queryFn: listInterviews });
 
   // Write the response straight into the cache: a settings toggle should not
   // wait out a second round trip just to show its own new state.
@@ -220,11 +222,24 @@ export function ProfilePage() {
           <div className={styles.archive}>
             <p className={styles.archiveKicker}>{profileCopy.archive}</p>
             <p className={styles.archiveIntro}>{profileCopy.archiveIntro}</p>
-            <ChipRow>
-              {p.archive.map((month) => (
-                <Chip key={month}>{month}</Chip>
+            {archive.data && archive.data.length === 0 && (
+              <p className={styles.archiveIntro}>{desk.archiveEmpty}</p>
+            )}
+            <div className={styles.archiveList}>
+              {(archive.data ?? []).map((item) => (
+                <Link key={item.id} to={`/interview/${item.id}`} className={styles.archiveItem}>
+                  <span className={styles.archiveHeadline}>
+                    {item.headline || desk.archivedInterview}
+                  </span>
+                  <span className={styles.archiveWhen}>
+                    {new Date(item.startedAt).toLocaleDateString("he-IL", {
+                      day: "numeric",
+                      month: "long",
+                    })}
+                  </span>
+                </Link>
               ))}
-            </ChipRow>
+            </div>
           </div>
         </aside>
       </div>

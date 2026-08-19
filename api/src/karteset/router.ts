@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { ERROR_UNAUTHORIZED } from "../contract.ts";
 import { getDb } from "../db.ts";
 import type { Fact, FactCategory } from "../types.ts";
 import { getSessionUserId } from "./session.ts";
@@ -29,7 +30,7 @@ function nextFactId(): string {
 }
 
 function unauthorized(c: { json: (body: unknown, status: number) => Response }) {
-  return c.json({ message: "צריך להיות מחובר" }, 401);
+  return c.json({ message: ERROR_UNAUTHORIZED }, 401);
 }
 
 export const kartesetRouter = new Hono();

@@ -6,10 +6,17 @@ import {
   ERROR_INTERVIEW_NOT_FOUND,
   ERROR_INVALID_FORM,
   ERROR_NO_OPEN_INTERVIEW,
+  ERROR_RATE_LIMIT,
   ERROR_STATUS,
+  ERROR_UNAUTHORIZED,
 } from "../contract.js";
-import type { Article, ArticleTypeId, FactInput, ToneId } from "../types.js";
+import type { ArticleTypeId, FactInput, ToneId } from "../types.js";
 import { MAX_MESSAGES, TONE_LABELS, TYPE_LABELS } from "../types.js";
+import { cookieOf, coreGetUserId, coreSaveInterview } from "./core.js";
+import { clientIp, rateLimit } from "./rateLimit.js";
+import { closeWithDraft, jsonError, persistAfter, readerCount } from "./run.js";
+import { useHttpLogging } from "../log/http.js";
+import { sseJson } from "./sse.js";
 import {
   buildTurns,
   clearSession,
@@ -18,56 +25,27 @@ import {
   newMessage,
   toWireSession,
 } from "./session.js";
-import { useHttpLogging } from "../log/http.js";
-import { sseJson } from "./sse.js";
-import type { NextQuestionFn, SectionId, SessionState, WriteArticleFn } from "./types.js";
+import type {
+  GetUserIdFn,
+  NextQuestionFn,
+  SaveInterviewFn,
+  SectionId,
+  WriteArticleFn,
+} from "./types.js";
 
 const DEFAULT_ORIGIN = "http://localhost:5173";
 
 export type AppDeps = {
   nextQuestion?: NextQuestionFn;
   writeArticle?: WriteArticleFn;
+  getUserId?: GetUserIdFn;
+  saveInterview?: SaveInterviewFn;
 };
+
+type AppEnv = { Variables: { userId: string } };
 
 const TYPE_IDS = new Set(Object.keys(TYPE_LABELS));
 const TONE_IDS = new Set(Object.keys(TONE_LABELS));
-
-function jsonError(message: string, status: number) {
-  return Response.json({ message }, { status });
-}
-
-function articleToDraft(article: Article, draftId: string) {
-  return {
-    id: draftId,
-    status: "ready" as const,
-    angle: article.angle,
-    headline: article.headline,
-    standfirst: article.standfirst,
-    paragraphs: article.paragraphs,
-    pendingParagraph: null,
-    checks: [] as { label: string; done: boolean }[],
-    section: null as SectionId | null,
-  };
-}
-
-function readerCount(state: SessionState): number {
-  return state.messages.filter((m) => m.role === "reader").length;
-}
-
-async function closeWithDraft(state: SessionState, writeArticle: WriteArticleFn) {
-  state.exhausted = true;
-  const article = await writeArticle({
-    facts: state.facts,
-    turns: state.turns,
-    subjectName: state.subjectName,
-    ...(state.type ? { type: state.type } : {}),
-    ...(state.tone ? { tone: state.tone } : {}),
-  });
-  state.draft = articleToDraft(article, state.draft.id);
-  state.angleChosen = true;
-  state.type = article.type;
-  state.tone = article.tone;
-}
 
 async function resolveDeps(deps?: AppDeps): Promise<Required<AppDeps>> {
   const nextQuestion =
@@ -75,7 +53,12 @@ async function resolveDeps(deps?: AppDeps): Promise<Required<AppDeps>> {
     (await import("../interviewer/interviewer.js")).nextQuestion;
   const writeArticle =
     deps?.writeArticle ?? (await import("../writer/writer.js")).writeArticle;
-  return { nextQuestion, writeArticle };
+  return {
+    nextQuestion,
+    writeArticle,
+    getUserId: deps?.getUserId ?? coreGetUserId,
+    saveInterview: deps?.saveInterview ?? coreSaveInterview,
+  };
 }
 
 function sessionNotFound() {
@@ -91,8 +74,8 @@ function parseFormId(
   return { ok: false };
 }
 
-function requireCurrent(id?: string) {
-  const state = getCurrentSession();
+function requireCurrent(userId: string, id?: string) {
+  const state = getCurrentSession(userId);
   if (!state) {
     return { error: jsonError(ERROR_NO_OPEN_INTERVIEW, ERROR_STATUS.noOpenInterview) };
   }
@@ -102,8 +85,8 @@ function requireCurrent(id?: string) {
   return { state };
 }
 
-export function createApp(deps?: AppDeps): Hono {
-  const app = new Hono();
+export function createApp(deps?: AppDeps): Hono<AppEnv> {
+  const app = new Hono<AppEnv>();
   let resolved: Required<AppDeps> | null = null;
 
   const getDeps = async () => {
@@ -118,14 +101,55 @@ export function createApp(deps?: AppDeps): Hono {
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean),
+      credentials: true,
     }),
   );
   useHttpLogging(app);
 
+  app.use(
+    "*",
+    rateLimit({
+      windowMs: 60 * 1000,
+      limit: 60,
+      message: ERROR_RATE_LIMIT,
+      key: (c) => `ip:${clientIp(c)}`,
+      skip: (c) => {
+        const path = c.req.path;
+        return (
+          path === "/health" ||
+          (c.req.method === "POST" && (path.endsWith("/messages") || path.endsWith("/draft")))
+        );
+      },
+    }),
+  );
+
+  app.use("*", async (c, next) => {
+    if (c.req.path === "/health") return next();
+    const { getUserId } = await getDeps();
+    const userId = await getUserId(cookieOf(c));
+    if (!userId) return jsonError(ERROR_UNAUTHORIZED, ERROR_STATUS.unauthorized);
+    c.set("userId", userId);
+    await next();
+  });
+
+  app.use(
+    "*",
+    rateLimit({
+      windowMs: 60 * 1000,
+      limit: 30,
+      message: ERROR_RATE_LIMIT,
+      key: (c) => `llm:${c.get("userId") ?? clientIp(c)}`,
+      skip: (c) => {
+        const path = c.req.path;
+        return !(c.req.method === "POST" && (path.endsWith("/messages") || path.endsWith("/draft")));
+      },
+    }),
+  );
+
   app.get("/health", (c) => c.json({ ok: true }));
 
   app.get("/interviews", (c) => {
-    const state = getCurrentSession();
+    const state = getCurrentSession(c.get("userId"));
     if (!state) return c.body(null, 204);
     return c.json(toWireSession(state));
   });
@@ -138,19 +162,19 @@ export function createApp(deps?: AppDeps): Hono {
     const facts = Array.isArray(body.facts) ? body.facts : [];
     const subjectName =
       typeof body.subjectName === "string" ? body.subjectName : undefined;
-    const state = createSession(facts, subjectName);
+    const state = createSession(c.get("userId"), facts, subjectName);
     return c.json(toWireSession(state), 200);
   });
 
   app.get("/interviews/:id", (c) => {
-    const { error, state } = requireCurrent(c.req.param("id"));
+    const { error, state } = requireCurrent(c.get("userId"), c.req.param("id"));
     if (error) return error;
     return c.json(toWireSession(state!));
   });
 
   app.post("/interviews/:id/messages", async (c) => {
     const id = c.req.param("id");
-    const { error, state } = requireCurrent(id);
+    const { error, state } = requireCurrent(c.get("userId"), id);
     if (error) return error;
 
     const body = (await c.req.json()) as { text?: string };
@@ -163,7 +187,10 @@ export function createApp(deps?: AppDeps): Hono {
       return jsonError(ERROR_INTERVIEW_CLOSED, ERROR_STATUS.interviewClosed);
     }
 
-    const { nextQuestion, writeArticle } = await getDeps();
+    const { nextQuestion, writeArticle, saveInterview } = await getDeps();
+    const cookie = cookieOf(c);
+    const charged = await saveInterview(cookie, toWireSession(state!));
+    if (!charged.ok) return jsonError(charged.message, charged.status);
 
     return sseJson(async () => {
       state!.messages.push(newMessage("reader", text));
@@ -171,6 +198,7 @@ export function createApp(deps?: AppDeps): Hono {
 
       if (readerCount(state!) >= MAX_MESSAGES) {
         await closeWithDraft(state!, writeArticle);
+        await persistAfter(saveInterview, cookie, state!);
         return toWireSession(state!);
       }
 
@@ -183,25 +211,31 @@ export function createApp(deps?: AppDeps): Hono {
         await closeWithDraft(state!, writeArticle);
       }
 
+      await persistAfter(saveInterview, cookie, state!);
       return toWireSession(state!);
     });
   });
 
   app.post("/interviews/:id/draft", async (c) => {
     const id = c.req.param("id");
-    const { error, state } = requireCurrent(id);
+    const { error, state } = requireCurrent(c.get("userId"), id);
     if (error) return error;
 
-    const { writeArticle } = await getDeps();
+    const { writeArticle, saveInterview } = await getDeps();
+    const cookie = cookieOf(c);
+    const charged = await saveInterview(cookie, toWireSession(state!));
+    if (!charged.ok) return jsonError(charged.message, charged.status);
+
     return sseJson(async () => {
       await closeWithDraft(state!, writeArticle);
+      await persistAfter(saveInterview, cookie, state!);
       return toWireSession(state!);
     });
   });
 
   app.patch("/interviews/:id/draft/section", async (c) => {
     const id = c.req.param("id");
-    const { error, state } = requireCurrent(id);
+    const { error, state } = requireCurrent(c.get("userId"), id);
     if (error) return error;
 
     const body = (await c.req.json()) as { section?: SectionId };
@@ -211,7 +245,7 @@ export function createApp(deps?: AppDeps): Hono {
 
   app.patch("/interviews/:id/form", async (c) => {
     const id = c.req.param("id");
-    const { error, state } = requireCurrent(id);
+    const { error, state } = requireCurrent(c.get("userId"), id);
     if (error) return error;
 
     if (state!.exhausted) {
@@ -242,9 +276,10 @@ export function createApp(deps?: AppDeps): Hono {
   });
 
   app.delete("/interviews/:id", (c) => {
-    const { error } = requireCurrent(c.req.param("id"));
+    const userId = c.get("userId");
+    const { error } = requireCurrent(userId, c.req.param("id"));
     if (error) return error;
-    clearSession();
+    clearSession(userId);
     return c.body(null, 204);
   });
 

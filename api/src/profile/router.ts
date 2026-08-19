@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { ERROR_UNAUTHORIZED } from "../contract.ts";
 import { closeDb, getDb } from "../db.ts";
 import { provisionUser } from "../provision.ts";
 import type { EditionSettings, Profile, User } from "../types.ts";
@@ -25,7 +26,7 @@ interface ProfileRow {
 }
 
 function unauthorized(c: { json: (body: unknown, status: number) => Response }) {
-  return c.json({ message: "צריך להיות מחובר" }, 401);
+  return c.json({ message: ERROR_UNAUTHORIZED }, 401);
 }
 
 function rowToUser(row: ProfileRow): User {

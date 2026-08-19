@@ -1,4 +1,4 @@
-import { ApiError } from "../client";
+import { ApiError, readError } from "../client";
 
 const REPORTER_BASE = import.meta.env.VITE_REPORTER_URL ?? "";
 
@@ -14,19 +14,11 @@ export async function reporterRequest<T>(path: string, init?: RequestInit): Prom
 
   const res = await fetch(`${REPORTER_BASE}${path}`, {
     ...init,
+    credentials: "include",
     headers,
   });
 
-  if (!res.ok) {
-    let message = res.statusText || "Request failed";
-    try {
-      const body = (await res.json()) as { message?: string };
-      if (typeof body.message === "string" && body.message) message = body.message;
-    } catch {
-      /* non-JSON error body */
-    }
-    throw new ApiError(message, res.status);
-  }
+  if (!res.ok) throw await readError(res);
 
   if (res.status === 204) return undefined as T;
 
@@ -37,7 +29,17 @@ export async function reporterRequest<T>(path: string, init?: RequestInit): Prom
     const matches = [...text.matchAll(/^data: (.+)$/gm)];
     const last = matches.at(-1)?.[1];
     if (!last) throw new ApiError("Empty reporter stream");
-    return JSON.parse(last) as T;
+    const parsed: unknown = JSON.parse(last);
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      "message" in parsed &&
+      !("id" in parsed) &&
+      typeof (parsed as { message: unknown }).message === "string"
+    ) {
+      throw new ApiError((parsed as { message: string }).message, 502);
+    }
+    return parsed as T;
   }
   return JSON.parse(text) as T;
 }

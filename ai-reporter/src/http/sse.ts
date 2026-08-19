@@ -1,4 +1,5 @@
 import type { Logger } from "pino";
+import { ERROR_LLM } from "../contract.js";
 import { getLogger } from "../log/logger.js";
 
 const KEEPALIVE_MS = 15_000;
@@ -33,7 +34,7 @@ export function sseJson(work: () => Promise<unknown>, log: Logger = getLogger())
           "sse error",
         );
         controller.enqueue(
-          encoder.encode(`data: ${JSON.stringify({ message: "error" })}\n\n`),
+          encoder.encode(`data: ${JSON.stringify({ message: ERROR_LLM })}\n\n`),
         );
       } finally {
         clearInterval(ping);

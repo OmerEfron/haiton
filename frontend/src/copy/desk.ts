@@ -48,6 +48,12 @@ export const desk = {
     "אין כאן ידיעות כי עוד לא סיפרת כלום. ספר לכתב מה קרה השבוע — הוא ישאל, יבחר זווית, ויחזיר טיוטה לאישור שלך.",
   startFirstInterview: "התחילו ראיון ראשון",
   fillKarteset: "מלאו רקע בכרטסת",
+  quotaTitle: "הגעתם לשתי ידיעות להיום",
+  quotaBody: "מחר הכתב מחכה שוב.",
+  archiveEmpty: "עוד אין ראיונות בארכיון",
+  archivedInterview: "ראיון מהארכיון",
+  archive: "ארכיון",
+  backToEdition: "חזרה למהדורה",
   noFlashes: "לא נמצאו מבזקים כרגע",
   tomorrowTitle: "מה יכול להיות כאן מחר",
   tomorrowCards: [

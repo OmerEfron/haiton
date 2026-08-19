@@ -70,6 +70,7 @@ CREATE TABLE IF NOT EXISTS stories (
   published_at TEXT NOT NULL,
   image_caption TEXT,
   placement TEXT NOT NULL CHECK (placement IN ('lead', 'secondary', 'list')),
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
   PRIMARY KEY (user_id, id)
 );
 
@@ -143,3 +144,16 @@ CREATE TABLE IF NOT EXISTS readers (
 );
 
 CREATE INDEX IF NOT EXISTS idx_readers_name ON readers(name);
+
+CREATE TABLE IF NOT EXISTS interviews (
+  id TEXT NOT NULL,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  day TEXT NOT NULL,
+  started_at TEXT NOT NULL,
+  headline TEXT,
+  session_json TEXT NOT NULL,
+  PRIMARY KEY (user_id, id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_interviews_user_day ON interviews(user_id, day);
+CREATE INDEX IF NOT EXISTS idx_interviews_user_started ON interviews(user_id, started_at);

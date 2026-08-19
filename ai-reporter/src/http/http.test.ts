@@ -10,6 +10,7 @@ const {
   ERROR_INTERVIEW_CLOSED,
   ERROR_INTERVIEW_NOT_FOUND,
   ERROR_INVALID_FORM,
+  ERROR_LLM,
   ERROR_NO_OPEN_INTERVIEW,
   ERROR_STATUS,
 } = await import("../contract.js");
@@ -51,7 +52,13 @@ function fakeDeps() {
     type: "feature",
   });
 
-  return { nextQuestion, writeArticle, turnsSeen };
+  const getUserId = async (cookie: string) => {
+    const match = cookie.match(/(?:^|;\s*)user=([^;]+)/);
+    return match?.[1] ?? "u-test";
+  };
+  const saveInterview = async () => ({ ok: true as const });
+
+  return { nextQuestion, writeArticle, getUserId, saveInterview, turnsSeen };
 }
 
 describe("http session", () => {
@@ -224,7 +231,7 @@ describe("http session", () => {
       tone: "intimate",
       type: "feature",
     });
-    const app = createApp({ nextQuestion, writeArticle });
+    const app = createApp({ ...fakeDeps(), nextQuestion, writeArticle });
     const createRes = await app.request("/interviews", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -280,7 +287,7 @@ describe("http session", () => {
         type: "feature",
       };
     };
-    const app = createApp({ nextQuestion, writeArticle });
+    const app = createApp({ ...fakeDeps(), nextQuestion, writeArticle });
     const createRes = await app.request("/interviews", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -354,6 +361,7 @@ describe("http session", () => {
       };
     };
     const app = createApp({
+      ...fakeDeps(),
       nextQuestion: async () => ({ question: "", done: true }),
       writeArticle,
     });
@@ -415,5 +423,87 @@ describe("http session", () => {
     assert.equal(res.status, ERROR_STATUS.invalidForm);
     const body = await res.json();
     assert.equal(body.message, ERROR_INVALID_FORM);
+  });
+
+  it("429 from saveInterview does not call the LLM", async () => {
+    let llm = 0;
+    const saveInterview = async () => ({
+      ok: false as const,
+      status: 429,
+      message: "הגעתם לשתי ידיעות להיום. מחר הכתב מחכה שוב.",
+    });
+    const nextQuestion = async (): Promise<NextQuestion> => {
+      llm += 1;
+      return { question: "?", done: false };
+    };
+    const writeArticle = async (): Promise<Article> => {
+      llm += 1;
+      return {
+        angle: "זווית",
+        headline: "כותרת",
+        standfirst: "משנה",
+        paragraphs: ["פסקה"],
+        tone: "intimate",
+        type: "feature",
+      };
+    };
+    const app = createApp({ ...fakeDeps(), saveInterview, nextQuestion, writeArticle });
+    const createRes = await app.request("/interviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ facts: FACTS }),
+    });
+    const { id } = await createRes.json();
+    const res = await app.request(`/interviews/${id}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "שלום" }),
+    });
+    assert.equal(res.status, 429);
+    assert.equal(llm, 0);
+  });
+
+  it("two users do not share a session", async () => {
+    const app = createApp(fakeDeps());
+    const a = await app.request("/interviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: "user=a" },
+      body: JSON.stringify({ facts: FACTS }),
+    });
+    const b = await app.request("/interviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: "user=b" },
+      body: JSON.stringify({ facts: FACTS }),
+    });
+    const sa = (await a.json()) as { id: string };
+    const sb = (await b.json()) as { id: string };
+    assert.notEqual(sa.id, sb.id);
+
+    const getA = await app.request("/interviews", { headers: { Cookie: "user=a" } });
+    const getB = await app.request("/interviews", { headers: { Cookie: "user=b" } });
+    assert.equal(((await getA.json()) as { id: string }).id, sa.id);
+    assert.equal(((await getB.json()) as { id: string }).id, sb.id);
+  });
+
+  it("LLM throw becomes an SSE error payload", async () => {
+    const writeArticle = async (): Promise<Article> => {
+      throw new Error("boom");
+    };
+    const app = createApp({
+      ...fakeDeps(),
+      writeArticle,
+      nextQuestion: async () => ({ question: "", done: true }),
+    });
+    const createRes = await app.request("/interviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ facts: FACTS }),
+    });
+    const { id } = await createRes.json();
+    const res = await app.request(`/interviews/${id}/draft`, { method: "POST" });
+    assert.equal(res.status, 200);
+    const payload = parseSseJson(await res.text()) as { message?: string; id?: string };
+    assert.equal(payload.message, ERROR_LLM);
+    assert.equal(payload.id, undefined);
   });
 });

@@ -3,12 +3,31 @@
 
 export class ApiError extends Error {
   status: number;
+  retryAfter?: number;
 
-  constructor(message: string, status = 400) {
+  constructor(message: string, status = 400, retryAfter?: number) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    if (retryAfter != null) this.retryAfter = retryAfter;
   }
+}
+
+function retryAfterOf(res: Response): number | undefined {
+  const raw = res.headers.get("Retry-After");
+  if (!raw || !/^\d+$/.test(raw)) return undefined;
+  return Number(raw);
+}
+
+export async function readError(res: Response): Promise<ApiError> {
+  let message = res.statusText || "Request failed";
+  try {
+    const body = (await res.json()) as { message?: string };
+    if (typeof body.message === "string" && body.message) message = body.message;
+  } catch {
+    /* non-JSON error body */
+  }
+  return new ApiError(message, res.status, retryAfterOf(res));
 }
 
 const API_BASE = import.meta.env.VITE_API_URL ?? "";
@@ -30,14 +49,7 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!res.ok) {
-    let message = res.statusText || "Request failed";
-    try {
-      const body = (await res.json()) as { message?: string };
-      if (typeof body.message === "string" && body.message) message = body.message;
-    } catch {
-      /* non-JSON error body */
-    }
-    throw new ApiError(message, res.status);
+    throw await readError(res);
   }
 
   if (res.status === 204) return undefined as T;

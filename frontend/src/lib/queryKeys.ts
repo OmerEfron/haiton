@@ -12,4 +12,7 @@ export const qk = {
   suggestedConnections: ["suggested-connections"] as const,
   readerSearch: (q: string) => ["reader-search", q] as const,
   interview: ["interview"] as const,
+  quota: ["quota"] as const,
+  deskInterviews: ["desk-interviews"] as const,
+  deskInterview: (id: string) => ["desk-interview", id] as const,
 };

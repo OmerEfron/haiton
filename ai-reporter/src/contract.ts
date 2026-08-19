@@ -74,6 +74,10 @@ export const ERROR_EMPTY_MESSAGE = "אי אפשר לשלוח הודעה ריקה
 export const ERROR_INTERVIEW_NOT_FOUND = "ראיון לא נמצא";
 export const ERROR_INTERVIEW_CLOSED = "הראיון הסתיים";
 export const ERROR_INVALID_FORM = "בחירה לא חוקית";
+export const ERROR_UNAUTHORIZED = "יש להתחבר כדי להמשיך";
+export const ERROR_RATE_LIMIT = "יותר מדי בקשות. נסו שוב בעוד רגע.";
+export const ERROR_LLM = "הכתב לא הצליח לנסח תשובה. נסו שוב.";
+export const ERROR_INTERNAL = "משהו השתבש בשולחן העורכים";
 
 /** HTTP status codes paired with the Hebrew errors above. */
 export const ERROR_STATUS = {
@@ -82,6 +86,8 @@ export const ERROR_STATUS = {
   interviewNotFound: 404,
   interviewClosed: 409,
   invalidForm: 400,
+  unauthorized: 401,
+  llm: 502,
 } as const;
 
 /** Wire keys for InterviewMessage (matches frontend/src/api/types.ts). */

@@ -27,6 +27,8 @@
       "/readers",
       "/profile",
       "/profile/*",
+      "/quota",
+      "/desk/*",
       "/interviews",
       "/interviews/*"
     ]

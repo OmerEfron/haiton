@@ -226,6 +226,20 @@ export interface InterviewSession {
 /** Reader turns after which the reporter stops and writes a draft. */
 export const MAX_INTERVIEW_MESSAGES = 4;
 
+export interface Quota {
+  limit: number;
+  used: number;
+  remaining: number;
+  resetsAt: string;
+}
+
+export interface InterviewListItem {
+  id: string;
+  startedAt: string;
+  headline: string | null;
+  exhausted: boolean;
+}
+
 export interface Session {
   user: User;
   editionName: string;

@@ -3,6 +3,7 @@
 
 import type { InterviewSession, SectionId, ArticleTypeId, ToneId } from "../types";
 import { ApiError } from "../client";
+import { getQuota } from "../core/desk";
 import { listFacts } from "../core/karteset";
 import { reporterRequest } from "./fetch";
 
@@ -19,6 +20,15 @@ export async function startSession(subjectName?: string): Promise<InterviewSessi
       ...(name ? { subjectName: name } : {}),
     }),
   });
+}
+
+/** Resume a live session, or start one when quota remains. Null = daily cap, nothing open. */
+export async function loadOrStartSession(subjectName?: string): Promise<InterviewSession | null> {
+  const existing = await reporterRequest<InterviewSession | undefined>("/interviews");
+  if (existing) return existing;
+  const quota = await getQuota();
+  if (quota.remaining === 0) return null;
+  return startSession(subjectName);
 }
 
 export async function getSession(): Promise<InterviewSession | null> {

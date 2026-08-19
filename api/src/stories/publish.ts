@@ -115,8 +115,8 @@ export function publishDraft(
   db.prepare(
     `INSERT INTO stories (
       id, user_id, section, section_name, edition_label, headline, standfirst,
-      body_json, angle, byline, published_at, image_caption, placement
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'lead')`,
+      body_json, angle, byline, published_at, image_caption, placement, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'lead', ?)`,
   ).run(
     storyId,
     userId,
@@ -130,6 +130,7 @@ export function publishDraft(
     BYLINE,
     full,
     "placeholder",
+    new Date().toISOString(),
   );
 
   const flashId = `f_${Date.now()}`;

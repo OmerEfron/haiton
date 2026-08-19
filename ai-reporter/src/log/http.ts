@@ -1,5 +1,7 @@
+import { HTTPException } from "hono/http-exception";
+import { ERROR_INTERNAL } from "../contract.js";
 import { structuredLogger } from "@hono/structured-logger";
-import type { Context, Hono } from "hono";
+import type { Context, Env, Hono } from "hono";
 import { requestId } from "hono/request-id";
 import type { RequestIdVariables } from "hono/request-id";
 import { getLogger, root, runWithLogger } from "./logger.js";
@@ -22,7 +24,7 @@ function httpLevel(status: number): "info" | "warn" | "error" {
   return "info";
 }
 
-export function useHttpLogging(app: Hono): void {
+export function useHttpLogging<E extends Env>(app: Hono<E>): void {
   app.use("*", requestId());
   app.use("*", async (c, next) => {
     const id = (c.var as RequestIdVariables).requestId;
@@ -43,5 +45,10 @@ export function useHttpLogging(app: Hono): void {
       },
     }),
   );
-  app.onError((_err, c) => c.json({ message: "internal error" }, 500));
+  app.onError((err, c) => {
+    if (err instanceof HTTPException) {
+      return c.json({ message: err.message }, err.status);
+    }
+    return c.json({ message: ERROR_INTERNAL }, 500);
+  });
 }

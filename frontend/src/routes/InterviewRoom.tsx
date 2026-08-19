@@ -7,9 +7,10 @@ import { ChatBubble, TimeStamp, TypingIndicator } from "../components/interview/
 import { DraftPanel } from "../components/interview/DraftPanel";
 import { ArticleFormChips } from "../components/interview/ArticleFormChips";
 import { Avatar, ErrorState, LivePill, Loading } from "../components/ui/Bits";
-import { Button } from "../components/ui/Button";
+import { Button, ButtonLink } from "../components/ui/Button";
 import { Chip } from "../components/ui/Chip";
 import { TextArea } from "../components/ui/Field";
+import { EmptyState } from "../components/ui/EmptyState";
 import {
   MAX_INTERVIEW_MESSAGES,
   type ArticleTypeId,
@@ -17,10 +18,10 @@ import {
 } from "../api/types";
 import {
   discardSession,
+  loadOrStartSession,
   requestDraft,
   sendMessage,
   setArticleForm,
-  startSession,
 } from "../api/reporter/interview";
 import { publishStory } from "../api/core/stories";
 import { qk } from "../lib/queryKeys";
@@ -38,7 +39,8 @@ export function InterviewRoom() {
 
   const interview = useQuery({
     queryKey: qk.interview,
-    queryFn: () => startSession(appSession?.user.name),
+    queryFn: () => loadOrStartSession(appSession?.user.name),
+    staleTime: 0,
   });
 
   const refresh = () => client.invalidateQueries({ queryKey: qk.interview });
@@ -46,6 +48,7 @@ export function InterviewRoom() {
   const send = useMutation({
     mutationFn: (value: string) => sendMessage(value),
     onMutate: () => setText(""),
+    onError: (_err, value) => setText(value),
     onSuccess: refresh,
   });
 
@@ -87,9 +90,19 @@ export function InterviewRoom() {
   if (interview.error) return <ErrorState error={interview.error} />;
 
   const s = interview.data;
-  // BottomNav peeks the same query key with getSession(), which is null until
-  // this page starts an interview. Cached null is a successful result.
-  if (!s) return <Loading />;
+  if (!s) {
+    return (
+      <EmptyState
+        title={desk.quotaTitle}
+        body={desk.quotaBody}
+        actions={
+          <ButtonLink to="/" size="lg">
+            {desk.backToEdition}
+          </ButtonLink>
+        }
+      />
+    );
+  }
   const readerName = appSession?.user.name.split(" ")[0] ?? "אתה";
   const readerTurns = s.messages.filter((m) => m.role === "reader").length;
   const firstInterview = readerTurns === 0;
@@ -271,7 +284,9 @@ export function InterviewRoom() {
         </div>
       )}
 
-      {publish.error && <ErrorState error={publish.error} />}
+      {(send.error || draftIt.error || publish.error) && (
+        <ErrorState error={send.error || draftIt.error || publish.error} />
+      )}
     </div>
   );
 }

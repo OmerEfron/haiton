@@ -97,7 +97,7 @@ export const profileCopy = {
   },
   reminderValue: (at: string | null) => (at ? `כל יום ב-${at}` : "כבוי"),
   archive: "ארכיון",
-  archiveIntro: "כל המהדורות שיצאו מאז ינואר 2026, לפי חודש.",
+  archiveIntro: "ראיונות קודמים והידיעות שנוסחו — לקריאה בלבד.",
 } as const;
 
 export const authCopy = {

@@ -3,7 +3,7 @@ import { SESSION_OPENERS } from "../contract.js";
 import type { FactInput, Turn } from "../types.js";
 import type { Draft, InterviewMessage, InterviewSession, SessionState } from "./types.js";
 
-let current: SessionState | null = null;
+const sessions = new Map<string, SessionState>();
 
 function emptyDraft(): Draft {
   return {
@@ -19,15 +19,17 @@ function emptyDraft(): Draft {
   };
 }
 
-export function getCurrentSession(): SessionState | null {
-  return current;
+export function getCurrentSession(userId: string): SessionState | null {
+  return sessions.get(userId) ?? null;
 }
 
-export function clearSession(): void {
-  current = null;
+export function clearSession(userId?: string): void {
+  if (userId) sessions.delete(userId);
+  else sessions.clear();
 }
 
 export function createSession(
+  userId: string,
   facts: FactInput[],
   subjectName?: string,
 ): SessionState {
@@ -46,8 +48,14 @@ export function createSession(
     tone: null,
   };
   const name = subjectName?.trim();
-  current = { ...session, facts, turns: [], ...(name ? { subjectName: name } : {}) };
-  return current;
+  const state: SessionState = {
+    ...session,
+    facts,
+    turns: [],
+    ...(name ? { subjectName: name } : {}),
+  };
+  sessions.set(userId, state);
+  return state;
 }
 
 export function newMessage(role: InterviewMessage["role"], text: string): InterviewMessage {

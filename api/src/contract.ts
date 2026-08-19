@@ -14,6 +14,13 @@ export interface RouteContract {
 /** Cookie session name — httpOnly, set by auth router (W1). */
 export const SESSION_COOKIE_NAME = "iton_session";
 
+export const ERROR_UNAUTHORIZED = "יש להתחבר כדי להמשיך";
+export const ERROR_DAILY_QUOTA = "הגעתם לשתי ידיעות להיום. מחר הכתב מחכה שוב.";
+export const ERROR_RATE_LIMIT = "יותר מדי בקשות. נסו שוב בעוד רגע.";
+export const ERROR_INTERNAL = "משהו השתבש בשולחן העורכים";
+export const ERROR_INTERVIEW_NOT_FOUND = "ראיון לא נמצא בארכיון";
+export const DAILY_INTERVIEW_LIMIT = 2;
+
 export const ROUTES: readonly RouteContract[] = [
   { method: "GET", path: "/health" },
   { method: "GET", path: "/auth/session", handler: "getSession" },
@@ -83,6 +90,14 @@ export const ROUTES: readonly RouteContract[] = [
     path: "/readers",
     handler: "searchReaders",
     notes: "query: q",
+  },
+  { method: "GET", path: "/quota", handler: "getQuota" },
+  { method: "GET", path: "/desk/interviews", handler: "listInterviews" },
+  { method: "GET", path: "/desk/interviews/:id", handler: "getArchivedInterview" },
+  {
+    method: "PUT",
+    path: "/desk/interviews/:id",
+    notes: "reporter upsert; body: InterviewSession",
   },
 ] as const;
 
