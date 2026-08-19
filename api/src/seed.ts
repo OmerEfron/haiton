@@ -8,6 +8,7 @@ const DEFAULT_NAME = "עומר";
 
 /** Idempotent login-only seed: one user, empty edition. No-op without SEED_USER_EMAIL. */
 export function seed(): void {
+  if (process.env.NODE_ENV === "production") return;
   const email = process.env.SEED_USER_EMAIL?.trim();
   if (!email) return;
   const password = process.env.SEED_USER_PASSWORD?.trim() || DEFAULT_PASSWORD;

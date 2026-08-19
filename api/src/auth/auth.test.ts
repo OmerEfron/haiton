@@ -141,7 +141,7 @@ test("sign-up returns 400 when email exists with wrong password", async () => {
   }
 });
 
-test("sign-up of an existing email signs in when the password matches", async () => {
+test("sign-up of an existing email returns 400 even when the password matches", async () => {
   const dbPath = tempDbPath();
   try {
     seedUser(dbPath);
@@ -155,10 +155,33 @@ test("sign-up of an existing email signs in when the password matches", async ()
         password: SEED_PASSWORD,
       }),
     });
-    assert.equal(res.status, 200);
-    const session = (await res.json()) as Session;
-    assert.equal(session.user.email, SEED_EMAIL);
-    assert.ok(cookieFromResponse(res));
+    assert.equal(res.status, 400);
+    const body = (await res.json()) as { message: string };
+    assert.equal(body.message, "הדוא״ל הזה כבר רשום");
+  } finally {
+    resetAuthDb();
+    rmSync(join(dbPath, ".."), { recursive: true, force: true });
+    delete process.env.DATABASE_PATH;
+  }
+});
+
+test("sign-up returns 400 for a short password", async () => {
+  const dbPath = tempDbPath();
+  try {
+    seedUser(dbPath);
+    const app = makeApp();
+    const res = await app.request("/auth/sign-up", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "עומר",
+        email: "new@example.com",
+        password: "1",
+      }),
+    });
+    assert.equal(res.status, 400);
+    const body = (await res.json()) as { message: string };
+    assert.equal(body.message, "הסיסמה חייבת להיות לפחות 8 תווים");
   } finally {
     resetAuthDb();
     rmSync(join(dbPath, ".."), { recursive: true, force: true });

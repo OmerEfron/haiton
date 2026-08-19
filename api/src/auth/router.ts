@@ -6,7 +6,7 @@ import { closeDb, getDb } from "../db.ts";
 import type { Session, User } from "../types.ts";
 import { getLogger } from "../log/logger.ts";
 import { provisionUser } from "../provision.ts";
-import { hashPassword, verifyPassword } from "./password.ts";
+import { assertPasswordOk, hashPassword, verifyPassword } from "./password.ts";
 
 const SIGN_IN_ERROR = "צריך דוא״ל וסיסמה כדי להיכנס";
 const SIGN_UP_ERROR = "צריך שם, דוא״ל וסיסמה כדי לפתוח מהדורה";
@@ -126,6 +126,8 @@ export const authRouter = new Hono()
     const email = body.email?.trim() ?? "";
     const password = body.password?.trim() ?? "";
     if (!name || !email || !password) return badRequest(c, SIGN_UP_ERROR);
+    const passwordError = assertPasswordOk(password);
+    if (passwordError) return badRequest(c, passwordError);
 
     const userId = randomUUID();
     const initial = [...name][0] ?? name.charAt(0);
@@ -143,20 +145,7 @@ export const authRouter = new Hono()
       provisionUser(db, userId, editionName);
     } catch {
       getLogger().info({ event: "auth.signup_conflict" }, "signup conflict");
-      const existing = db
-        .prepare(
-          "SELECT id, password_hash FROM users WHERE email = ? COLLATE NOCASE",
-        )
-        .get(email) as { id: string; password_hash: string } | undefined;
-      if (!existing) return badRequest(c, SIGN_UP_ERROR);
-      if (!verifyPassword(password, existing.password_hash)) {
-        return badRequest(c, SIGN_UP_EMAIL_EXISTS_ERROR);
-      }
-      const existingSessionId = createSession(existing.id);
-      setSessionCookie(c, existingSessionId);
-      const existingSession = loadSession(existing.id);
-      if (!existingSession) return c.json({ message: "Session failed" }, 500);
-      return c.json(existingSession);
+      return badRequest(c, SIGN_UP_EMAIL_EXISTS_ERROR);
     }
 
     const sessionId = createSession(userId);

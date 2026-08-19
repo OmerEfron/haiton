@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import styles from "./LoginPage.module.css";
@@ -20,26 +20,42 @@ export function LoginPage() {
 
   const [mode, setMode] = useState<Mode>("signIn");
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("omer@example.com");
-  const [password, setPassword] = useState("iton-dev");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const from = (location.state as { from?: string } | null)?.from ?? "/";
 
   const submit = useMutation({
-    mutationFn: async () =>
-      mode === "signIn" ? signIn({ email, password }) : signUp({ name, email, password }),
+    mutationFn: async () => {
+      if (mode === "signIn") return signIn({ email, password });
+      if (password.length < 8) throw new Error(authCopy.passwordTooShort);
+      if (password !== confirmPassword) throw new Error(authCopy.passwordMismatch);
+      return signUp({ name, email, password });
+    },
     onSuccess: async () => {
       await client.invalidateQueries({ queryKey: qk.session });
       navigate(from, { replace: true });
     },
   });
 
+  const resetSubmit = submit.reset;
+  useEffect(() => {
+    resetSubmit();
+  }, [email, password, name, mode, confirmPassword, resetSubmit]);
+
   if (session) return <Navigate to={from} replace />;
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
+    if (mode === "signUp") {
+      if (!name.trim() || password.length < 8 || password !== confirmPassword) return;
+    }
     submit.mutate();
   }
+
+  const signupBlocked =
+    !name.trim() || password !== confirmPassword || password.length < 8;
 
   return (
     <div className={styles.screen}>
@@ -91,10 +107,25 @@ export function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               autoComplete={mode === "signIn" ? "current-password" : "new-password"}
             />
+            {mode === "signUp" && (
+              <TextField
+                label={authCopy.confirmPassword}
+                ltr
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
+              />
+            )}
 
             {submit.error && <p className={styles.error}>{(submit.error as Error).message}</p>}
 
-            <Button type="submit" size="xl" block disabled={submit.isPending}>
+            <Button
+              type="submit"
+              size="xl"
+              block
+              disabled={submit.isPending || (mode === "signUp" && signupBlocked)}
+            >
               {submit.isPending
                 ? "רגע…"
                 : mode === "signIn"
