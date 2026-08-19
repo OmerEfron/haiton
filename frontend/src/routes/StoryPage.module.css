@@ -23,14 +23,14 @@
 }
 .author { font-weight: 700; color: var(--ink); }
 .bullet { width: 4px; height: 4px; background: var(--dot); border-radius: 50%; flex: none; }
-.angle {
-  margin-inline-start: auto;
-  padding: 4px 9px;
-  background: var(--tint);
-  border: 1px solid var(--rule);
-  font: 500 11.5px/1 var(--sans);
+.share {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin: 0 0 22px;
 }
-.caption { margin: 8px 0 22px; font: 400 11.5px/1.5 var(--sans); color: var(--ph-ink); }
+.share a { font: 700 12px/1 var(--sans); color: var(--paper-red); }
 .body {
   font: 400 17px/1.85 var(--sans);
   color: var(--ink);
@@ -58,5 +58,4 @@
   .standfirst { font-size: 16px; }
   .body { font-size: 16px; line-height: 1.8; }
   .quote { font-size: 18px; }
-  .angle { margin-inline-start: 0; }
 }

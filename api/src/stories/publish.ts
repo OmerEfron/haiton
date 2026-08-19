@@ -129,7 +129,7 @@ export function publishDraft(
     angleFromDraft(draft),
     BYLINE,
     full,
-    "placeholder",
+    null,
     new Date().toISOString(),
   );
 

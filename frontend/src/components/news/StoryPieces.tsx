@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import styles from "./News.module.css";
 import type { Flash, Story } from "../../api/types";
-import { Kicker, Placeholder } from "../ui/Bits";
+import { Kicker } from "../ui/Bits";
 import { Tag } from "../ui/Chip";
 
 /** Which edition published the story — shown when the tag setting is on. */
@@ -14,12 +14,10 @@ export function LeadStory({
   story,
   editionName,
   showTag,
-  imageHeight = 300,
 }: {
   story: Story;
   editionName: string;
   showTag: boolean;
-  imageHeight?: number;
 }) {
   return (
     <article>
@@ -32,9 +30,6 @@ export function LeadStory({
         <Link to={`/story/${story.id}`}>{story.headline}</Link>
       </h2>
       <p className={styles.leadStandfirst}>{story.standfirst}</p>
-      <div className={styles.leadImage}>
-        <Placeholder height={imageHeight} sub={story.imageCaption} />
-      </div>
       <div className={styles.leadByline}>
         <time>{story.publishedAt}</time>
         <span className={styles.bullet} />
@@ -55,7 +50,6 @@ export function StoryCard({ story, showTag }: { story: Story; showTag: boolean }
       <h3 className={styles.cardHeadline}>
         <Link to={`/story/${story.id}`}>{story.headline}</Link>
       </h3>
-      <Placeholder height={110} />
       <time className={styles.cardTime}>{story.publishedAt}</time>
     </article>
   );
@@ -77,7 +71,6 @@ export function StoryListRow({ story, showTag }: { story: Story; showTag: boolea
 export function StoryThumbRow({ story, showTag }: { story: Story; showTag: boolean }) {
   return (
     <Link to={`/story/${story.id}`} className={styles.thumbRow}>
-      <span className={styles.thumb} />
       <span>
         <span className={styles.listMeta}>
           {story.sectionName}
