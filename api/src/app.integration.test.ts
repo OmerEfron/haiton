@@ -47,6 +47,8 @@ async function authedGet(app: App, cookie: string, path: string) {
 }
 
 function setup(): App {
+  process.env.SEED_USER_EMAIL = SEED_EMAIL;
+  process.env.SEED_USER_PASSWORD = SEED_PASSWORD;
   closeDb();
   seed();
   return createApp();
@@ -56,6 +58,8 @@ function teardown(dbPath: string): void {
   closeDb();
   rmSync(join(dbPath, ".."), { recursive: true, force: true });
   delete process.env.DATABASE_PATH;
+  delete process.env.SEED_USER_EMAIL;
+  delete process.env.SEED_USER_PASSWORD;
 }
 
 const UI_GETS = [

@@ -18,6 +18,7 @@ import {
   newMessage,
   toWireSession,
 } from "./session.js";
+import { sseJson } from "./sse.js";
 import type { NextQuestionFn, SectionId, SessionState, WriteArticleFn } from "./types.js";
 
 const DEFAULT_ORIGIN = "http://localhost:5173";
@@ -159,24 +160,26 @@ export function createApp(deps?: AppDeps): Hono {
 
     const { nextQuestion, writeArticle } = await getDeps();
 
-    state!.messages.push(newMessage("reader", text));
-    state!.turns = buildTurns(state!.messages);
+    return sseJson(async () => {
+      state!.messages.push(newMessage("reader", text));
+      state!.turns = buildTurns(state!.messages);
 
-    if (readerCount(state!) >= MAX_MESSAGES) {
-      await closeWithDraft(state!, writeArticle);
-      return c.json(toWireSession(state!));
-    }
+      if (readerCount(state!) >= MAX_MESSAGES) {
+        await closeWithDraft(state!, writeArticle);
+        return toWireSession(state!);
+      }
 
-    const result = await nextQuestion(state!.facts, state!.turns);
-    if (result.question) {
-      state!.messages.push(newMessage("reporter", result.question));
-    }
+      const result = await nextQuestion(state!.facts, state!.turns);
+      if (result.question) {
+        state!.messages.push(newMessage("reporter", result.question));
+      }
 
-    if (result.done && !result.question) {
-      await closeWithDraft(state!, writeArticle);
-    }
+      if (result.done && !result.question) {
+        await closeWithDraft(state!, writeArticle);
+      }
 
-    return c.json(toWireSession(state!));
+      return toWireSession(state!);
+    });
   });
 
   app.post("/interviews/:id/draft", async (c) => {
@@ -185,8 +188,10 @@ export function createApp(deps?: AppDeps): Hono {
     if (error) return error;
 
     const { writeArticle } = await getDeps();
-    await closeWithDraft(state!, writeArticle);
-    return c.json(toWireSession(state!));
+    return sseJson(async () => {
+      await closeWithDraft(state!, writeArticle);
+      return toWireSession(state!);
+    });
   });
 
   app.patch("/interviews/:id/draft/section", async (c) => {

@@ -29,5 +29,12 @@ export async function reporterRequest<T>(path: string, init?: RequestInit): Prom
 
   const text = await res.text();
   if (!text) return undefined as T;
+  const type = res.headers.get("content-type") ?? "";
+  if (type.includes("text/event-stream")) {
+    const matches = [...text.matchAll(/^data: (.+)$/gm)];
+    const last = matches.at(-1)?.[1];
+    if (!last) throw new ApiError("Empty reporter stream");
+    return JSON.parse(last) as T;
+  }
   return JSON.parse(text) as T;
 }

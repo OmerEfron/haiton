@@ -27,6 +27,8 @@ test("integrated app: /health and one GET per module", async () => {
   const dbPath = tempDbPath();
   try {
     process.env.DATABASE_PATH = dbPath;
+    process.env.SEED_USER_EMAIL = SEED_EMAIL;
+    process.env.SEED_USER_PASSWORD = SEED_PASSWORD;
     closeDb();
     seed();
     const app = createApp();
@@ -69,5 +71,7 @@ test("integrated app: /health and one GET per module", async () => {
     closeDb();
     rmSync(join(dbPath, ".."), { recursive: true, force: true });
     delete process.env.DATABASE_PATH;
+    delete process.env.SEED_USER_EMAIL;
+    delete process.env.SEED_USER_PASSWORD;
   }
 });

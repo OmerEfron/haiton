@@ -59,13 +59,19 @@ function createSession(userId: string): string {
   return id;
 }
 
-function setSessionCookie(c: Parameters<typeof setCookie>[0], sessionId: string): void {
-  setCookie(c, SESSION_COOKIE_NAME, sessionId, {
+function cookieOpts() {
+  const crossSite = process.env.COOKIE_SAMESITE === "None";
+  return {
     httpOnly: true,
     path: "/",
-    sameSite: "Lax",
+    sameSite: (crossSite ? "None" : "Lax") as "None" | "Lax",
+    secure: crossSite,
     maxAge: SESSION_MAX_AGE,
-  });
+  };
+}
+
+function setSessionCookie(c: Parameters<typeof setCookie>[0], sessionId: string): void {
+  setCookie(c, SESSION_COOKIE_NAME, sessionId, cookieOpts());
 }
 
 function sessionFromCookie(c: Parameters<typeof getCookie>[0]): Session | null {
@@ -162,7 +168,7 @@ export const authRouter = new Hono()
     if (sessionId) {
       getDb().prepare("DELETE FROM sessions WHERE id = ?").run(sessionId);
     }
-    deleteCookie(c, SESSION_COOKIE_NAME, { path: "/" });
+    deleteCookie(c, SESSION_COOKIE_NAME, cookieOpts());
     return c.body(null, 204);
   });
 

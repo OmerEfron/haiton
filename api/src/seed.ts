@@ -3,13 +3,13 @@ import { hashPassword } from "./auth/password.ts";
 import { getDb } from "./db.ts";
 import { provisionUser } from "./provision.ts";
 
-const DEFAULT_EMAIL = "omer@example.com";
 const DEFAULT_PASSWORD = "iton-dev";
 const DEFAULT_NAME = "עומר";
 
-/** Idempotent login-only seed: one user, empty edition. */
+/** Idempotent login-only seed: one user, empty edition. No-op without SEED_USER_EMAIL. */
 export function seed(): void {
-  const email = process.env.SEED_USER_EMAIL?.trim() || DEFAULT_EMAIL;
+  const email = process.env.SEED_USER_EMAIL?.trim();
+  if (!email) return;
   const password = process.env.SEED_USER_PASSWORD?.trim() || DEFAULT_PASSWORD;
   const db = getDb();
 
