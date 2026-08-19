@@ -158,6 +158,57 @@ test("GET /profile without session returns 401", async () => {
   }
 });
 
+test("PATCH /profile updates name, initial, city, headline", async () => {
+  const dbPath = tempDbPath();
+  try {
+    seedProfile(dbPath);
+    const app = makeApp();
+    const headers = {
+      Cookie: sessionCookie(),
+      "Content-Type": "application/json",
+    };
+
+    const emptyRes = await app.request("/profile", {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ name: "   " }),
+    });
+    assert.equal(emptyRes.status, 400);
+
+    const noSession = await app.request("/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "נועה כהן" }),
+    });
+    assert.equal(noSession.status, 401);
+
+    const patchRes = await app.request("/profile", {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ name: "נועה כהן", city: "תל אביב", headline: "עורכת" }),
+    });
+    assert.equal(patchRes.status, 200);
+    const patched = (await patchRes.json()) as Profile;
+    assertProfileShape(patched);
+    assert.equal(patched.user.name, "נועה כהן");
+    assert.equal(patched.user.initial, "נ");
+    assert.equal(patched.user.city, "תל אביב");
+    assert.equal(patched.user.headline, "עורכת");
+
+    const getRes = await app.request("/profile", { headers: { Cookie: sessionCookie() } });
+    assert.equal(getRes.status, 200);
+    const profile = (await getRes.json()) as Profile;
+    assert.equal(profile.user.name, "נועה כהן");
+    assert.equal(profile.user.initial, "נ");
+    assert.equal(profile.user.city, "תל אביב");
+    assert.equal(profile.user.headline, "עורכת");
+  } finally {
+    resetProfileDb();
+    rmSync(join(dbPath, ".."), { recursive: true, force: true });
+    delete process.env.DATABASE_PATH;
+  }
+});
+
 test.after(() => {
   closeDb();
 });
