@@ -1,4 +1,5 @@
 import { complete } from "../llm.js";
+import { getLogger } from "../log/logger.js";
 import type {
   Article,
   ArticleTypeId,
@@ -176,7 +177,16 @@ export async function writeArticle({
   const input = buildWriterInput(facts, turns, subjectName);
 
   const output = await complete({ instructions, input });
-  const raw = parseArticleOutput(output, pickType, pickTone);
+  let raw: RawArticle;
+  try {
+    raw = parseArticleOutput(output, pickType, pickTone);
+  } catch (err) {
+    getLogger().warn(
+      { event: "llm.parse_error", outputChars: output.length },
+      "writer parse failed",
+    );
+    throw err;
+  }
 
   return {
     angle: raw.angle,

@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { getLogger } from "./log/logger.js";
 import { MODEL } from "./types.js";
 
 let callCount = 0;
@@ -23,16 +24,40 @@ export async function complete({
   }
 
   callCount += 1;
-  console.log(`[llm] call ${callCount}`);
-
-  const client = new OpenAI();
+  const started = performance.now();
   const model = process.env.OPENAI_MODEL ?? MODEL;
+  const log = getLogger();
 
-  const response = await client.responses.create({
-    model,
-    instructions,
-    input,
-  });
-
-  return response.output_text;
+  try {
+    const client = new OpenAI();
+    const response = await client.responses.create({
+      model,
+      instructions,
+      input,
+    });
+    const output = response.output_text;
+    log.info(
+      {
+        event: "llm.call",
+        model,
+        call: callCount,
+        elapsedMs: Math.round(performance.now() - started),
+        inputChars: input.length,
+        outputChars: output.length,
+      },
+      "llm call",
+    );
+    return output;
+  } catch (err) {
+    log.error(
+      {
+        event: "llm.error",
+        err,
+        model,
+        elapsedMs: Math.round(performance.now() - started),
+      },
+      "llm error",
+    );
+    throw err;
+  }
 }

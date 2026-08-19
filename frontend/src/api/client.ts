@@ -19,6 +19,9 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (init?.body != null && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
+  if (!headers.has("X-Request-Id")) {
+    headers.set("X-Request-Id", crypto.randomUUID());
+  }
 
   const res = await fetch(`${API_BASE}${path}`, {
     ...init,

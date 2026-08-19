@@ -3,6 +3,7 @@ import { cors } from "hono/cors";
 import { authRouter } from "./auth/index.ts";
 import { createCircleRouter } from "./circle/router.ts";
 import { kartesetRouter } from "./karteset/router.ts";
+import { useHttpLogging } from "./log/http.ts";
 import { profileRouter } from "./profile/index.ts";
 import { createStoriesRouter } from "./stories/router.ts";
 
@@ -21,6 +22,7 @@ export function createApp(): Hono {
       credentials: true,
     }),
   );
+  useHttpLogging(app);
 
   app.get("/health", (c) => c.json({ ok: true }));
 

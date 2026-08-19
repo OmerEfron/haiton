@@ -18,6 +18,7 @@ import {
   newMessage,
   toWireSession,
 } from "./session.js";
+import { useHttpLogging } from "../log/http.js";
 import { sseJson } from "./sse.js";
 import type { NextQuestionFn, SectionId, SessionState, WriteArticleFn } from "./types.js";
 
@@ -119,6 +120,7 @@ export function createApp(deps?: AppDeps): Hono {
         .filter(Boolean),
     }),
   );
+  useHttpLogging(app);
 
   app.get("/health", (c) => c.json({ ok: true }));
 

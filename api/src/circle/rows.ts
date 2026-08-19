@@ -1,3 +1,4 @@
+import { getLogger } from "../log/logger.ts";
 import type { Connection, ConnectionStatus, Invitation, RelationKind, SectionId } from "../types.ts";
 
 interface ConnectionRow {
@@ -31,6 +32,7 @@ export function parseSettings(json: string): Connection["settings"] {
       notifyOnPublish: Boolean(parsed?.notifyOnPublish),
     };
   } catch {
+    getLogger().warn({ event: "settings.parse_failed" }, "settings parse failed");
     return { seesMyEdition: true, showsFullName: true, notifyOnPublish: false };
   }
 }

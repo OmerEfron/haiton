@@ -8,6 +8,9 @@ export async function reporterRequest<T>(path: string, init?: RequestInit): Prom
   if (init?.body != null && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
+  if (!headers.has("X-Request-Id")) {
+    headers.set("X-Request-Id", crypto.randomUUID());
+  }
 
   const res = await fetch(`${REPORTER_BASE}${path}`, {
     ...init,

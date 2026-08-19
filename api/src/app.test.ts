@@ -36,6 +36,13 @@ test("integrated app: /health and one GET per module", async () => {
     const health = await app.request("/health");
     assert.equal(health.status, 200);
     assert.deepEqual(await health.json(), { ok: true });
+    assert.ok(health.headers.get("X-Request-Id"));
+
+    const traced = await app.request("/health", {
+      headers: { "X-Request-Id": "test-req-1" },
+    });
+    assert.equal(traced.status, 200);
+    assert.equal(traced.headers.get("X-Request-Id"), "test-req-1");
 
     const signIn = await app.request("/auth/sign-in", {
       method: "POST",

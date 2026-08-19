@@ -4,6 +4,7 @@ import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { SESSION_COOKIE_NAME } from "../contract.ts";
 import { closeDb, getDb } from "../db.ts";
 import type { Session, User } from "../types.ts";
+import { getLogger } from "../log/logger.ts";
 import { provisionUser } from "../provision.ts";
 import { hashPassword, verifyPassword } from "./password.ts";
 
@@ -141,6 +142,7 @@ export const authRouter = new Hono()
       ).run(userId, editionName);
       provisionUser(db, userId, editionName);
     } catch {
+      getLogger().info({ event: "auth.signup_conflict" }, "signup conflict");
       const existing = db
         .prepare(
           "SELECT id, password_hash FROM users WHERE email = ? COLLATE NOCASE",

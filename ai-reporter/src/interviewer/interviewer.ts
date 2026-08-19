@@ -1,4 +1,5 @@
 import { complete } from "../llm.js";
+import { getLogger } from "../log/logger.js";
 import type { FactInput, NextQuestion, Turn } from "../types.js";
 import { MAX_MESSAGES } from "../types.js";
 
@@ -43,16 +44,22 @@ function buildInput(facts: FactInput[], turns: Turn[]): string {
   return `כרטיסייה:\n${karteset}\n\nשיחה עד כה:\n${transcript}\n\nתשובות מהקורא: ${turns.length}/${MAX_MESSAGES}`;
 }
 
+function parseFail(outputChars: number): never {
+  getLogger().warn({ event: "llm.parse_error", outputChars }, "interviewer parse failed");
+  throw new Error("interviewer parse failed");
+}
+
 function parseResponse(text: string): NextQuestion {
   const match = text.trim().match(/\{[\s\S]*\}/);
-  if (!match) {
-    throw new Error(`Failed to parse interviewer response: ${text}`);
-  }
+  if (!match) parseFail(text.length);
 
-  const parsed = JSON.parse(match[0]) as { question?: unknown; done?: unknown };
-  if (typeof parsed.done !== "boolean") {
-    throw new Error(`Invalid done field in interviewer response: ${text}`);
+  let parsed: { question?: unknown; done?: unknown };
+  try {
+    parsed = JSON.parse(match[0]) as { question?: unknown; done?: unknown };
+  } catch {
+    parseFail(text.length);
   }
+  if (typeof parsed.done !== "boolean") parseFail(text.length);
 
   const question = typeof parsed.question === "string" ? parsed.question.trim() : "";
   return { question, done: parsed.done };

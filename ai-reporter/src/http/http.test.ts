@@ -57,6 +57,16 @@ function fakeDeps() {
 describe("http session", () => {
   beforeEach(() => clearSession());
 
+  it("honors X-Request-Id on /health", async () => {
+    const app = createApp(fakeDeps());
+    const res = await app.request("/health", {
+      headers: { "X-Request-Id": "test-req-1" },
+    });
+    assert.equal(res.status, 200);
+    assert.deepEqual(await res.json(), { ok: true });
+    assert.equal(res.headers.get("X-Request-Id"), "test-req-1");
+  });
+
   it("create returns empty messages", async () => {
     const app = createApp(fakeDeps());
     const res = await app.request("/interviews", {

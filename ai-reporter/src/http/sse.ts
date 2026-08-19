@@ -1,3 +1,6 @@
+import type { Logger } from "pino";
+import { getLogger } from "../log/logger.js";
+
 const KEEPALIVE_MS = 15_000;
 
 /** Parse the last `data:` payload from an SSE body. */
@@ -9,8 +12,9 @@ export function parseSseJson<T>(text: string): T {
 }
 
 /** Stream `: keepalive` comments while `work` runs, then one `data:` JSON event. */
-export function sseJson(work: () => Promise<unknown>): Response {
+export function sseJson(work: () => Promise<unknown>, log: Logger = getLogger()): Response {
   const encoder = new TextEncoder();
+  const started = performance.now();
   const stream = new ReadableStream({
     async start(controller) {
       const ping = setInterval(() => {
@@ -19,10 +23,17 @@ export function sseJson(work: () => Promise<unknown>): Response {
       try {
         const data = await work();
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+        log.info(
+          { event: "sse.complete", elapsedMs: Math.round(performance.now() - started) },
+          "sse complete",
+        );
       } catch (err) {
-        const message = err instanceof Error ? err.message : "error";
+        log.error(
+          { event: "sse.error", err, elapsedMs: Math.round(performance.now() - started) },
+          "sse error",
+        );
         controller.enqueue(
-          encoder.encode(`data: ${JSON.stringify({ message })}\n\n`),
+          encoder.encode(`data: ${JSON.stringify({ message: "error" })}\n\n`),
         );
       } finally {
         clearInterval(ping);
