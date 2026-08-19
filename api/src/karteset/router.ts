@@ -14,6 +14,13 @@ interface FactRow {
   updated_label: string | null;
 }
 
+function formatUpdatedLabel(raw: string | null): string | undefined {
+  if (!raw) return undefined;
+  const ms = Date.parse(raw);
+  if (Number.isNaN(ms)) return raw;
+  return new Date(ms).toLocaleString("he-IL");
+}
+
 function rowToFact(row: FactRow): Fact {
   const fact: Fact = {
     id: row.id,
@@ -21,7 +28,8 @@ function rowToFact(row: FactRow): Fact {
     text: row.text,
     usedInStories: row.used_in_stories,
   };
-  if (row.updated_label) fact.updatedLabel = row.updated_label;
+  const updatedLabel = formatUpdatedLabel(row.updated_label);
+  if (updatedLabel) fact.updatedLabel = updatedLabel;
   return fact;
 }
 
@@ -63,23 +71,25 @@ kartesetRouter.post("/karteset/facts", async (c) => {
   }
 
   const id = nextFactId();
-  const updatedLabel = "נרשם עכשיו";
+  const updatedAt = new Date().toISOString();
   const db = getDb();
 
   db.prepare(
     `INSERT INTO facts (id, user_id, category, text, used_in_stories, updated_label)
      VALUES (?, ?, ?, ?, 0, ?)`,
-  ).run(id, userId, category, text, updatedLabel);
+  ).run(id, userId, category, text, updatedAt);
 
   db.prepare(`UPDATE profile_stats SET facts = facts + 1 WHERE user_id = ?`).run(userId);
 
-  return c.json({
-    id,
-    category,
-    text,
-    usedInStories: 0,
-    updatedLabel,
-  } satisfies Fact);
+  return c.json(
+    rowToFact({
+      id,
+      category,
+      text,
+      used_in_stories: 0,
+      updated_label: updatedAt,
+    }),
+  );
 });
 
 kartesetRouter.patch("/karteset/facts/:id", async (c) => {
@@ -103,7 +113,7 @@ kartesetRouter.patch("/karteset/facts/:id", async (c) => {
       ? (body.category as FactCategory)
       : undefined;
 
-  const updatedLabel = "עודכן עכשיו";
+  const updatedLabel = new Date().toISOString();
 
   if (category) {
     db.prepare(

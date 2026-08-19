@@ -90,7 +90,8 @@ test("POST /karteset/facts adds fact and bumps profile stats", async () => {
     assert.ok(fact.id.startsWith("k_"));
     assert.equal(fact.text, "new fact");
     assert.equal(fact.usedInStories, 0);
-    assert.equal(fact.updatedLabel, "נרשם עכשיו");
+    assert.ok(fact.updatedLabel);
+    assert.notEqual(fact.updatedLabel, "נרשם עכשיו");
 
     const stats = getDb()
       .prepare(`SELECT facts FROM profile_stats WHERE user_id = ?`)
@@ -142,7 +143,8 @@ test("PATCH /karteset/facts/:id updates fact", async () => {
     };
     assert.equal(fact.text, "updated text");
     assert.equal(fact.category, "routine");
-    assert.equal(fact.updatedLabel, "עודכן עכשיו");
+    assert.ok(fact.updatedLabel);
+    assert.notEqual(fact.updatedLabel, "עודכן עכשיו");
   } finally {
     teardown(dir);
   }
