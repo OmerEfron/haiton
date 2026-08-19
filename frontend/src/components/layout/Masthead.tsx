@@ -1,7 +1,6 @@
 import { Link, NavLink } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import styles from "./Masthead.module.css";
-import { LivePill } from "../ui/Bits";
 import { ButtonLink } from "../ui/Button";
 import { brand, common, nav } from "../../copy/common";
 import { getCircleSummary } from "../../api/core/connections";
@@ -46,7 +45,7 @@ export function Masthead({ dateLong, dateShort, editionNumber, editionName }: Pr
         </div>
 
         <nav className={`${styles.nav} ${styles.desktopOnly}`} aria-label="ניווט ראשי">
-          <LivePill>{common.deskOpen}</LivePill>
+          <span className={styles.deskStatus}>{common.deskOpen}</span>
           <NavLink to="/karteset" className={navClass}>
             {nav.karteset}
           </NavLink>
@@ -68,7 +67,7 @@ export function Masthead({ dateLong, dateShort, editionNumber, editionName }: Pr
         </nav>
 
         <div className={styles.mobileOnly}>
-          <LivePill>{common.live}</LivePill>
+          <span className={styles.deskStatus}>{common.live}</span>
         </div>
       </div>
     </header>

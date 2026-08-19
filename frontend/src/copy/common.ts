@@ -30,7 +30,7 @@ export const common = {
   cancel: "ביטול",
   approve: "אישור",
   reject: "דחייה",
-  loading: "שולחן העורכים נערך…",
+  loading: "טוען…",
   copyright: "© 2026 העיתון",
   placeholderImage: "מקום לתמונה",
   placeholderSuffix: "placeholder",
