@@ -1,4 +1,6 @@
+import { HTTPException } from "hono/http-exception";
 import type { Context } from "hono";
+import { ERROR_INTERNAL } from "../contract.js";
 import type { InterviewSession } from "./types.js";
 
 export type SaveInterviewResult =
@@ -17,9 +19,17 @@ function coreUrl(): string {
   return process.env.CORE_API_URL?.trim() || DEFAULT_CORE;
 }
 
+async function coreFetch(path: string, init?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(`${coreUrl()}${path}`, init);
+  } catch {
+    throw new HTTPException(503, { message: ERROR_INTERNAL });
+  }
+}
+
 export async function coreGetUserId(cookie: string): Promise<string | null> {
   if (!cookie) return null;
-  const res = await fetch(`${coreUrl()}/auth/session`, {
+  const res = await coreFetch("/auth/session", {
     headers: { Cookie: cookie },
   });
   if (!res.ok) return null;
@@ -31,14 +41,22 @@ export async function coreSaveInterview(
   cookie: string,
   session: InterviewSession,
 ): Promise<SaveInterviewResult> {
-  const res = await fetch(`${coreUrl()}/desk/interviews/${encodeURIComponent(session.id)}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: cookie,
-    },
-    body: JSON.stringify(session),
-  });
+  let res: Response;
+  try {
+    res = await coreFetch(`/desk/interviews/${encodeURIComponent(session.id)}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookie,
+      },
+      body: JSON.stringify(session),
+    });
+  } catch (err) {
+    if (err instanceof HTTPException) {
+      return { ok: false, status: err.status, message: err.message };
+    }
+    throw err;
+  }
   if (res.ok) return { ok: true };
   let message = "שגיאה בשמירת הראיון";
   try {
