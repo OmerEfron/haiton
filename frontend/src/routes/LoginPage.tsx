@@ -8,6 +8,7 @@ import { signIn, signUp } from "../api/core/auth";
 import { useSession } from "../lib/session";
 import { qk } from "../lib/queryKeys";
 import { brand } from "../copy/common";
+import { BrandLogo } from "../components/layout/BrandLogo";
 import { authCopy } from "../copy/circle";
 import { joinReturnPath } from "./JoinPage";
 
@@ -62,7 +63,7 @@ export function LoginPage() {
     <div className={styles.screen}>
       <div className={styles.card}>
         <div className={styles.hero}>
-          <p className={styles.logo}>{brand.name}</p>
+          <BrandLogo className={styles.logo} />
           <p className={styles.tagline}>{brand.tagline}</p>
         </div>
 

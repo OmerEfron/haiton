@@ -138,9 +138,11 @@ a.stat:hover { background: var(--tint); }
   margin: 0;
   padding: 14px var(--gutter);
   border-bottom: 4px solid var(--paper-red);
-  font: 900 40px/1 var(--serif);
-  color: var(--paper-red);
-  letter-spacing: -0.02em;
+}
+.splashBrand img {
+  display: block;
+  height: 40px;
+  width: auto;
 }
 .state {
   padding: 16px 24px;
@@ -157,6 +159,6 @@ a.stat:hover { background: var(--tint); }
   .splashBrand {
     padding: 10px var(--gutter-sm);
     border-bottom-width: 3px;
-    font-size: 26px;
   }
+  .splashBrand img { height: 26px; }
 }

@@ -4,7 +4,8 @@
   padding: 22px var(--gutter);
   text-align: center;
 }
-.name { font: 700 16px/1 var(--serif); color: var(--paper-red); margin: 0; }
+.name { margin: 0; }
+.name img { height: 22px; width: auto; }
 .small { margin: 10px 0 0; font: 400 11px/1 var(--sans); color: var(--ink-2); }
 .links { margin: 10px 0 0; display: flex; gap: 14px; justify-content: center; font: 500 12px/1 var(--sans); }
 

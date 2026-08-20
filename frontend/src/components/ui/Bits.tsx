@@ -1,7 +1,8 @@
 import type { CSSProperties, ReactNode } from "react";
 import { Link } from "react-router";
 import styles from "./Bits.module.css";
-import { brand, common } from "../../copy/common";
+import { common } from "../../copy/common";
+import { BrandLogo } from "../layout/BrandLogo";
 
 export function LiveDot({ size = 7, light }: { size?: number; light?: boolean }) {
   return (
@@ -160,7 +161,9 @@ export function Loading({
   if (!framed) return status;
   return (
     <div className={styles.splash}>
-      <header className={styles.splashBrand}>{brand.name}</header>
+      <header className={styles.splashBrand}>
+        <BrandLogo />
+      </header>
       {status}
     </div>
   );

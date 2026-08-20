@@ -2,7 +2,8 @@ import { Link, NavLink } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import styles from "./Masthead.module.css";
 import { ButtonLink } from "../ui/Button";
-import { brand, common, nav } from "../../copy/common";
+import { common, nav } from "../../copy/common";
+import { BrandLogo } from "./BrandLogo";
 import { listInvitations } from "../../api/core/connections";
 import { qk } from "../../lib/queryKeys";
 import { useSession } from "../../lib/session";
@@ -33,7 +34,7 @@ export function Masthead({ dateLong, dateShort, editionNumber, editionName }: Pr
       <div className={styles.inner}>
         <div className={styles.brand}>
           <Link to="/" className={styles.logo}>
-            {brand.name}
+            <BrandLogo />
           </Link>
           <span className={styles.dateline}>
             <span className={styles.desktopOnly}>{dateLong ?? dateShort ?? ""}</span>

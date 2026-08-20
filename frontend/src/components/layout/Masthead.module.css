@@ -11,13 +11,18 @@
   justify-content: space-between;
   gap: 24px;
 }
-.brand { display: flex; align-items: baseline; gap: 14px; min-width: 0; }
+.brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .logo {
-  font: 900 40px/1 var(--serif);
-  color: var(--paper-red);
-  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  flex: none;
 }
-.logo:hover { color: var(--paper-red-dark); }
+.logo img {
+  display: block;
+  height: 40px;
+  width: auto;
+}
+.logo:hover { opacity: 0.85; }
 .dateline {
   display: flex;
   flex-direction: column;
@@ -68,7 +73,7 @@
   .masthead { border-bottom-width: 3px; }
   .inner { padding: 8px var(--gutter-sm); gap: 10px; }
   .brand { flex-direction: column; gap: 0; align-items: flex-start; }
-  .logo { font-size: 26px; }
+  .logo img { height: 26px; }
   .dateline { font-size: 10.5px; line-height: 1.5; }
   .desktopOnly { display: none; }
   .mobileOnly { display: flex; }
