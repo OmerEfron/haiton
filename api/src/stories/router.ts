@@ -14,7 +14,9 @@ export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
   const app = new Hono<{ Variables: StoriesVariables }>();
 
   app.get("/stories/share/:token", optionalSession, (c) => {
-    const shared = loadSharedStory(c.req.param("token"), c.get("userId") || null);
+    const token = c.req.param("token");
+    if (!token) return c.json({ message: STORY_NOT_FOUND }, 404);
+    const shared = loadSharedStory(token, c.get("userId") || null);
     if (!shared) return c.json({ message: STORY_NOT_FOUND }, 404);
     return c.json(shared);
   });
@@ -46,7 +48,7 @@ export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
            LEFT JOIN stories s ON s.user_id = f.user_id AND s.id = f.story_id
            WHERE f.user_id = ? AND COALESCE(s.hidden, 0) = 0 ORDER BY f.sort_order`,
         )
-        .all(userId) as FlashRow[]
+        .all(userId) as unknown as FlashRow[]
     ).map(rowToFlash);
 
     return c.json({ flashes, dateShort: state?.date_short ?? "" });
@@ -66,8 +68,8 @@ export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
     const rows = section
       ? (db
           .prepare("SELECT * FROM stories WHERE user_id = ? AND section = ?")
-          .all(userId, section) as StoryRow[])
-      : (db.prepare("SELECT * FROM stories WHERE user_id = ?").all(userId) as StoryRow[]);
+          .all(userId, section) as unknown as StoryRow[])
+      : (db.prepare("SELECT * FROM stories WHERE user_id = ?").all(userId) as unknown as StoryRow[]);
 
     return c.json(rows.map((row) => rowToStory(row, settings.edition_name, { author })));
   });
