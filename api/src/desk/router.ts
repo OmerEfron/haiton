@@ -45,7 +45,7 @@ export function createDeskRouter(): Hono<{ Variables: StoriesVariables }> {
         `SELECT id, started_at, headline, session_json
          FROM interviews WHERE user_id = ? ORDER BY started_at DESC`,
       )
-      .all(c.get("userId")) as InterviewRow[];
+      .all(c.get("userId")) as unknown as InterviewRow[];
 
     const list: InterviewListItem[] = rows.map((row) => {
       const session = JSON.parse(row.session_json) as InterviewSnapshot;
