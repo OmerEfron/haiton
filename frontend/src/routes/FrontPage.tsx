@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router";
 import { Masthead } from "../components/layout/Masthead";
 import { PageHeader } from "../components/layout/PageHeader";
-import { SectionsBar } from "../components/layout/SectionsBar";
 import { Ticker } from "../components/layout/Ticker";
 import { Footer } from "../components/layout/Footer";
 import { EditionView } from "../components/news/EditionView";

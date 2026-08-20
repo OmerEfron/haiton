@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import styles from "./BriefsPage.module.css";
 import { PageHeader } from "../components/layout/PageHeader";
-import { SectionsBar } from "../components/layout/SectionsBar";
 import { Footer } from "../components/layout/Footer";
 import { FlashItem } from "../components/news/StoryPieces";
 import { ErrorState, Loading } from "../components/ui/Bits";
