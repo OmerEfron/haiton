@@ -42,6 +42,7 @@
   background: var(--white);
   min-height: 0;
 }
+.splitSolo { grid-template-columns: 1fr; }
 .divider { background: var(--rule); }
 
 .chat { display: flex; flex-direction: column; min-height: 0; }
@@ -68,16 +69,13 @@
   min-height: 320px;
 }
 
-/* First-interview hero (1f) */
-.cold {
-  background: var(--white);
-  padding: 20px 16px;
-  border-bottom: 1px solid var(--rule);
-  text-align: center;
+.openers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px var(--gutter) 0;
+  flex: none;
 }
-.coldTitle { margin: 12px 0 0; font: 900 26px/1.2 var(--serif); color: var(--ink); }
-.coldBody { margin: 10px auto 0; max-width: 46ch; font: 400 14.5px/1.7 var(--sans); color: var(--ink-2); }
-.openers { display: flex; flex-direction: column; gap: 8px; }
 .openersLabel { margin: 0; font: 500 11.5px/1 var(--sans); color: var(--ink-2); }
 .opener {
   padding: 12px 14px;
@@ -116,6 +114,7 @@
   .chatHead { padding: 12px var(--gutter-sm); }
   .chatTags { display: none; }
   .thread { padding: 16px var(--gutter-sm); }
+  .openers { padding-inline: var(--gutter-sm); }
 
   /* The side panel becomes a sheet the reader opens deliberately (1f has none). */
   .desktopDraft { display: none; }

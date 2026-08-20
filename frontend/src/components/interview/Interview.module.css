@@ -52,6 +52,7 @@
 
 /* ---- Composer ----------------------------------------------------------- */
 .composer { border-top: 1px solid var(--rule); padding: 16px var(--gutter); background: var(--white); }
+.composerTop { border-top: 0; border-bottom: 1px solid var(--rule); }
 .composerActions { margin-top: 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .consent { margin-inline-start: auto; font: 400 11.5px/1.5 var(--sans); color: var(--ink-2); }
 

@@ -7,7 +7,7 @@ import { ChatBubble, TimeStamp, TypingIndicator } from "../components/interview/
 import { DraftPanel } from "../components/interview/DraftPanel";
 import { ArticleFormChips } from "../components/interview/ArticleFormChips";
 import { heDate, InterviewBar } from "../components/interview/InterviewBar";
-import { Avatar, ErrorState, Loading } from "../components/ui/Bits";
+import { ErrorState, Loading } from "../components/ui/Bits";
 import { Button, ButtonLink } from "../components/ui/Button";
 import { Chip } from "../components/ui/Chip";
 import { TextArea } from "../components/ui/Field";
@@ -119,7 +119,7 @@ export function InterviewRoom() {
   }
   const readerName = appSession?.user.name.split(" ")[0] ?? "אתה";
   const readerTurns = s.messages.filter((m) => m.role === "reader").length;
-  const firstInterview = readerTurns === 0;
+  const showNewsroom = readerTurns > 0 || s.draft.status !== "empty";
   const closed = s.exhausted || s.draft.status === "ready";
   const writingNow =
     draftIt.isPending || (send.isPending && readerTurns >= MAX_INTERVIEW_MESSAGES - 1);
@@ -131,7 +131,7 @@ export function InterviewRoom() {
     send.mutate(text);
   }
 
-  const draftPanel = (
+  const draftPanel = showNewsroom ? (
     <DraftPanel
       key={`${s.draft.id}-${s.draft.status}`}
       draft={s.draft}
@@ -139,36 +139,92 @@ export function InterviewRoom() {
       publishing={publish.isPending}
       onSave={saveDraft}
     />
+  ) : null;
+
+  const composer = (
+    <form
+      className={[interviewStyles.composer, !showNewsroom && interviewStyles.composerTop].filter(Boolean).join(" ")}
+      onSubmit={submit}
+    >
+      <TextArea
+        label={desk.composerLabel}
+        placeholder={closed ? desk.interviewClosed : desk.composerPlaceholder}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        rows={2}
+        disabled={busy || closed}
+      />
+      <div className={interviewStyles.composerActions}>
+        <Button type="submit" size="lg" disabled={busy || closed || !text.trim()}>
+          {desk.send}
+        </Button>
+        {!closed && (
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => draftIt.mutate()}
+            disabled={busy || readerTurns === 0}
+          >
+            {desk.writeDraft}
+          </Button>
+        )}
+        {canDrop && (
+          <Button variant="outline" size="lg" onClick={() => drop.mutate()} disabled={drop.isPending}>
+            {desk.startOver}
+          </Button>
+        )}
+        {showNewsroom && (
+          <span className={interviewStyles.consent}>
+            {closed
+              ? desk.interviewClosed
+              : s.draft.status === "empty"
+                ? desk.noDraftYet
+                : desk.consentNote}
+          </span>
+        )}
+      </div>
+    </form>
   );
 
   return (
     <div className={styles.room}>
       <InterviewBar startedAt={s.startedAt} elapsedLabel={s.elapsedLabel} factsLocked={s.factsLocked} closed={closed} />
 
-      <div className={styles.split}>
+      <div className={[styles.split, !showNewsroom && styles.splitSolo].filter(Boolean).join(" ")}>
         <div className={styles.chat}>
           <div className={styles.chatHead}>
             <div>
-              <p className={styles.chatWho}>{desk.reporterName}</p>
-              <p className={styles.chatSub}>{desk.reporterSubtitle}</p>
+              <p className={styles.chatWho}>{showNewsroom ? desk.reporterName : desk.emptyFirstTitle}</p>
+              <p className={styles.chatSub}>{showNewsroom ? desk.reporterSubtitle : desk.emptyFirstBody}</p>
             </div>
-            <div className={styles.chatTags}>
-              {s.angleChosen && <Chip>{desk.angleChosen}</Chip>}
-              <Chip>{desk.factsLocked(s.factsLocked)}</Chip>
-            </div>
+            {showNewsroom && (
+              <div className={styles.chatTags}>
+                {s.angleChosen && <Chip>{desk.angleChosen}</Chip>}
+                <Chip>{desk.factsLocked(s.factsLocked)}</Chip>
+              </div>
+            )}
           </div>
 
-          {firstInterview && (
-            <div className={styles.cold}>
-              <Avatar initial="כ" size={56} tone="solid" />
-              <h2 className={styles.coldTitle}>{desk.emptyFirstTitle}</h2>
-              <p className={styles.coldBody}>{desk.emptyFirstBody}</p>
+          {!showNewsroom && composer}
+
+          {!showNewsroom && !closed && (
+            <div className={styles.openers}>
+              <p className={styles.openersLabel}>{desk.suggestedOpeners}</p>
+              {s.openers.map((opener) => (
+                <button
+                  key={opener}
+                  type="button"
+                  className={styles.opener}
+                  onClick={() => !busy && send.mutate(opener)}
+                >
+                  {opener}
+                </button>
+              ))}
             </div>
           )}
 
           <div className={styles.thread}>
             <TimeStamp>{`היום, ${heDate(s.startedAt)}`}</TimeStamp>
-
             {s.messages.map((message) => (
               <ChatBubble
                 key={message.id}
@@ -177,96 +233,39 @@ export function InterviewRoom() {
                 onSuggestion={(value) => !busy && !closed && send.mutate(value)}
               />
             ))}
-
-            {firstInterview && !closed && (
-              <div className={styles.openers}>
-                <p className={styles.openersLabel}>{desk.suggestedOpeners}</p>
-                {s.openers.map((opener) => (
-                  <button
-                    key={opener}
-                    type="button"
-                    className={styles.opener}
-                    onClick={() => !busy && send.mutate(opener)}
-                  >
-                    {opener}
-                  </button>
-                ))}
-              </div>
-            )}
-
             {busy && <TypingIndicator label={writingNow ? desk.writingDraft : "הכתב מקליד…"} />}
             <div ref={threadEnd} />
           </div>
 
-          <ArticleFormChips
-            type={s.type ?? null}
-            tone={s.tone ?? null}
-            locked={closed}
-            onChange={(patch) => !busy && !closed && chooseForm.mutate(patch)}
-          />
-
-          <form className={interviewStyles.composer} onSubmit={submit}>
-            <TextArea
-              label={desk.composerLabel}
-              placeholder={closed ? desk.interviewClosed : desk.composerPlaceholder}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              rows={2}
-              disabled={busy || closed}
+          {showNewsroom && (
+            <ArticleFormChips
+              type={s.type ?? null}
+              tone={s.tone ?? null}
+              locked={closed}
+              onChange={(patch) => !busy && !closed && chooseForm.mutate(patch)}
             />
-            <div className={interviewStyles.composerActions}>
-              <Button type="submit" size="lg" disabled={busy || closed || !text.trim()}>
-                {desk.send}
+          )}
+          {showNewsroom && composer}
+          {showNewsroom && (
+            <div className={styles.draftToggle}>
+              <Button
+                variant="quiet"
+                size="lg"
+                block
+                onClick={() => setSheetOpen(true)}
+                disabled={s.draft.status === "empty"}
+              >
+                {s.draft.status === "empty" ? desk.noDraftYet : desk.showDraft}
               </Button>
-              {!closed && (
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => draftIt.mutate()}
-                  disabled={busy || readerTurns === 0}
-                >
-                  {desk.writeDraft}
-                </Button>
-              )}
-              {canDrop && (
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => drop.mutate()}
-                  disabled={drop.isPending}
-                >
-                  {desk.startOver}
-                </Button>
-              )}
-              <span className={interviewStyles.consent}>
-                {closed
-                  ? desk.interviewClosed
-                  : s.draft.status === "empty"
-                    ? desk.noDraftYet
-                    : desk.consentNote}
-              </span>
             </div>
-          </form>
-
-          <div className={styles.draftToggle}>
-            <Button
-              variant="quiet"
-              size="lg"
-              block
-              onClick={() => setSheetOpen(true)}
-              disabled={s.draft.status === "empty"}
-            >
-              {s.draft.status === "empty" ? desk.noDraftYet : desk.showDraft}
-            </Button>
-          </div>
+          )}
         </div>
 
-        <div className={styles.divider} />
-
-        <div className={styles.desktopDraft}>{draftPanel}</div>
+        {showNewsroom && <div className={styles.divider} />}
+        {showNewsroom && <div className={styles.desktopDraft}>{draftPanel}</div>}
       </div>
 
-      {sheetOpen && (
+      {sheetOpen && showNewsroom && (
         <div className={styles.mobileDraft}>
           <div>
             <div className={styles.bar}>

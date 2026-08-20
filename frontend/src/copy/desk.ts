@@ -38,9 +38,8 @@ export const desk = {
   showDraft: "הצגת הטיוטה",
   hideDraft: "חזרה לשיחה",
 
-  emptyFirstTitle: "הכתב מחכה לראיון הראשון",
-  emptyFirstBody:
-    "מה קרה? ספרו בקצרה. הכתב ישאל שאלות המשך, יבחר זווית — וכשתרצו, ינסח ידיעה לאישור.",
+  emptyFirstTitle: "ספרו מה קרה",
+  emptyFirstBody: "הכתב ישאל שאלות המשך.",
 
   waitingTitle: "הכתב ממתין לך",
   continueDraft: "המשך לטיוטה",
