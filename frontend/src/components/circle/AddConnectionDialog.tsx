@@ -5,13 +5,19 @@ import { Modal } from "../ui/Modal";
 import { Button } from "../ui/Button";
 import { Chip, ChipRow } from "../ui/Chip";
 import { TextArea, TextField } from "../ui/Field";
-import { Avatar, Toggle } from "../ui/Bits";
+import { Avatar } from "../ui/Bits";
 import type { Connection, RelationKind } from "../../api/types";
 import { searchReaders, sendInvitation } from "../../api/core/connections";
 import { qk } from "../../lib/queryKeys";
 import { circle } from "../../copy/circle";
 
 const RELATIONS: RelationKind[] = ["friend", "family", "work", "neighbour", "other"];
+
+const DEFAULT_SETTINGS: Connection["settings"] = {
+  seesMyEdition: true,
+  showsFullName: true,
+  notifyOnPublish: false,
+};
 
 /** Mockup 2b. */
 export function AddConnectionDialog({ onClose }: { onClose: () => void }) {
@@ -23,11 +29,6 @@ export function AddConnectionDialog({ onClose }: { onClose: () => void }) {
   const [chosenName, setChosenName] = useState("");
   const [relation, setRelation] = useState<RelationKind>("friend");
   const [note, setNote] = useState("");
-  const [settings, setSettings] = useState<Connection["settings"]>({
-    seesMyEdition: true,
-    showsFullName: true,
-    notifyOnPublish: false,
-  });
 
   const results = useQuery({
     queryKey: qk.readerSearch(query),
@@ -42,7 +43,7 @@ export function AddConnectionDialog({ onClose }: { onClose: () => void }) {
         name: chosenName || term,
         relation,
         note,
-        settings,
+        settings: DEFAULT_SETTINGS,
       }),
     onSuccess: async () => {
       await client.invalidateQueries({ queryKey: qk.invitations });
@@ -51,10 +52,7 @@ export function AddConnectionDialog({ onClose }: { onClose: () => void }) {
     },
   });
 
-  const settingRows = [
-    { key: "seesMyEdition", copy: circle.dialog.settings.seesMyEdition },
-    { key: "showsFullName", copy: circle.dialog.settings.showsFullName },
-  ] as const;
+  const extrasOpen = Boolean(chosenId) || term.includes("@");
 
   return (
     <Modal title={circle.dialog.title} onClose={onClose}>
@@ -105,43 +103,28 @@ export function AddConnectionDialog({ onClose }: { onClose: () => void }) {
         </div>
       )}
 
-      <div className={styles.group}>
-        <span className={styles.groupLabel}>{circle.dialog.relationLabel}</span>
-        <ChipRow>
-          {RELATIONS.map((r) => (
-            <Chip key={r} active={relation === r} onClick={() => setRelation(r)}>
-              {circle.relations[r]}
-            </Chip>
-          ))}
-        </ChipRow>
+      {extrasOpen && (
+        <div className={styles.group}>
+          <span className={styles.groupLabel}>{circle.dialog.relationLabel}</span>
+          <ChipRow>
+            {RELATIONS.map((r) => (
+              <Chip key={r} active={relation === r} onClick={() => setRelation(r)}>
+                {circle.relations[r]}
+              </Chip>
+            ))}
+          </ChipRow>
 
-        <p className={styles.settingsLabel}>{circle.dialog.settingsTitle}</p>
-        <div className={styles.settingsBox}>
-          {settingRows.map((row) => (
-            <div key={row.key} className={styles.settingRow}>
-              <span>
-                <span className={styles.settingTitle}>{row.copy.title}</span>
-                <span className={styles.settingDetail}>{row.copy.detail}</span>
-              </span>
-              <Toggle
-                label={row.copy.title}
-                checked={settings[row.key]}
-                onChange={(next) => setSettings((prev) => ({ ...prev, [row.key]: next }))}
-              />
-            </div>
-          ))}
+          <div className={styles.noteField}>
+            <TextArea
+              label={circle.dialog.noteLabel}
+              placeholder={circle.dialog.notePlaceholder}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={2}
+            />
+          </div>
         </div>
-
-        <div style={{ marginTop: 16 }}>
-          <TextArea
-            label={circle.dialog.noteLabel}
-            placeholder={circle.dialog.notePlaceholder}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            rows={2}
-          />
-        </div>
-      </div>
+      )}
 
       <div className={styles.dialogActions}>
         <Button
@@ -156,11 +139,7 @@ export function AddConnectionDialog({ onClose }: { onClose: () => void }) {
           ביטול
         </Button>
       </div>
-      {send.error ? (
-        <p className={styles.dialogError}>{(send.error as Error).message}</p>
-      ) : (
-        <p className={styles.dialogNote}>{circle.dialog.privacyNote}</p>
-      )}
+      {send.error ? <p className={styles.dialogError}>{(send.error as Error).message}</p> : null}
     </Modal>
   );
 }

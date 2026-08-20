@@ -23,7 +23,7 @@ export const circle = {
 
   dialog: {
     title: "הוספת חיבור למעגל",
-    intro: "חפשו לפי דוא״ל או שלחו הזמנה למי שעוד אין לו עיתון.",
+    intro: "חפשו או הזמינו לפי דוא״ל.",
     searchLabel: "חיפוש לפי דוא״ל",
     search: "חיפוש",
     resultsTitle: "קוראים עם עיתון",
@@ -50,7 +50,6 @@ export const circle = {
     noteLabel: "הערה להזמנה (לא חובה)",
     notePlaceholder: "«נועה, פתחתי עיתון — תראי מה מתפרסם אצלי, ואני אצלך»",
     send: "שליחת הזמנה",
-    privacyNote: "אף אחד לא רואה טיוטות — רק ידיעות שפרסמת",
   },
 
   relations: {
