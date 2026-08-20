@@ -106,6 +106,11 @@ export function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete={mode === "signIn" ? "current-password" : "new-password"}
+              error={
+                mode === "signUp" && password.length > 0 && password.length < 8
+                  ? authCopy.passwordTooShort
+                  : undefined
+              }
             />
             {mode === "signUp" && (
               <TextField
@@ -115,6 +120,11 @@ export function LoginPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 autoComplete="new-password"
+                error={
+                  confirmPassword.length > 0 && password !== confirmPassword
+                    ? authCopy.passwordMismatch
+                    : undefined
+                }
               />
             )}
 
