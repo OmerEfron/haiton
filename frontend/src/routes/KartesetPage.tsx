@@ -88,9 +88,7 @@ export function KartesetPage() {
       <div className={styles.wrap}>
         <div className={styles.head}>
           <h1 className={styles.title}>{karteset.title}</h1>
-          <p className={empty ? styles.emptyIntro : styles.intro}>
-            {empty ? karteset.emptyIntro : karteset.introShort}
-          </p>
+          {empty && <p className={styles.emptyIntro}>{karteset.emptyIntro}</p>}
           {!empty && (
             <div className={styles.filters}>
               <ChipRow scroll>

@@ -1,6 +1,6 @@
 export const brand = {
   name: "העיתון",
-  tagline: "עיתון אישי בעברית. מהדורה אחת ליום, והכתב שלך מחכה לדיווח.",
+  tagline: "עיתון אישי בעברית",
 } as const;
 
 export const nav = {
