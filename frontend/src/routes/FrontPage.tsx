@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import styles from "./FrontPage.module.css";
 import { Masthead } from "../components/layout/Masthead";
+import { PageHeader } from "../components/layout/PageHeader";
 import { SectionsBar } from "../components/layout/SectionsBar";
 import { Ticker } from "../components/layout/Ticker";
 import { Footer } from "../components/layout/Footer";
@@ -27,7 +28,14 @@ export function FrontPage() {
   const profile = useQuery({ queryKey: qk.profile, queryFn: getProfile });
   const interview = useQuery({ queryKey: qk.interview, queryFn: getSession });
 
-  if (front.isPending) return <Loading />;
+  if (front.isPending) {
+    return (
+      <>
+        <PageHeader />
+        <Loading />
+      </>
+    );
+  }
   if (front.error) return <ErrorState error={front.error} />;
 
   const page = front.data;

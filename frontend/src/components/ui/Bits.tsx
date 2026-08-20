@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import styles from "./Bits.module.css";
-import { common } from "../../copy/common";
+import { brand, common } from "../../copy/common";
 
 export function LiveDot({ size = 7, light }: { size?: number; light?: boolean }) {
   return (
@@ -133,11 +133,24 @@ export function SectionHead({ title, aside }: { title: string; aside?: ReactNode
   );
 }
 
-export function Loading({ label = common.loading }: { label?: string }) {
-  return (
+export function Loading({
+  label = common.loading,
+  framed = false,
+}: {
+  label?: string;
+  framed?: boolean;
+}) {
+  const status = (
     <p className={styles.state} role="status">
       {label}
     </p>
+  );
+  if (!framed) return status;
+  return (
+    <div className={styles.splash}>
+      <header className={styles.splashBrand}>{brand.name}</header>
+      {status}
+    </div>
   );
 }
 
