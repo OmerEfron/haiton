@@ -154,6 +154,36 @@ export interface Fact {
   updatedLabel?: string;
 }
 
+export interface BriefSubject {
+  name: string;
+  city?: string;
+  age?: number;
+  headline?: string;
+}
+
+export interface BriefCirclePerson {
+  name: string;
+  relationLabel: string;
+  sectionName: string;
+}
+
+export interface BriefRecentStory {
+  headline: string;
+  angle: string;
+}
+
+export interface PersonBrief {
+  subject: BriefSubject;
+  facts: Fact[];
+  circle: BriefCirclePerson[];
+  recent: BriefRecentStory[];
+}
+
+export interface ProposedFact {
+  text: string;
+  category: FactCategory;
+}
+
 export type ConnectionStatus = "connected" | "pending_them" | "pending_you";
 
 export type RelationKind = "family" | "friend" | "work" | "neighbour" | "other";
@@ -247,6 +277,10 @@ export interface InterviewSession {
   tone: ToneId | null;
   /** Skip the real reporter model; placeholder questions and drafts. */
   testMode?: boolean;
+  /** Standing facts locked when this interview started. */
+  facts?: { id: string; category: FactCategory; text: string }[];
+  /** Standing facts the reporter offers to file after the draft. */
+  proposedFacts?: ProposedFact[];
 }
 
 /** Reader turns after which the reporter stops and writes a draft. */

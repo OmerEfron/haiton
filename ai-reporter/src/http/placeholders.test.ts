@@ -5,12 +5,15 @@ import type { Turn } from "../types.ts";
 
 register("./hook.mjs", import.meta.url);
 
+const { emptyBrief } = await import("../types.js");
 const {
   llmFns,
   PLACEHOLDER_ARTICLE,
   PLACEHOLDER_QUESTIONS,
+  PLACEHOLDER_PROPOSED,
   placeholderNextQuestion,
   placeholderWriteArticle,
+  placeholderProposeKarteset,
   thinkMs,
   allowTestMode,
 } = await import("./placeholders.js");
@@ -21,7 +24,7 @@ describe("placeholders", () => {
   });
 
   it("asks the next placeholder question", async () => {
-    const first = await placeholderNextQuestion([], [
+    const first = await placeholderNextQuestion(emptyBrief(), [
       { question: "", answer: "פתיחה" },
     ]);
     assert.deepEqual(first, {
@@ -33,7 +36,7 @@ describe("placeholders", () => {
       { question: "", answer: "פתיחה" },
       { question: PLACEHOLDER_QUESTIONS[0], answer: "תשובה" },
     ];
-    const second = await placeholderNextQuestion([], turns);
+    const second = await placeholderNextQuestion(emptyBrief(), turns);
     assert.deepEqual(second, {
       question: PLACEHOLDER_QUESTIONS[1],
       done: false,
@@ -47,13 +50,13 @@ describe("placeholders", () => {
       { question: PLACEHOLDER_QUESTIONS[1], answer: "c" },
       { question: PLACEHOLDER_QUESTIONS[2], answer: "d" },
     ];
-    const done = await placeholderNextQuestion([], turns);
+    const done = await placeholderNextQuestion(emptyBrief(), turns);
     assert.deepEqual(done, { question: "", done: true });
   });
 
   it("writes a placeholder draft honoring type and tone", async () => {
     const article = await placeholderWriteArticle({
-      facts: [],
+      brief: emptyBrief(),
       turns: [{ question: "", answer: "פתיחה" }],
       type: "news",
       tone: "factual",
@@ -65,16 +68,22 @@ describe("placeholders", () => {
     assert.equal(article.tone, "factual");
   });
 
+  it("placeholder propose returns dummy standing facts", async () => {
+    assert.deepEqual(await placeholderProposeKarteset(), [...PLACEHOLDER_PROPOSED]);
+  });
+
   it("llmFns swaps in placeholders only when testMode", () => {
     const nextQuestion = async () => ({ question: "real", done: false });
     const writeArticle = async () => {
       throw new Error("real write");
     };
-    const live = llmFns(false, { nextQuestion, writeArticle });
+    const proposeKarteset = async () => [];
+    const live = llmFns(false, { nextQuestion, writeArticle, proposeKarteset });
     assert.equal(live.nextQuestion, nextQuestion);
-    const test = llmFns(true, { nextQuestion, writeArticle });
+    const test = llmFns(true, { nextQuestion, writeArticle, proposeKarteset });
     assert.equal(test.nextQuestion, placeholderNextQuestion);
     assert.equal(test.writeArticle, placeholderWriteArticle);
+    assert.equal(test.proposeKarteset, placeholderProposeKarteset);
   });
 
   it("blocks placeholders when NODE_ENV is production", () => {
@@ -86,7 +95,7 @@ describe("placeholders", () => {
       const writeArticle = async () => {
         throw new Error("real write");
       };
-      const fns = llmFns(true, { nextQuestion, writeArticle });
+      const fns = llmFns(true, { nextQuestion, writeArticle, proposeKarteset: async () => [] });
       assert.equal(fns.nextQuestion, nextQuestion);
     } finally {
       process.env.NODE_ENV = prev;

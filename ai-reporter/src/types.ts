@@ -60,6 +60,49 @@ export type FactInput = {
   updatedLabel?: string;
 };
 
+export type BriefSubject = {
+  name: string;
+  city?: string;
+  age?: number;
+  headline?: string;
+};
+
+export type BriefCirclePerson = {
+  name: string;
+  relationLabel: string;
+  sectionName: string;
+};
+
+export type BriefRecentStory = {
+  headline: string;
+  angle: string;
+};
+
+export type PersonBrief = {
+  subject: BriefSubject;
+  facts: FactInput[];
+  circle: BriefCirclePerson[];
+  recent: BriefRecentStory[];
+};
+
+export type ProposedFact = {
+  text: string;
+  category: string;
+};
+
+export function emptyBrief(name = ""): PersonBrief {
+  return { subject: { name }, facts: [], circle: [], recent: [] };
+}
+
+export function briefFromFacts(facts: FactInput[], subjectName?: string): PersonBrief {
+  return {
+    subject: { name: subjectName?.trim() ?? "" },
+    facts,
+    circle: [],
+    recent: [],
+  };
+}
+
 export type Turn = {
   question: string;
   answer: string;

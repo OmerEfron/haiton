@@ -1,8 +1,12 @@
-import type { InterviewListItem, InterviewSession, Quota } from "../types";
+import type { InterviewListItem, InterviewSession, PersonBrief, Quota } from "../types";
 import { request } from "../client";
 
 export async function getQuota(): Promise<Quota> {
   return request<Quota>("/quota");
+}
+
+export async function getBrief(): Promise<PersonBrief> {
+  return request<PersonBrief>("/desk/brief");
 }
 
 export async function listInterviews(): Promise<InterviewListItem[]> {

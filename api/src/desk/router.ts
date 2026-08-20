@@ -8,6 +8,7 @@ import { getDb } from "../db.ts";
 import { israelDay, nextResetIso, quotaPayload, secondsUntilIsraelMidnight } from "../quota.ts";
 import { requireSession, type StoriesVariables } from "../stories/session.ts";
 import type { InterviewListItem, InterviewSnapshot, Quota } from "../types.ts";
+import { loadBrief } from "./brief.ts";
 
 interface InterviewRow {
   id: string;
@@ -38,6 +39,12 @@ export function createDeskRouter(): Hono<{ Variables: StoriesVariables }> {
     const used = todayCount(c.get("userId"), israelDay());
     const quota: Quota = quotaPayload(used);
     return c.json(quota);
+  });
+
+  app.get("/desk/brief", (c) => {
+    const brief = loadBrief(getDb(), c.get("userId"));
+    if (!brief) return c.json({ message: "הפרופיל לא נמצא" }, 404);
+    return c.json(brief);
   });
 
   app.get("/desk/interviews", (c) => {

@@ -213,3 +213,24 @@ test("PATCH /stories/:id returns 404 for a missing story", async () => {
   });
   assert.equal(res.status, 404);
 });
+
+test("publish increments used_in_stories when the fact text is in the article", async () => {
+  resetDb("facts-used.sqlite");
+  const db = getDb();
+  db.prepare(
+    `INSERT INTO facts (id, user_id, category, text, used_in_stories)
+     VALUES ('k-hit', ?, 'work', 'כותרת ייחודית לבדיקה', 0),
+            ('k-miss', ?, 'personal', 'חתולה שנקראת לולו', 0)`,
+  ).run(USER_ID, USER_ID);
+
+  await publish("כותרת ייחודית לבדיקה");
+
+  const hit = db
+    .prepare("SELECT used_in_stories AS n FROM facts WHERE id = 'k-hit'")
+    .get() as { n: number };
+  const miss = db
+    .prepare("SELECT used_in_stories AS n FROM facts WHERE id = 'k-miss'")
+    .get() as { n: number };
+  assert.equal(hit.n, 1);
+  assert.equal(miss.n, 0);
+});

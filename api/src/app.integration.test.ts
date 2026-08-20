@@ -72,6 +72,8 @@ const UI_GETS = [
   "/connections",
   "/connections/summary",
   "/invitations",
+  "/quota",
+  "/desk/brief",
 ] as const;
 
 test("seeded user: every UI GET returns 200 with wire shapes", async () => {

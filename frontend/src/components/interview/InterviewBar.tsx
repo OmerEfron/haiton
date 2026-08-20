@@ -67,7 +67,9 @@ export function InterviewBar({
         <span className={styles.barMeta}>
           {started} · {elapsedLabel}
         </span>
-        <span className={styles.barMeta}>עובדות שנרשמו: {factsLocked}</span>
+        <Link to="/karteset" className={styles.kartesetLink}>
+          {desk.kartesetBar(factsLocked)}
+        </Link>
         <Link to="/" className={styles.close}>
           {desk.close}
         </Link>

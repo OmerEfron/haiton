@@ -21,7 +21,7 @@ export const ROUTES: readonly RouteContract[] = [
     method: "POST",
     path: "/interviews",
     handler: "createInterview",
-    notes: "body: { facts: FactInput[]; subjectName?: string; testMode?: boolean }; replaces current",
+    notes: "body: { brief?: PersonBrief; facts?: FactInput[]; subjectName?: string; testMode?: boolean }; replaces current",
   },
   { method: "GET", path: "/interviews/:id", handler: "getInterview" },
   {
@@ -129,4 +129,6 @@ export const INTERVIEW_SESSION_KEYS = [
   "type",
   "tone",
   "testMode",
+  "facts",
+  "proposedFacts",
 ] as const;

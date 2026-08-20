@@ -7,6 +7,15 @@ export const desk = {
   reporterSubtitle: "שואל שאלות המשך ומנסח ידיעה לאישור",
   angleChosen: "זווית נבחרה",
   factsLocked: (n: number) => (n === 1 ? "עובדה נעולה אחת" : `${n} עובדות נעולות`),
+  kartesetBar: (n: number) => (n === 0 ? "כרטסת ריקה" : `כרטסת · ${n}`),
+  kartesetHow:
+    "הכתב קרא את הכרטסת. עובדות קבועות (עבודה, משפחה, שגרה) עוזרות לו לשאול במדויק — לא כמו זר.",
+  kartesetEmptyHow:
+    "אין עובדות בכרטסת. רשמו רקע קבוע (עבודה, משפחה, שגרה) כדי שהכתב ישאל במדויק.",
+  addToKarteset: "הוסיפו לכרטסת",
+  allKarteset: "כל הכרטסת",
+  kartesetNextInterview: "נרשם בכרטסת — ייכנס לראיון הבא.",
+  proposedFactsTitle: "רשמו בכרטסת לידיעות הבאות",
   close: "סגירה",
   closeAndReturn: "סגירה וחזרה לעיתון",
   composerLabel: "מה קרה?",
@@ -39,7 +48,7 @@ export const desk = {
   hideDraft: "חזרה לשיחה",
 
   emptyFirstTitle: "ספרו מה קרה",
-  emptyFirstBody: "הכתב ישאל שאלות המשך.",
+  emptyFirstBody: "הכתב קרא את הכרטסת וישאל שאלות המשך.",
 
   waitingTitle: "הכתב ממתין לך",
   continueDraft: "המשך לטיוטה",

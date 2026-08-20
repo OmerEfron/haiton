@@ -63,8 +63,9 @@ function fakeDeps() {
     return match?.[1] ?? "u-test";
   };
   const saveInterview = async () => ({ ok: true as const });
+  const proposeKarteset = async () => [];
 
-  return { nextQuestion, writeArticle, getUserId, saveInterview, turnsSeen };
+  return { nextQuestion, writeArticle, proposeKarteset, getUserId, saveInterview, turnsSeen };
 }
 
 describe("http session", () => {
@@ -96,6 +97,8 @@ describe("http session", () => {
     assert.equal(session.type, null);
     assert.equal(session.tone, null);
     assert.equal(session.testMode, false);
+    assert.deepEqual(session.facts, FACTS.map((f) => ({ id: f.id, category: f.category, text: f.text })));
+    assert.deepEqual(session.proposedFacts, []);
     assert.deepEqual(session.openers, [
       "משהו קרה בעבודה",
       "משהו קרה למישהו קרוב",
@@ -290,16 +293,16 @@ describe("http session", () => {
     assert.equal(body.message, ERROR_INTERVIEW_CLOSED);
   });
 
-  it("passes subjectName through to writeArticle", async () => {
+  it("passes brief.subject.name through to writeArticle", async () => {
     let seenName: string | undefined;
     const nextQuestion = async (): Promise<NextQuestion> => ({
       question: "",
       done: true,
     });
     const writeArticle = async (input: {
-      subjectName?: string;
+      brief?: { subject?: { name?: string } };
     }): Promise<Article> => {
-      seenName = input.subjectName;
+      seenName = input.brief?.subject?.name;
       return {
         angle: "זווית",
         headline: "כותרת בדיקה",
@@ -325,6 +328,27 @@ describe("http session", () => {
     });
     await app.request(`/interviews/${id}/draft`, { method: "POST" });
     assert.equal(seenName, "עומר");
+  });
+
+  it("draft path attaches proposedFacts", async () => {
+    const proposeKarteset = async () => [
+      { text: "גר בחיפה", category: "personal" },
+    ];
+    const app = createApp({ ...fakeDeps(), proposeKarteset });
+    const createRes = await app.request("/interviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ facts: FACTS }),
+    });
+    const { id } = await createRes.json();
+    await app.request(`/interviews/${id}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "פתיחה" }),
+    });
+    const res = await app.request(`/interviews/${id}/draft`, { method: "POST" });
+    const session = sseSession(await res.text());
+    assert.deepEqual(session.proposedFacts, [{ text: "גר בחיפה", category: "personal" }]);
   });
 
   it("PATCH form stores type and tone", async () => {
@@ -591,6 +615,10 @@ describe("http session", () => {
     };
     assert.equal(afterDraft.draft.headline, PLACEHOLDER_ARTICLE.headline);
     assert.equal(afterDraft.exhausted, true);
+    assert.deepEqual(
+      (afterDraft as { proposedFacts?: { text: string }[] }).proposedFacts,
+      [{ text: "עובד בחברת בדיקה", category: "work" }],
+    );
     assert.equal(llm, 0);
   });
 

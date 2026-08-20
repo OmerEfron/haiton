@@ -7,7 +7,7 @@ register("./hook.mjs", import.meta.url);
 const { personaFacts } = await import("../fixtures/persona.js");
 const { weekAnswers } = await import("../fixtures/week-answers.js");
 const { getCallCount } = await import("../llm.js");
-const { WORD_COUNT } = await import("../types.js");
+const { WORD_COUNT, briefFromFacts } = await import("../types.js");
 const { buildInstructions, buildWriterInput, writeArticle } = await import("./writer.js");
 
 const turns = [
@@ -43,13 +43,13 @@ function hasLongEnglishSentence(text: string): boolean {
 
 describe("buildWriterInput", () => {
   it("names the interviewee so the model cannot pick a prompt example", () => {
-    const input = buildWriterInput(personaFacts, turns, "עומר");
+    const input = buildWriterInput(briefFromFacts(personaFacts, "עומר"), turns);
     assert.match(input, /^המרואיין: עומר/m);
     assert.doesNotMatch(input, /תומר/);
   });
 
   it("forbids inventing a name when none was given", () => {
-    const input = buildWriterInput([], []);
+    const input = buildWriterInput(briefFromFacts([]), []);
     assert.match(input, /השם לא סופק/);
   });
 
@@ -74,9 +74,8 @@ describe("writeArticle", () => {
     }
 
     const article = await writeArticle({
-      facts: personaFacts,
+      brief: briefFromFacts(personaFacts, "עומר עפרון"),
       turns,
-      subjectName: "עומר עפרון",
       tone: "factual",
       type: "news",
     });

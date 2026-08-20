@@ -1,4 +1,4 @@
-import type { FactInput, Turn } from "../types.js";
+import type { PersonBrief, ProposedFact, Turn } from "../types.js";
 
 export type SectionId =
   | "work"
@@ -36,6 +36,12 @@ export interface Draft {
   section: SectionId | null;
 }
 
+export interface LockedFact {
+  id: string;
+  category: string;
+  text: string;
+}
+
 export interface InterviewSession {
   id: string;
   startedAt: string;
@@ -53,26 +59,31 @@ export interface InterviewSession {
   tone: import("../types.js").ToneId | null;
   /** Skip the real LLM; placeholder questions and drafts with a think delay. */
   testMode: boolean;
+  facts: LockedFact[];
+  proposedFacts: ProposedFact[];
 }
 
 export type SessionState = InterviewSession & {
-  facts: FactInput[];
+  brief: PersonBrief;
   turns: Turn[];
-  subjectName?: string;
 };
 
 export type WriteArticleFn = (input: {
-  facts: FactInput[];
+  brief: PersonBrief;
   turns: Turn[];
-  subjectName?: string;
   tone?: import("../types.js").ToneId;
   type?: import("../types.js").ArticleTypeId;
 }) => Promise<import("../types.js").Article>;
 
 export type NextQuestionFn = (
-  facts: FactInput[],
+  brief: PersonBrief,
   turns: Turn[],
 ) => Promise<import("../types.js").NextQuestion>;
+
+export type ProposeKartesetFn = (
+  facts: PersonBrief["facts"],
+  turns: Turn[],
+) => Promise<ProposedFact[]>;
 
 export type GetUserIdFn = (cookie: string) => Promise<string | null>;
 

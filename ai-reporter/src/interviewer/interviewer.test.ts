@@ -7,7 +7,7 @@ register("./hook.mjs", import.meta.url);
 const { personaFacts } = await import("../fixtures/persona.js");
 const { weekAnswers } = await import("../fixtures/week-answers.js");
 const { getCallCount } = await import("../llm.js");
-const { GENERIC_QUESTION_NEEDLES } = await import("../types.js");
+const { GENERIC_QUESTION_NEEDLES, briefFromFacts } = await import("../types.js");
 const { nextQuestion } = await import("./interviewer.js");
 
 function stripPunctuation(text: string): string {
@@ -67,7 +67,7 @@ describe("interviewer live", () => {
     }
 
     const opening = weekAnswers[0]!;
-    const result = await nextQuestion(personaFacts, [
+    const result = await nextQuestion(briefFromFacts(personaFacts, "עומר עפרון"), [
       { question: "", answer: opening },
     ]);
 

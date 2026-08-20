@@ -33,6 +33,7 @@ const PLAN_ROUTES: { method: string; path: string; handler?: string }[] = [
   { method: "PATCH", path: "/connections/:id", handler: "updateConnection" },
   { method: "DELETE", path: "/connections/:id", handler: "removeConnection" },
   { method: "GET", path: "/quota", handler: "getQuota" },
+  { method: "GET", path: "/desk/brief", handler: "getBrief" },
   { method: "GET", path: "/desk/interviews", handler: "listInterviews" },
   { method: "GET", path: "/desk/interviews/:id", handler: "getArchivedInterview" },
   { method: "PUT", path: "/desk/interviews/:id" },

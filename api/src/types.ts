@@ -114,6 +114,32 @@ export interface Fact {
   updatedLabel?: string;
 }
 
+export interface BriefSubject {
+  name: string;
+  city?: string;
+  age?: number;
+  headline?: string;
+}
+
+export interface BriefCirclePerson {
+  name: string;
+  relationLabel: string;
+  sectionName: string;
+}
+
+export interface BriefRecentStory {
+  headline: string;
+  angle: string;
+}
+
+/** Standing file the reporter reads at interview start. */
+export interface PersonBrief {
+  subject: BriefSubject;
+  facts: Fact[];
+  circle: BriefCirclePerson[];
+  recent: BriefRecentStory[];
+}
+
 export type ConnectionStatus = "connected" | "pending_them" | "pending_you";
 
 export type RelationKind = "family" | "friend" | "work" | "neighbour" | "other";

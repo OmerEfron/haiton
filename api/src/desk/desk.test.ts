@@ -139,3 +139,53 @@ test("GET missing interview is 404", async () => {
   const body = (await res.json()) as { message: string };
   assert.equal(body.message, ERROR_INTERVIEW_NOT_FOUND);
 });
+
+test("GET /desk/brief returns subject, facts, circle, and recent", async () => {
+  const db = getDb();
+  db.prepare("UPDATE users SET city = ?, headline = ? WHERE id = ?").run(
+    "חיפה",
+    "מפתח",
+    USER_ID,
+  );
+  db.prepare(
+    `INSERT INTO facts (id, user_id, category, text, used_in_stories)
+     VALUES ('k1', ?, 'work', 'מפתח בחיפה', 0)`,
+  ).run(USER_ID);
+  db.prepare(
+    `INSERT INTO users (id, name, email, password_hash, initial)
+     VALUES ('u-friend', 'דנה כהן', 'dana@example.com', 'x', 'ד')`,
+  ).run();
+  db.prepare(
+    `INSERT INTO connections
+     (id, user_id, connected_user_id, name, initial, relation_label, relation,
+      section, section_name, status, story_count, settings_json)
+     VALUES ('c1', ?, 'u-friend', 'דנה כהן', 'ד', 'שכנה', 'neighbour',
+             'friends', 'חברים', 'connected', 0, '{}')`,
+  ).run(USER_ID);
+  db.prepare(
+    `INSERT INTO stories (
+      id, user_id, section, section_name, edition_label, headline, standfirst,
+      body_json, angle, byline, published_at, placement, created_at
+    ) VALUES ('1', ?, 'work', 'עבודה', 'מהדורה', 'המשוב הראשון', '',
+              '[]', 'עבודה', 'כתב', '01.01.26', 'lead', '2026-08-01T00:00:00.000Z')`,
+  ).run(USER_ID);
+
+  const res = await app.request("/desk/brief", { headers: { Cookie: COOKIE } });
+  assert.equal(res.status, 200);
+  const brief = (await res.json()) as {
+    subject: { name: string; city?: string; headline?: string };
+    facts: { text: string }[];
+    circle: { name: string; relationLabel: string }[];
+    recent: { headline: string; angle: string }[];
+  };
+  assert.equal(brief.subject.name, "בדיקה");
+  assert.equal(brief.subject.city, "חיפה");
+  assert.equal(brief.subject.headline, "מפתח");
+  assert.equal(brief.facts.length, 1);
+  assert.equal(brief.facts[0]?.text, "מפתח בחיפה");
+  assert.equal(brief.circle.length, 1);
+  assert.equal(brief.circle[0]?.name, "דנה כהן");
+  assert.equal(brief.circle[0]?.relationLabel, "שכנה");
+  assert.equal(brief.recent.length, 1);
+  assert.equal(brief.recent[0]?.headline, "המשוב הראשון");
+});

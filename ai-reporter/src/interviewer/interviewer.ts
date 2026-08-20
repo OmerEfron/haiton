@@ -1,7 +1,8 @@
 import { complete } from "../llm.js";
 import { getLogger } from "../log/logger.js";
-import type { FactInput, NextQuestion, Turn } from "../types.js";
+import type { NextQuestion, PersonBrief, Turn } from "../types.js";
 import { MAX_MESSAGES } from "../types.js";
+import { formatInterviewBrief } from "../brief.js";
 
 const INSTRUCTIONS = `אתה עיתונאי בעיתון "העיתון". קראת מראש את כרטיסיית המרואיין ומקשיב לתשובות — לא שואל כמו זר.
 
@@ -37,11 +38,10 @@ function formatTranscript(turns: Turn[]): string {
   return parts.join("\n\n");
 }
 
-function buildInput(facts: FactInput[], turns: Turn[]): string {
-  const karteset = facts.map((f) => `- ${f.text}`).join("\n");
+function buildInput(brief: PersonBrief, turns: Turn[]): string {
   const transcript = formatTranscript(turns);
 
-  return `כרטיסייה:\n${karteset}\n\nשיחה עד כה:\n${transcript}\n\nתשובות מהקורא: ${turns.length}/${MAX_MESSAGES}`;
+  return `${formatInterviewBrief(brief)}\n\nשיחה עד כה:\n${transcript}\n\nתשובות מהקורא: ${turns.length}/${MAX_MESSAGES}`;
 }
 
 function parseFail(outputChars: number): never {
@@ -66,7 +66,7 @@ function parseResponse(text: string): NextQuestion {
 }
 
 export async function nextQuestion(
-  facts: FactInput[],
+  brief: PersonBrief,
   turns: Turn[],
 ): Promise<NextQuestion> {
   if (turns.length >= MAX_MESSAGES) {
@@ -75,7 +75,7 @@ export async function nextQuestion(
 
   const output = await complete({
     instructions: INSTRUCTIONS,
-    input: buildInput(facts, turns),
+    input: buildInput(brief, turns),
   });
 
   return parseResponse(output);

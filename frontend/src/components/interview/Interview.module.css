@@ -127,3 +127,49 @@
 }
 .footRow { display: flex; gap: 9px; }
 .footNote { margin: 0; text-align: center; font: 400 11px/1.5 var(--sans); color: var(--ink-2); }
+
+.strip {
+  padding: 0 var(--gutter) 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: none;
+}
+.stripHow,
+.stripNote,
+.stripLink {
+  margin: 0;
+  font: 400 12.5px/1.5 var(--sans);
+  color: var(--ink-2);
+}
+.stripLink { color: var(--paper-red); }
+.stripActions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.stripForm { display: flex; flex-direction: column; gap: 12px; }
+
+@media (max-width: 900px) {
+  .strip { padding-inline: var(--gutter-sm); }
+}
+
+.propose {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-ui);
+  background: var(--white);
+  padding: 12px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.proposeTitle { margin: 0; font: 700 11px/1 var(--sans); color: var(--ink-2); }
+.proposeRow {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font: 400 13px/1.5 var(--sans);
+  color: var(--ink);
+}
+.proposeCat {
+  display: inline;
+  margin-inline-end: 6px;
+  font: 700 11px/1 var(--sans);
+  color: var(--ink-2);
+}

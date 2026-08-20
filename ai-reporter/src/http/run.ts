@@ -1,6 +1,12 @@
 import { getLogger } from "../log/logger.js";
 import type { Article } from "../types.js";
-import type { SaveInterviewFn, SectionId, SessionState, WriteArticleFn } from "./types.js";
+import type {
+  ProposeKartesetFn,
+  SaveInterviewFn,
+  SectionId,
+  SessionState,
+  WriteArticleFn,
+} from "./types.js";
 import { toWireSession } from "./session.js";
 
 export function jsonError(message: string, status: number) {
@@ -25,12 +31,15 @@ export function readerCount(state: SessionState): number {
   return state.messages.filter((m) => m.role === "reader").length;
 }
 
-export async function closeWithDraft(state: SessionState, writeArticle: WriteArticleFn) {
+export async function closeWithDraft(
+  state: SessionState,
+  writeArticle: WriteArticleFn,
+  proposeKarteset: ProposeKartesetFn,
+) {
   state.exhausted = true;
   const article = await writeArticle({
-    facts: state.facts,
+    brief: state.brief,
     turns: state.turns,
-    subjectName: state.subjectName,
     ...(state.type ? { type: state.type } : {}),
     ...(state.tone ? { tone: state.tone } : {}),
   });
@@ -38,6 +47,7 @@ export async function closeWithDraft(state: SessionState, writeArticle: WriteArt
   state.angleChosen = true;
   state.type = article.type;
   state.tone = article.tone;
+  state.proposedFacts = await proposeKarteset(state.brief.facts, state.turns);
 }
 
 export async function persistAfter(

@@ -101,6 +101,19 @@ export function nextStoryId(db: DatabaseSync, userId: string): string {
   return String((row.max_id ?? 0) + 1);
 }
 
+function bumpFactsUsedInStory(db: DatabaseSync, userId: string, draft: Draft): void {
+  const article = [draft.headline, draft.standfirst ?? "", ...draft.paragraphs].join("\n");
+  const facts = db
+    .prepare("SELECT id, text FROM facts WHERE user_id = ?")
+    .all(userId) as { id: string; text: string }[];
+  const bump = db.prepare(
+    "UPDATE facts SET used_in_stories = used_in_stories + 1 WHERE user_id = ? AND id = ?",
+  );
+  for (const fact of facts) {
+    if (fact.text && article.includes(fact.text)) bump.run(userId, fact.id);
+  }
+}
+
 export function publishDraft(
   db: DatabaseSync,
   userId: string,
@@ -202,6 +215,7 @@ export function publishDraft(
   ).run(rebuildSectionCountsJson(db, userId), userId);
 
   bumpAuthorPublish(db, userId, full);
+  bumpFactsUsedInStory(db, userId, draft);
 
   const row = db
     .prepare("SELECT * FROM stories WHERE user_id = ? AND id = ?")

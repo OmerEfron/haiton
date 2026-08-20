@@ -1,46 +1,44 @@
 /* REPORTER AGENT API — the interviewing / story-writing service.
  * Separate deployment from the core API; wired via VITE_REPORTER_URL. */
 
-import type { InterviewSession, SectionId, ArticleTypeId, ToneId } from "../types";
+import type {
+  ArticleTypeId,
+  Draft,
+  InterviewSession,
+  ProposedFact,
+  SectionId,
+  Story,
+  ToneId,
+} from "../types";
 import { ApiError } from "../client";
-import { getQuota } from "../core/desk";
-import { listFacts } from "../core/karteset";
-import { getProfile } from "../core/profile";
+import { getBrief, getQuota } from "../core/desk";
+import { addFact } from "../core/karteset";
+import { publishStory } from "../core/stories";
 import { reporterRequest } from "./fetch";
 
 export async function startSession(
-  subjectName?: string,
   opts?: { testMode?: boolean },
 ): Promise<InterviewSession> {
   const existing = await reporterRequest<InterviewSession | undefined>("/interviews");
   if (existing) return existing;
 
-  const facts = await listFacts();
-  let name = subjectName?.trim() ?? "";
-  if (!name) {
-    try {
-      name = (await getProfile()).user.name.trim();
-    } catch {
-      name = "";
-    }
-  }
+  const brief = await getBrief();
   return reporterRequest<InterviewSession>("/interviews", {
     method: "POST",
     body: JSON.stringify({
-      facts,
-      ...(name ? { subjectName: name } : {}),
+      brief,
       ...(import.meta.env.DEV && opts?.testMode ? { testMode: true } : {}),
     }),
   });
 }
 
 /** Resume a live session, or start one when quota remains. Null = daily cap, nothing open. */
-export async function loadOrStartSession(subjectName?: string): Promise<InterviewSession | null> {
+export async function loadOrStartSession(): Promise<InterviewSession | null> {
   const existing = await reporterRequest<InterviewSession | undefined>("/interviews");
   if (existing) return existing;
   const quota = await getQuota();
   if (quota.remaining === 0) return null;
-  return startSession(subjectName);
+  return startSession();
 }
 
 export async function getSession(): Promise<InterviewSession | null> {
@@ -105,9 +103,23 @@ export async function discardSession(): Promise<void> {
 
 /** Drop the open session (if any) and start a new one, optionally in test mode. */
 export async function restartSession(
-  subjectName?: string,
   opts?: { testMode?: boolean },
 ): Promise<InterviewSession> {
   await discardSession();
-  return startSession(subjectName, opts);
+  return startSession(opts);
+}
+
+/** File opted-in karteset rows, then publish. Filing failures do not block the story. */
+export async function publishDraftWithFacts(
+  draft: Draft,
+  fileFacts: ProposedFact[],
+): Promise<Story> {
+  for (const fact of fileFacts) {
+    try {
+      await addFact(fact);
+    } catch {
+      /* filing is optional */
+    }
+  }
+  return publishStory(draft);
 }

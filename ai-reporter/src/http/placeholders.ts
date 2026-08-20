@@ -4,11 +4,12 @@ import {
   DEFAULT_TYPE,
   MAX_MESSAGES,
   type Article,
-  type FactInput,
+  type PersonBrief,
+  type ProposedFact,
   type NextQuestion,
   type Turn,
 } from "../types.js";
-import type { NextQuestionFn, WriteArticleFn } from "./types.js";
+import type { NextQuestionFn, ProposeKartesetFn, WriteArticleFn } from "./types.js";
 
 export const PLACEHOLDER_QUESTIONS = [
   "מה בדיוק קרה אחר כך?",
@@ -26,6 +27,10 @@ export const PLACEHOLDER_ARTICLE = {
   ],
 } as const;
 
+export const PLACEHOLDER_PROPOSED: ProposedFact[] = [
+  { text: "עובד בחברת בדיקה", category: "work" },
+];
+
 const THINK_MIN_MS = 500;
 const THINK_SPAN_MS = 4500;
 
@@ -41,7 +46,7 @@ async function pause(): Promise<void> {
 }
 
 export async function placeholderNextQuestion(
-  _facts: FactInput[],
+  _brief: PersonBrief,
   turns: Turn[],
 ): Promise<NextQuestion> {
   await pause();
@@ -52,9 +57,8 @@ export async function placeholderNextQuestion(
 }
 
 export async function placeholderWriteArticle(input: {
-  facts: FactInput[];
+  brief: PersonBrief;
   turns: Turn[];
-  subjectName?: string;
   tone?: Article["tone"];
   type?: Article["type"];
 }): Promise<Article> {
@@ -69,19 +73,36 @@ export async function placeholderWriteArticle(input: {
   };
 }
 
+export async function placeholderProposeKarteset(): Promise<ProposedFact[]> {
+  return [...PLACEHOLDER_PROPOSED];
+}
+
 export function allowTestMode(): boolean {
   return process.env.NODE_ENV !== "production";
 }
 
 export function llmFns(
   testMode: boolean,
-  deps: { nextQuestion: NextQuestionFn; writeArticle: WriteArticleFn },
-): { nextQuestion: NextQuestionFn; writeArticle: WriteArticleFn } {
+  deps: {
+    nextQuestion: NextQuestionFn;
+    writeArticle: WriteArticleFn;
+    proposeKarteset: ProposeKartesetFn;
+  },
+): {
+  nextQuestion: NextQuestionFn;
+  writeArticle: WriteArticleFn;
+  proposeKarteset: ProposeKartesetFn;
+} {
   if (!testMode || !allowTestMode()) {
-    return { nextQuestion: deps.nextQuestion, writeArticle: deps.writeArticle };
+    return {
+      nextQuestion: deps.nextQuestion,
+      writeArticle: deps.writeArticle,
+      proposeKarteset: deps.proposeKarteset,
+    };
   }
   return {
     nextQuestion: placeholderNextQuestion,
     writeArticle: placeholderWriteArticle,
+    proposeKarteset: placeholderProposeKarteset,
   };
 }

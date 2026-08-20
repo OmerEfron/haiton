@@ -116,6 +116,12 @@ export const ROUTES: readonly RouteContract[] = [
   { method: "PATCH", path: "/connections/:id", handler: "updateConnection" },
   { method: "DELETE", path: "/connections/:id", handler: "removeConnection" },
   { method: "GET", path: "/quota", handler: "getQuota" },
+  {
+    method: "GET",
+    path: "/desk/brief",
+    handler: "getBrief",
+    notes: "profile + karteset + circle + last headlines for the reporter",
+  },
   { method: "GET", path: "/desk/interviews", handler: "listInterviews" },
   { method: "GET", path: "/desk/interviews/:id", handler: "getArchivedInterview" },
   {

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import styles from "./InterviewRoom.module.css";
 import { ChatBubble, TimeStamp, TypingIndicator } from "../components/interview/ChatBubble";
 import { DraftPanel } from "../components/interview/DraftPanel";
+import { KartesetStrip } from "../components/interview/KartesetStrip";
 import { ArticleFormChips } from "../components/interview/ArticleFormChips";
 import { InterviewComposer } from "../components/interview/InterviewComposer";
 import { heDate, InterviewBar } from "../components/interview/InterviewBar";
@@ -11,11 +12,10 @@ import { ErrorState, Loading } from "../components/ui/Bits";
 import { Button, ButtonLink } from "../components/ui/Button";
 import { Chip } from "../components/ui/Chip";
 import { EmptyState } from "../components/ui/EmptyState";
-import { MAX_INTERVIEW_MESSAGES, type ArticleTypeId, type ToneId } from "../api/types";
+import { MAX_INTERVIEW_MESSAGES, type ArticleTypeId, type Draft, type ProposedFact, type ToneId } from "../api/types";
 import {
-  discardSession, loadOrStartSession, requestDraft, restartSession, sendMessage, setArticleForm,
+  discardSession, loadOrStartSession, publishDraftWithFacts, requestDraft, restartSession, sendMessage, setArticleForm,
 } from "../api/reporter/interview";
-import { publishStory } from "../api/core/stories";
 import { qk } from "../lib/queryKeys";
 import { useSession } from "../lib/session";
 import { desk } from "../copy/desk";
@@ -31,7 +31,7 @@ export function InterviewRoom() {
 
   const interview = useQuery({
     queryKey: qk.interview,
-    queryFn: () => loadOrStartSession(appSession?.user.name),
+    queryFn: () => loadOrStartSession(),
     staleTime: 0,
   });
 
@@ -63,13 +63,15 @@ export function InterviewRoom() {
   });
 
   const publish = useMutation({
-    mutationFn: publishStory,
+    mutationFn: ({ draft, fileFacts }: { draft: Draft; fileFacts: ProposedFact[] }) =>
+      publishDraftWithFacts(draft, fileFacts),
     onSuccess: async (story) => {
       await client.cancelQueries({ queryKey: qk.interview });
       await discardSession();
       client.setQueryData(qk.interview, null);
       await client.invalidateQueries({ queryKey: qk.frontPage });
       await client.invalidateQueries({ queryKey: qk.profile });
+      await client.invalidateQueries({ queryKey: qk.facts });
       await client.invalidateQueries({ queryKey: qk.deskInterviews });
       navigate(story.shareToken ? `/s/${story.shareToken}` : `/story/${story.id}`);
     },
@@ -86,7 +88,7 @@ export function InterviewRoom() {
   });
 
   const toggleTest = useMutation({
-    mutationFn: (testMode: boolean) => restartSession(appSession?.user.name, { testMode }),
+    mutationFn: (testMode: boolean) => restartSession({ testMode }),
     onSuccess: (session) => client.setQueryData(qk.interview, session),
     onError: () => { void client.invalidateQueries({ queryKey: qk.interview }); },
   });
@@ -148,7 +150,7 @@ export function InterviewRoom() {
       key={`${s.draft.id}-${s.draft.status}`}
       draft={s.draft}
       writing={writingNow}
-      onPublish={(d) => publish.mutate(d)}
+      onPublish={(d, fileFacts) => publish.mutate({ draft: d, fileFacts })}
       publishing={publish.isPending}
       onSave={saveDraft}
       onDrop={canDrop ? () => drop.mutate() : undefined}
@@ -157,6 +159,7 @@ export function InterviewRoom() {
       tone={s.tone ?? null}
       onFormChange={formChange}
       formLocked={writingNow || closed}
+      proposedFacts={s.proposedFacts ?? []}
     />
   );
 
@@ -208,19 +211,26 @@ export function InterviewRoom() {
           </div>
 
           {!chatting && !closed && (
-            <div className={styles.openers}>
-              <p className={styles.openersLabel}>{desk.suggestedOpeners}</p>
-              {s.openers.map((opener) => (
-                <button
-                  key={opener}
-                  type="button"
-                  className={styles.opener}
-                  onClick={() => !busy && send.mutate(opener)}
-                >
-                  {opener}
-                </button>
-              ))}
-            </div>
+            <>
+              <KartesetStrip
+                facts={s.facts ?? []}
+                lockNow
+                onRelock={() => toggleTest.mutate(Boolean(s.testMode))}
+              />
+              <div className={styles.openers}>
+                <p className={styles.openersLabel}>{desk.suggestedOpeners}</p>
+                {s.openers.map((opener) => (
+                  <button
+                    key={opener}
+                    type="button"
+                    className={styles.opener}
+                    onClick={() => !busy && send.mutate(opener)}
+                  >
+                    {opener}
+                  </button>
+                ))}
+              </div>
+            </>
           )}
 
           {chatting && !showDraft && (
@@ -271,7 +281,7 @@ export function InterviewRoom() {
           <ErrorState error={send.error || draftIt.error || publish.error || toggleTest.error} />
           {publish.error && (
             <>
-              <Button size="md" onClick={() => publish.mutate(publish.variables ?? s.draft)}>
+              <Button size="md" onClick={() => publish.mutate(publish.variables ?? { draft: s.draft, fileFacts: [] })}>
                 {desk.retry}
               </Button>
               <Button variant="outline" size="md" onClick={() => drop.mutate()} disabled={drop.isPending}>

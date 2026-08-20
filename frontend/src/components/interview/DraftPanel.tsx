@@ -1,7 +1,8 @@
 import { useState } from "react";
 import styles from "./Interview.module.css";
-import type { ArticleTypeId, Draft, ToneId } from "../../api/types";
+import type { ArticleTypeId, Draft, ProposedFact, ToneId } from "../../api/types";
 import { ArticleFormChips } from "./ArticleFormChips";
+import { ProposedFacts } from "./ProposedFacts";
 import { LivePill } from "../ui/Bits";
 import { Button } from "../ui/Button";
 import { desk } from "../../copy/desk";
@@ -19,10 +20,11 @@ export function DraftPanel({
   tone,
   onFormChange,
   formLocked,
+  proposedFacts,
 }: {
   draft: Draft;
   writing?: boolean;
-  onPublish?: (draft: Draft) => void;
+  onPublish?: (draft: Draft, fileFacts: ProposedFact[]) => void;
   publishing?: boolean;
   onSave?: () => void;
   onDrop?: () => void;
@@ -32,12 +34,14 @@ export function DraftPanel({
   tone?: ToneId | null;
   onFormChange?: (patch: { type?: ArticleTypeId | null; tone?: ToneId | null }) => void;
   formLocked?: boolean;
+  proposedFacts?: ProposedFact[];
 }) {
   const ready = draft.status === "ready";
   const [editing, setEditing] = useState(false);
   const [headline, setHeadline] = useState(draft.headline ?? "");
   const [standfirst, setStandfirst] = useState(draft.standfirst ?? "");
   const [body, setBody] = useState(draft.paragraphs.join("\n\n"));
+  const [selected, setSelected] = useState<Set<number>>(() => new Set());
 
   function edited(): Draft {
     return {
@@ -167,6 +171,21 @@ export function DraftPanel({
             </div>
           </div>
         )}
+
+        {ready && (proposedFacts?.length ?? 0) > 0 && (
+          <ProposedFacts
+            facts={proposedFacts!}
+            selected={selected}
+            onToggle={(i) => {
+              setSelected((prev) => {
+                const next = new Set(prev);
+                if (next.has(i)) next.delete(i);
+                else next.add(i);
+                return next;
+              });
+            }}
+          />
+        )}
       </div>
 
       {!readOnly && !writing && (
@@ -174,7 +193,12 @@ export function DraftPanel({
           <Button
             size="xl"
             block
-            onClick={() => onPublish?.(edited())}
+            onClick={() =>
+              onPublish?.(
+                edited(),
+                (proposedFacts ?? []).filter((_, i) => selected.has(i)),
+              )
+            }
             disabled={!ready || publishing}
           >
             {publishing ? "מפרסם…" : desk.publish}

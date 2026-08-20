@@ -11,7 +11,7 @@ import {
   ERROR_STATUS,
   ERROR_UNAUTHORIZED,
 } from "../contract.js";
-import { MAX_MESSAGES, TONE_LABELS, TYPE_LABELS, type ArticleTypeId, type FactInput, type ToneId } from "../types.js";
+import { MAX_MESSAGES, TONE_LABELS, TYPE_LABELS, type ArticleTypeId, type ToneId } from "../types.js";
 import { cookieOf, coreGetUserId, coreSaveInterview } from "./core.js";
 import { clientIp, rateLimit } from "./rateLimit.js";
 import { allowTestMode, llmFns } from "./placeholders.js";
@@ -24,11 +24,13 @@ import {
   createSession,
   getCurrentSession,
   newMessage,
+  parseBrief,
   toWireSession,
 } from "./session.js";
 import type {
   GetUserIdFn,
   NextQuestionFn,
+  ProposeKartesetFn,
   SaveInterviewFn,
   SectionId,
   WriteArticleFn,
@@ -39,6 +41,7 @@ const DEFAULT_ORIGIN = "http://localhost:5173";
 export type AppDeps = {
   nextQuestion?: NextQuestionFn;
   writeArticle?: WriteArticleFn;
+  proposeKarteset?: ProposeKartesetFn;
   getUserId?: GetUserIdFn;
   saveInterview?: SaveInterviewFn;
 };
@@ -54,9 +57,12 @@ async function resolveDeps(deps?: AppDeps): Promise<Required<AppDeps>> {
     (await import("../interviewer/interviewer.js")).nextQuestion;
   const writeArticle =
     deps?.writeArticle ?? (await import("../writer/writer.js")).writeArticle;
+  const proposeKarteset =
+    deps?.proposeKarteset ?? (await import("../karteset/propose.js")).proposeKarteset;
   return {
     nextQuestion,
     writeArticle,
+    proposeKarteset,
     getUserId: deps?.getUserId ?? coreGetUserId,
     saveInterview: deps?.saveInterview ?? coreSaveInterview,
   };
@@ -157,17 +163,15 @@ export function createApp(deps?: AppDeps): Hono<AppEnv> {
 
   app.post("/interviews", async (c) => {
     const body = (await c.req.json()) as {
-      facts?: FactInput[];
+      brief?: unknown;
+      facts?: unknown;
       subjectName?: string;
       testMode?: boolean;
     };
-    const facts = Array.isArray(body.facts) ? body.facts : [];
-    const subjectName =
-      typeof body.subjectName === "string" ? body.subjectName : undefined;
+    const brief = parseBrief(body);
     const state = createSession(
       c.get("userId"),
-      facts,
-      subjectName,
+      brief,
       body.testMode === true && allowTestMode(),
     );
     return c.json(toWireSession(state), 200);
@@ -195,7 +199,7 @@ export function createApp(deps?: AppDeps): Hono<AppEnv> {
     }
 
     const deps = await getDeps();
-    const { nextQuestion, writeArticle } = llmFns(state!.testMode, deps);
+    const { nextQuestion, writeArticle, proposeKarteset } = llmFns(state!.testMode, deps);
     const cookie = cookieOf(c);
     const charged = await deps.saveInterview(cookie, toWireSession(state!));
     if (!charged.ok) return jsonError(charged.message, charged.status);
@@ -205,18 +209,18 @@ export function createApp(deps?: AppDeps): Hono<AppEnv> {
       state!.turns = buildTurns(state!.messages);
 
       if (readerCount(state!) >= MAX_MESSAGES) {
-        await closeWithDraft(state!, writeArticle);
+        await closeWithDraft(state!, writeArticle, proposeKarteset);
         await persistAfter(deps.saveInterview, cookie, state!);
         return toWireSession(state!);
       }
 
-      const result = await nextQuestion(state!.facts, state!.turns);
+      const result = await nextQuestion(state!.brief, state!.turns);
       if (result.question) {
         state!.messages.push(newMessage("reporter", result.question));
       }
 
       if (result.done && !result.question) {
-        await closeWithDraft(state!, writeArticle);
+        await closeWithDraft(state!, writeArticle, proposeKarteset);
       }
 
       await persistAfter(deps.saveInterview, cookie, state!);
@@ -234,13 +238,13 @@ export function createApp(deps?: AppDeps): Hono<AppEnv> {
     }
 
     const deps = await getDeps();
-    const { writeArticle } = llmFns(state!.testMode, deps);
+    const { writeArticle, proposeKarteset } = llmFns(state!.testMode, deps);
     const cookie = cookieOf(c);
     const charged = await deps.saveInterview(cookie, toWireSession(state!));
     if (!charged.ok) return jsonError(charged.message, charged.status);
 
     return sseJson(async () => {
-      await closeWithDraft(state!, writeArticle);
+      await closeWithDraft(state!, writeArticle, proposeKarteset);
       await persistAfter(deps.saveInterview, cookie, state!);
       return toWireSession(state!);
     });

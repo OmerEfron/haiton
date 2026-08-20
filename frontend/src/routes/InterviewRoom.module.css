@@ -51,6 +51,14 @@
   white-space: nowrap;
 }
 .close:hover { color: var(--white); background: rgba(255, 255, 255, 0.12); }
+.kartesetLink {
+  color: rgba(255, 255, 255, 0.85);
+  font: 500 12.5px/1 var(--sans);
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.kartesetLink:hover { color: var(--white); }
 
 .split {
   flex: 1;

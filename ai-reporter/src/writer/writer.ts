@@ -3,11 +3,12 @@ import { getLogger } from "../log/logger.js";
 import type {
   Article,
   ArticleTypeId,
-  FactInput,
+  PersonBrief,
   ToneId,
   Turn,
 } from "../types.js";
 import { TONE_LABELS, TYPE_LABELS } from "../types.js";
+import { formatWriteBrief } from "../brief.js";
 import {
   forcedTypeBlock,
   forcedTypePickToneBlock,
@@ -16,9 +17,8 @@ import {
 } from "./machines.js";
 
 type WriteArticleInput = {
-  facts: FactInput[];
+  brief: PersonBrief;
   turns: Turn[];
-  subjectName?: string;
   tone?: ToneId;
   type?: ArticleTypeId;
 };
@@ -97,10 +97,6 @@ function parseArticleOutput(
   return raw;
 }
 
-function formatFacts(facts: FactInput[]): string {
-  return facts.map((f) => `- ${f.text}`).join("\n");
-}
-
 function formatTurns(turns: Turn[]): string {
   return turns
     .map(
@@ -110,20 +106,8 @@ function formatTurns(turns: Turn[]): string {
     .join("\n\n");
 }
 
-export function buildWriterInput(
-  facts: FactInput[],
-  turns: Turn[],
-  subjectName?: string,
-): string {
-  const name = subjectName?.trim();
-  const who = name
-    ? `המרואיין: ${name}`
-    : "המרואיין: השם לא סופק. אל תמציא שם פרטי — כתוב בלי שם, או «המרואיין».";
-
-  return `${who}
-
-רקע (עובדות לבדיקה — לא למילוי אוטומטי):
-${formatFacts(facts)}
+export function buildWriterInput(brief: PersonBrief, turns: Turn[]): string {
+  return `${formatWriteBrief(brief)}
 
 תמליל ראיון (זה הסיפור):
 ${formatTurns(turns)}
@@ -165,16 +149,15 @@ ${jsonShape(pickType, pickTone)}`;
 }
 
 export async function writeArticle({
-  facts,
+  brief,
   turns,
-  subjectName,
   tone,
   type,
 }: WriteArticleInput): Promise<Article> {
   const pickType = type === undefined;
   const pickTone = tone === undefined;
   const instructions = buildInstructions(type, tone);
-  const input = buildWriterInput(facts, turns, subjectName);
+  const input = buildWriterInput(brief, turns);
 
   const output = await complete({ instructions, input });
   let raw: RawArticle;
