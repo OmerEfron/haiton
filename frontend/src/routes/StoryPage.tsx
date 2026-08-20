@@ -7,17 +7,18 @@ import { CrumbBar } from "../components/layout/SectionsBar";
 import crumbStyles from "../components/layout/SectionsBar.module.css";
 import { Footer } from "../components/layout/Footer";
 import { ErrorState, Kicker, Loading } from "../components/ui/Bits";
-import { Button, ButtonLink } from "../components/ui/Button";
+import { Button, ButtonAnchor, ButtonLink } from "../components/ui/Button";
 import type { SharedStory, Story } from "../api/types";
 import { getSharedStory, getStory, listStories } from "../api/core/stories";
 import { joinInvitation, respondToInvitation } from "../api/core/connections";
 import { getProfile } from "../api/core/profile";
 import { qk } from "../lib/queryKeys";
-import { storyPath, storyShareUrl } from "../lib/format";
+import { storyPath, storyShareUrl, displayPublishedAt } from "../lib/format";
 import { useSession } from "../lib/session";
 import { brand, common } from "../copy/common";
 import { circle } from "../copy/circle";
 import { desk } from "../copy/desk";
+import { StoryOwnerBar } from "../components/news/StoryOwnerBar";
 
 export function StoryPage() {
   const { token = "", storyId = "" } = useParams();
@@ -25,6 +26,7 @@ export function StoryPage() {
   const { session } = useSession();
   const client = useQueryClient();
   const [copied, setCopied] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   const shared = useQuery({
     queryKey: qk.sharedStory(token),
@@ -106,8 +108,8 @@ export function StoryPage() {
 
       <article className={styles.article}>
         <Kicker>{s.sectionName}</Kicker>
-        <h1 className={styles.headline}>{s.headline}</h1>
-        <p className={styles.standfirst}>{s.standfirst}</p>
+        {!editing && <h1 className={styles.headline}>{s.headline}</h1>}
+        {!editing && <p className={styles.standfirst}>{s.standfirst}</p>}
 
         <div className={styles.byline}>
           {s.author?.id ? (
@@ -124,47 +126,50 @@ export function StoryPage() {
             </>
           )}
           <span className={styles.bullet} />
-          <time>{s.publishedAt}</time>
+          <time>{displayPublishedAt(s.publishedAt)}</time>
         </div>
+
+        {!gated && <StoryOwnerBar story={s} editing={editing} onEditing={setEditing} />}
 
         <div className={styles.share}>
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
-              void navigator.clipboard.writeText(url).then(
-                () => {
-                  setCopied(true);
-                  window.setTimeout(() => setCopied(false), 2000);
-                },
-                () => {
-                  setCopied(true);
-                  window.setTimeout(() => setCopied(false), 2000);
-                },
-              );
+              setCopied(true);
+              window.setTimeout(() => setCopied(false), 2000);
+              void navigator.clipboard.writeText(url);
             }}
           >
-            {copied ? "הועתק" : "העתקת קישור"}
+            {copied ? circle.copied : "העתקת קישור"}
           </Button>
-          <a href={waHref} target="_blank" rel="noopener noreferrer">
+          <ButtonAnchor
+            href={waHref}
+            variant="outline"
+            size="sm"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             וואטסאפ
-          </a>
+          </ButtonAnchor>
         </div>
 
-        <div className={styles.body}>
-          {s.body.map((block, i) =>
-            block.kind === "quote" ? (
-              <blockquote key={i} className={styles.quote}>
-                {block.text}
-              </blockquote>
-            ) : (
-              <p key={i}>
-                {block.leadIn && <span className={styles.leadIn}>{block.leadIn} </span>}
-                {block.text}
-              </p>
-            ),
-          )}
-        </div>
+        {!editing && (
+          <div className={styles.body}>
+            {s.body.map((block, i) =>
+              block.kind === "quote" ? (
+                <blockquote key={i} className={styles.quote}>
+                  {block.text}
+                </blockquote>
+              ) : (
+                <p key={i}>
+                  {block.leadIn && <span className={styles.leadIn}>{block.leadIn} </span>}
+                  {block.text}
+                </p>
+              ),
+            )}
+          </div>
+        )}
 
         {gated && (
           <div className={styles.gate}>

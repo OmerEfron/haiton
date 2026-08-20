@@ -33,3 +33,23 @@ export async function publishStory(draft: Draft): Promise<Story> {
     body: JSON.stringify(draft),
   });
 }
+
+export async function updateStory(
+  id: string,
+  patch: {
+    headline?: string;
+    standfirst?: string;
+    /** Paragraph texts — API stores them as body_json. */
+    body?: string[];
+    hidden?: boolean;
+  },
+): Promise<Story> {
+  return request<Story>(`/stories/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+}
+
+export async function deleteStory(id: string): Promise<void> {
+  await request<void>(`/stories/${encodeURIComponent(id)}`, { method: "DELETE" });
+}

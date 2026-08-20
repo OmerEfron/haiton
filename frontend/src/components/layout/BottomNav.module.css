@@ -17,6 +17,7 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
+  min-width: 4.5em;
   min-height: var(--tap);
   font: 500 10.5px/1 var(--sans);
   color: var(--ink-2);
@@ -26,13 +27,20 @@
 .active { color: var(--paper-red); font-weight: 700; border-top: 2px solid var(--paper-red); }
 .glyph { font: 900 16px/1 var(--serif); }
 .cta {
-  background: var(--paper-red);
-  color: var(--white);
+  background: transparent;
+  color: var(--ink-2);
   font-weight: 700;
   padding: 6px 4px;
+  border: 1px solid var(--rule);
 }
-.cta:hover { color: var(--white); background: var(--paper-red-dark); }
-.cta.active { border-top: 0; }
+.cta:hover { color: var(--paper-red); background: transparent; }
+.cta.active {
+  background: var(--paper-red);
+  color: var(--white);
+  border-color: var(--paper-red);
+  border-top: 0;
+}
+.cta.active:hover { color: var(--white); background: var(--paper-red-dark); }
 .ctaNote { font: 400 9.5px/1 var(--sans); opacity: 0.85; }
 .badge {
   padding: 1px 5px;

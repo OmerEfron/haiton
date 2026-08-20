@@ -5,6 +5,7 @@ import type { InterviewSession, SectionId, ArticleTypeId, ToneId } from "../type
 import { ApiError } from "../client";
 import { getQuota } from "../core/desk";
 import { listFacts } from "../core/karteset";
+import { getProfile } from "../core/profile";
 import { reporterRequest } from "./fetch";
 
 export async function startSession(subjectName?: string): Promise<InterviewSession> {
@@ -12,7 +13,14 @@ export async function startSession(subjectName?: string): Promise<InterviewSessi
   if (existing) return existing;
 
   const facts = await listFacts();
-  const name = subjectName?.trim();
+  let name = subjectName?.trim() ?? "";
+  if (!name) {
+    try {
+      name = (await getProfile()).user.name.trim();
+    } catch {
+      name = "";
+    }
+  }
   return reporterRequest<InterviewSession>("/interviews", {
     method: "POST",
     body: JSON.stringify({

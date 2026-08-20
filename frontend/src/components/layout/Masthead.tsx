@@ -61,11 +61,8 @@ export function Masthead({ dateLong, dateShort, editionNumber, editionName }: Pr
               [styles.circleLink, isActive && styles.navActive].filter(Boolean).join(" ")
             }
           >
-            {nav.circle}
+            {nav.circleShort}
             {pending > 0 && <span className={styles.badge}>{pending}</span>}
-          </NavLink>
-          <NavLink to="/profile" className={navClass}>
-            {nav.profile}
           </NavLink>
           <ButtonLink to="/interview" size="md">
             {nav.interview}
@@ -73,7 +70,7 @@ export function Masthead({ dateLong, dateShort, editionNumber, editionName }: Pr
         </nav>
 
         <div className={styles.mobileOnly}>
-          <span className={styles.deskStatus}>{common.live}</span>
+          <span className={styles.deskStatus}>{common.deskOpen}</span>
         </div>
       </div>
     </header>

@@ -20,6 +20,7 @@ export const ERROR_RATE_LIMIT = "יותר מדי בקשות. נסו שוב בע�
 export const ERROR_INTERNAL = "משהו השתבש בשולחן העורכים";
 export const ERROR_INTERVIEW_NOT_FOUND = "ראיון לא נמצא בארכיון";
 export const DAILY_INTERVIEW_LIMIT = process.env.DAILY_INTERVIEW_LIMIT ? parseInt(process.env.DAILY_INTERVIEW_LIMIT) : 2;
+export const DAILY_STORY_LIMIT = process.env.DAILY_STORY_LIMIT ? parseInt(process.env.DAILY_STORY_LIMIT) : 2;
 
 export const ROUTES: readonly RouteContract[] = [
   { method: "GET", path: "/health" },
@@ -68,6 +69,18 @@ export const ROUTES: readonly RouteContract[] = [
     path: "/stories",
     handler: "publishStory",
     notes: "body: Draft",
+  },
+  {
+    method: "PATCH",
+    path: "/stories/:id",
+    handler: "updateStory",
+    notes: "body: { headline?, standfirst?, body?: string[], hidden?: boolean }; owner only",
+  },
+  {
+    method: "DELETE",
+    path: "/stories/:id",
+    handler: "removeStory",
+    notes: "owner only; 204",
   },
   { method: "GET", path: "/profile", handler: "getProfile" },
   {

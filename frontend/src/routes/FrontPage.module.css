@@ -48,19 +48,7 @@
   font: 700 17px/1 var(--serif);
 }
 
-.emptyEdition {
-  padding: 52px 20px;
-  text-align: center;
-  border-bottom: 1px solid var(--rule);
-  background: var(--white);
-}
-.emptyEditionTitle {
-  margin: 0 auto 24px;
-  max-width: 22ch;
-  font: 900 40px/1.12 var(--serif);
-  color: var(--ink);
-  text-wrap: pretty;
-}
+.draftActions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 
 @media (max-width: 900px) {
   .grid { display: block; padding: 16px var(--gutter-sm) 12px; }
@@ -69,6 +57,4 @@
   .band { padding: 0 var(--gutter-sm) 14px; border-bottom: 0; }
   .bandTitle { display: none; }
   .lower { display: none; }
-  .emptyEdition { padding: 34px 16px; }
-  .emptyEditionTitle { font-size: 26px; }
 }

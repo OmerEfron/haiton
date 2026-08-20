@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import styles from "./News.module.css";
 import type { Flash, Story } from "../../api/types";
-import { flashPath, storyPath } from "../../lib/format";
+import { displayPublishedAt, flashPath, storyPath } from "../../lib/format";
 import { Kicker } from "../ui/Bits";
 import { Tag } from "../ui/Chip";
 
@@ -40,7 +40,7 @@ export function LeadStory({
       </h2>
       <p className={styles.leadStandfirst}>{story.standfirst}</p>
       <div className={styles.leadByline}>
-        <time>{story.publishedAt}</time>
+        <time>{displayPublishedAt(story.publishedAt)}</time>
         <span className={styles.bullet} />
         <AuthorLabel story={story} />
         <EditionTag story={story} showTag={showTag} />
@@ -59,7 +59,7 @@ export function StoryCard({ story, showTag }: { story: Story; showTag: boolean }
       <h3 className={styles.cardHeadline}>
         <Link to={storyPath(story)}>{story.headline}</Link>
       </h3>
-      <time className={styles.cardTime}>{story.publishedAt}</time>
+      <time className={styles.cardTime}>{displayPublishedAt(story.publishedAt)}</time>
     </article>
   );
 }

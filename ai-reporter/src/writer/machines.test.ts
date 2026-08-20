@@ -34,6 +34,14 @@ describe("writer machines", () => {
     assert.match(SHARED_RULES, /לא מילוי/);
   });
 
+  it("shared rules keep thin interviews short and ban padding phrases", () => {
+    assert.match(SHARED_RULES, /1–2 תשובות/);
+    assert.match(SHARED_RULES, /2–3 פסקאות קצרות/);
+    assert.match(SHARED_RULES, /לא נמסר/);
+    assert.match(SHARED_RULES, /לא זוהה/);
+    assert.match(SHARED_RULES, /אם תימסר התייחסות/);
+  });
+
   it("does not seed a fake subject name or job for the model to copy", () => {
     assert.doesNotMatch(MACHINES.profile, /תומר/);
     assert.doesNotMatch(SHARED_RULES, /תומר/);

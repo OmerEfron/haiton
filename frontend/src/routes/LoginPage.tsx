@@ -75,7 +75,14 @@ export function LoginPage() {
                 role="tab"
                 aria-selected={mode === m}
                 className={[styles.tab, mode === m && styles.tabActive].filter(Boolean).join(" ")}
-                onClick={() => setMode(m)}
+                onClick={() => {
+                  if (m === "signUp" && mode !== "signUp") {
+                    setPassword("");
+                    setConfirmPassword("");
+                    submit.reset();
+                  }
+                  setMode(m);
+                }}
               >
                 {m === "signIn" ? authCopy.signIn : authCopy.signUp}
               </button>
@@ -150,7 +157,12 @@ export function LoginPage() {
                 <button
                   type="button"
                   className={styles.switch}
-                  onClick={() => setMode("signUp")}
+                  onClick={() => {
+                    setPassword("");
+                    setConfirmPassword("");
+                    submit.reset();
+                    setMode("signUp");
+                  }}
                 >
                   {authCopy.openEdition}
                 </button>

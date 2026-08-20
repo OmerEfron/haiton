@@ -30,6 +30,7 @@ function applySchema(database: DatabaseSync): void {
   tryExec(database, "ALTER TABLE stories ADD COLUMN created_at TEXT");
   tryExec(database, "ALTER TABLE users ADD COLUMN invite_token TEXT");
   tryExec(database, "ALTER TABLE stories ADD COLUMN share_token TEXT");
+  tryExec(database, "ALTER TABLE stories ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0");
   tryExec(database, "ALTER TABLE invitations ADD COLUMN from_user_id TEXT");
 
   const schemaPath = join(__dirname, "schema.sql");

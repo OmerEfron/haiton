@@ -45,7 +45,7 @@ function loadStories(
     .prepare(
       `SELECT s.*, u.name AS author_name, u.initial AS author_initial
        FROM stories s JOIN users u ON u.id = s.user_id
-       WHERE s.user_id IN (${ph}) ${order}`,
+       WHERE s.user_id IN (${ph}) AND COALESCE(s.hidden, 0) = 0 ${order}`,
     )
     .all(...userIds) as StoryJoinRow[];
   return rows.map((row) =>
@@ -62,7 +62,7 @@ function loadFlashes(db: DatabaseSync, userIds: string[]) {
       .prepare(
         `SELECT f.id, f.time, f.text, f.story_id, s.share_token FROM flashes f
          LEFT JOIN stories s ON s.user_id = f.user_id AND s.id = f.story_id
-         WHERE f.user_id IN (${ph}) ORDER BY f.rowid DESC`,
+         WHERE f.user_id IN (${ph}) AND COALESCE(s.hidden, 0) = 0 ORDER BY f.rowid DESC`,
       )
       .all(...userIds) as FlashRow[]
   ).map(rowToFlash);

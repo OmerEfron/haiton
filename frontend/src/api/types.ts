@@ -87,6 +87,8 @@ export interface Story {
   imageCaption?: string;
   /** Front-page slot the story occupies. */
   placement: "lead" | "secondary" | "list";
+  /** Hidden stories stay in the archive and at `/s/:token`, not the edition. */
+  hidden?: boolean;
 }
 
 export type StoryBlock =

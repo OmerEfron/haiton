@@ -30,7 +30,19 @@
   align-items: center;
   margin: 0 0 22px;
 }
-.share a { font: 700 12px/1 var(--sans); color: var(--paper-red); }
+.owner { margin: 0 0 16px; }
+.ownerHint {
+  margin: 0 0 8px;
+  font: 400 13px/1.5 var(--sans);
+  color: var(--ink-2);
+}
+.ownerError {
+  margin: 8px 0 0;
+  font: 500 12px/1.5 var(--sans);
+  color: var(--paper-red);
+}
+.ownerActions { display: flex; flex-wrap: wrap; gap: 8px; }
+.edit { display: flex; flex-direction: column; gap: 12px; }
 .body {
   font: 400 17px/1.85 var(--sans);
   color: var(--ink);

@@ -9,7 +9,6 @@ export function Footer() {
       <div className={styles.links}>
         <Link to="/karteset">{nav.karteset}</Link>
         <Link to="/profile">{nav.circleShort}</Link>
-        <Link to="/profile">{nav.profile}</Link>
       </div>
       <p className={styles.small}>{common.copyright}</p>
     </footer>

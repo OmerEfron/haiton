@@ -27,8 +27,7 @@ export function BriefsPage() {
         <ErrorState error={error} />
       ) : data.flashes.length === 0 ? (
         <EmptyState
-          title="אין מבזקים במהדורה הזו"
-          body={desk.noFlashes}
+          title={desk.noFlashes}
           actions={
             <ButtonLink to="/interview" size="lg">
               {desk.startFirstInterview}

@@ -45,11 +45,11 @@ export const TYPE_LABELS: Record<ArticleTypeId, string> = {
 };
 
 export const WORD_COUNT: Record<ArticleTypeId, { min: number; max: number }> = {
-  news: { min: 220, max: 450 },
-  profile: { min: 350, max: 700 },
-  feature: { min: 350, max: 700 },
-  interview: { min: 350, max: 700 },
-  column: { min: 350, max: 700 },
+  news: { min: 60, max: 180 },
+  profile: { min: 90, max: 280 },
+  feature: { min: 90, max: 280 },
+  interview: { min: 90, max: 280 },
+  column: { min: 90, max: 280 },
 };
 
 export type FactInput = {

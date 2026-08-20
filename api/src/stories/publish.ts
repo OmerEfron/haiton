@@ -7,6 +7,7 @@ import {
   MAIN_SECTION_NAME,
   SECTION_NAMES,
   angleFromDraft,
+  hebrewEditionDates,
   nowPublishedAt,
   paragraphsToBody,
   rowToStory,
@@ -23,10 +24,12 @@ const SECTION_ORDER: SectionId[] = [
   "flashes",
 ];
 
-function rebuildDigestsJson(db: DatabaseSync, userId: string): string {
+export function rebuildDigestsJson(db: DatabaseSync, userId: string): string {
   const rows = db
     .prepare(
-      "SELECT id, section, section_name, headline FROM stories WHERE user_id = ? ORDER BY section, CAST(id AS INTEGER)",
+      `SELECT id, section, section_name, headline FROM stories
+       WHERE user_id = ? AND COALESCE(hidden, 0) = 0
+       ORDER BY section, CAST(id AS INTEGER)`,
     )
     .all(userId) as { id: string; section: string; section_name: string; headline: string }[];
 
@@ -51,7 +54,7 @@ function rebuildDigestsJson(db: DatabaseSync, userId: string): string {
   return JSON.stringify(digests);
 }
 
-function rebuildSectionCountsJson(db: DatabaseSync, userId: string): string {
+export function rebuildSectionCountsJson(db: DatabaseSync, userId: string): string {
   const rows = db
     .prepare(
       "SELECT section, section_name, COUNT(*) AS cnt FROM stories WHERE user_id = ? GROUP BY section",
@@ -76,6 +79,17 @@ function rebuildSectionCountsJson(db: DatabaseSync, userId: string): string {
     }));
 
   return JSON.stringify(counts);
+}
+
+export function rebuildTickerJson(db: DatabaseSync, userId: string): string {
+  const rows = db
+    .prepare(
+      `SELECT headline FROM stories
+       WHERE user_id = ? AND COALESCE(hidden, 0) = 0
+       ORDER BY created_at DESC, CAST(id AS INTEGER) DESC LIMIT 5`,
+    )
+    .all(userId) as { headline: string }[];
+  return JSON.stringify(rows.map((row) => row.headline));
 }
 
 export function nextStoryId(db: DatabaseSync, userId: string): string {
@@ -105,7 +119,8 @@ export function publishDraft(
     ticker_json: string;
   };
 
-  const { time, full } = nowPublishedAt(state.date_short);
+  const now = new Date();
+  const { time, full } = nowPublishedAt(state.date_short, now);
   const storyId = nextStoryId(db, userId);
   const body = paragraphsToBody(draft.paragraphs);
   const shareToken = newToken();
@@ -156,6 +171,15 @@ export function publishDraft(
   db.prepare(
     "UPDATE edition_state SET edition_number = edition_number + 1, ticker_json = ? WHERE user_id = ?",
   ).run(JSON.stringify(ticker), userId);
+
+  if (!state.date_short.trim()) {
+    const dates = hebrewEditionDates(now);
+    db.prepare("UPDATE edition_state SET date_long = ?, date_short = ? WHERE user_id = ?").run(
+      dates.dateLong,
+      dates.dateShort,
+      userId,
+    );
+  }
 
   db.prepare(
     `UPDATE profile_stats SET

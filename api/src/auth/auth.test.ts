@@ -64,6 +64,39 @@ test("sign-in returns 400 for empty fields", async () => {
   }
 });
 
+test("sign-in returns a distinct error for bad credentials", async () => {
+  const dbPath = tempDbPath();
+  try {
+    seedUser(dbPath);
+    const app = makeApp();
+    const wrongPassword = await app.request("/auth/sign-in", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: SEED_EMAIL, password: "not-the-password" }),
+    });
+    assert.equal(wrongPassword.status, 400);
+    assert.equal(
+      ((await wrongPassword.json()) as { message: string }).message,
+      "דוא״ל או סיסמה שגויים",
+    );
+
+    const unknownEmail = await app.request("/auth/sign-in", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "nobody@example.com", password: SEED_PASSWORD }),
+    });
+    assert.equal(unknownEmail.status, 400);
+    assert.equal(
+      ((await unknownEmail.json()) as { message: string }).message,
+      "דוא״ל או סיסמה שגויים",
+    );
+  } finally {
+    resetAuthDb();
+    rmSync(join(dbPath, ".."), { recursive: true, force: true });
+    delete process.env.DATABASE_PATH;
+  }
+});
+
 test("sign-in returns Session and sets cookie", async () => {
   const dbPath = tempDbPath();
   try {

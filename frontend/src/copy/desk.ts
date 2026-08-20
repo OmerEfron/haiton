@@ -53,6 +53,12 @@ export const desk = {
   emptyEditionDraftTitle: "יש טיוטה בעריכה",
   emptyEditionDraftBody: (title: string) =>
     `«${title}» מחכה בחדר הראיונות. המשיכו משם במקום להתחיל ראיון חדש.`,
+  draftSaved: "הטיוטה נשמרה.",
+  hideFromEdition: "הסתרה מהמהדורה",
+  showInEdition: "הצגה במהדורה",
+  hiddenFromEdition: "לא מופיעה במהדורה",
+  hidden: "מוסתרת",
+  removeStoryConfirm: "להסיר את הידיעה? היא תימחק מהמהדורה ומהארכיון.",
   startFirstInterview: "התחילו ראיון ראשון",
   fillKarteset: "מלאו רקע בכרטסת",
   quotaTitle: "הגעתם לשתי ידיעות להיום",

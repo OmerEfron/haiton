@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS stories (
   placement TEXT NOT NULL CHECK (placement IN ('lead', 'secondary', 'list')),
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   share_token TEXT UNIQUE,
+  hidden INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (user_id, id)
 );
 

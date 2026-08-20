@@ -87,7 +87,7 @@ export function InterviewRoom() {
     client.invalidateQueries({ queryKey: qk.interview });
     client.invalidateQueries({ queryKey: qk.frontPage });
     client.invalidateQueries({ queryKey: qk.profile });
-    navigate("/");
+    navigate("/?draft=saved");
   };
 
   const busy = send.isPending || draftIt.isPending;
@@ -246,16 +246,10 @@ export function InterviewRoom() {
             />
           )}
           {showNewsroom && composer}
-          {showNewsroom && (
+          {showNewsroom && s.draft.status !== "empty" && (
             <div className={styles.draftToggle}>
-              <Button
-                variant="quiet"
-                size="lg"
-                block
-                onClick={() => setSheetOpen(true)}
-                disabled={s.draft.status === "empty"}
-              >
-                {s.draft.status === "empty" ? desk.noDraftYet : desk.showDraft}
+              <Button variant="quiet" size="lg" block onClick={() => setSheetOpen(true)}>
+                {desk.showDraft}
               </Button>
             </div>
           )}

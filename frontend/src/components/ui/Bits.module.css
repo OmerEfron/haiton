@@ -101,7 +101,8 @@
   background: var(--rule);
   border: 1px solid var(--rule);
 }
-.stat { background: var(--white); padding: 14px; }
+.stat { background: var(--white); padding: 14px; color: inherit; text-decoration: none; }
+a.stat:hover { background: var(--tint); }
 .statValue { font: 900 28px/1 var(--serif); color: var(--paper-red); }
 .statLabel { margin-top: 5px; font: 400 12px/1.4 var(--sans); color: var(--ink-2); }
 

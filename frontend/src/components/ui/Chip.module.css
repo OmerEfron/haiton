@@ -48,4 +48,8 @@ button.active:hover { background: var(--paper-red-dark); border-color: var(--pap
 
 @media (max-width: 900px) {
   button.chip { min-height: 38px; }
+  .scroll {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
 }

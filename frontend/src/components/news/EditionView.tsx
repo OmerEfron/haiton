@@ -8,7 +8,7 @@ import {
   StoryThumbRow,
 } from "./StoryPieces";
 import { Avatar, LivePill, SectionHead } from "../ui/Bits";
-import { ButtonLink } from "../ui/Button";
+import { Button, ButtonLink } from "../ui/Button";
 import type { FrontPage } from "../../api/types";
 import { common } from "../../copy/common";
 import { desk } from "../../copy/desk";
@@ -18,12 +18,23 @@ export function EditionView({
   showTag,
   openDraft,
   showDesk,
+  draftSaved,
+  onDiscardDraft,
+  discarding,
 }: {
   page: FrontPage;
   showTag: boolean;
   openDraft: { title: string; summary: string } | null;
   showDesk: boolean;
+  draftSaved?: boolean;
+  onDiscardDraft?: () => void;
+  discarding?: boolean;
 }) {
+  const moreStories = [...page.secondary, ...page.list];
+  const allStories = [page.lead, ...page.secondary, ...page.list].filter(
+    (s): s is NonNullable<typeof s> => Boolean(s),
+  );
+
   return (
     <>
       <div className={styles.grid}>
@@ -33,19 +44,21 @@ export function EditionView({
           )}
 
           <div className={styles.mobileOnly}>
-            <div className={styles.flashBlock}>
-              <div className={styles.flashHead}>
-                <h3 className={styles.flashHeadTitle}>{common.flashes}</h3>
-                {showDesk && (
-                  <ButtonLink to="/briefs" variant="link" size="sm">
-                    {common.allFlashes}
-                  </ButtonLink>
-                )}
+            {page.flashes.length > 0 && (
+              <div className={styles.flashBlock}>
+                <div className={styles.flashHead}>
+                  <h3 className={styles.flashHeadTitle}>{common.flashes}</h3>
+                  {showDesk && (
+                    <ButtonLink to="/briefs" variant="link" size="sm">
+                      {common.allFlashes}
+                    </ButtonLink>
+                  )}
+                </div>
+                {page.flashes.slice(0, 3).map((flash) => (
+                  <FlashItem key={flash.id} flash={flash} />
+                ))}
               </div>
-              {page.flashes.slice(0, 3).map((flash) => (
-                <FlashItem key={flash.id} flash={flash} />
-              ))}
-            </div>
+            )}
 
             {showDesk && (
               <div className={styles.promptBlock}>
@@ -57,40 +70,73 @@ export function EditionView({
                     </p>
                     <p className={newsStyles.promptBody}>
                       {openDraft
-                        ? `יש טיוטה אחת בעריכה: «${openDraft.title}».`
+                        ? draftSaved
+                          ? `${desk.draftSaved} ${desk.emptyEditionDraftBody(openDraft.title)}`
+                          : `יש טיוטה אחת בעריכה: «${openDraft.title}».`
                         : "הכתב מוכן לשאלה הראשונה על היום שלך."}
                     </p>
                     <ButtonLink to="/interview" size="lg">
                       {desk.openInterviewRoom}
                     </ButtonLink>
+                    {openDraft && onDiscardDraft && (
+                      <div className={styles.draftActions}>
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          onClick={onDiscardDraft}
+                          disabled={discarding}
+                        >
+                          {desk.startOver}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             )}
 
-            <div className={styles.moreBlock}>
-              <h3 className={styles.moreTitle}>{desk.moreInEdition}</h3>
-              {[...page.secondary, ...page.list].map((story) => (
-                <StoryThumbRow key={story.id} story={story} showTag={showTag} />
-              ))}
-            </div>
+            {moreStories.length > 0 && (
+              <div className={styles.moreBlock}>
+                <h3 className={styles.moreTitle}>{desk.moreInEdition}</h3>
+                {moreStories.map((story) => (
+                  <StoryThumbRow key={story.id} story={story} showTag={showTag} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
         <aside className={styles.rail}>
-          <SectionHead title={common.flashes} aside={<LivePill>{common.live}</LivePill>} />
-          {page.flashes.map((flash) => (
-            <FlashItem key={flash.id} flash={flash} />
-          ))}
+          {page.flashes.length > 0 && (
+            <>
+              <SectionHead title={common.flashes} aside={<LivePill>{common.live}</LivePill>} />
+              {page.flashes.map((flash) => (
+                <FlashItem key={flash.id} flash={flash} />
+              ))}
+            </>
+          )}
 
           {showDesk && openDraft && (
             <div className={newsStyles.teaser}>
               <p className={newsStyles.teaserKicker}>{common.inEditing}</p>
+              {draftSaved && <p className={newsStyles.teaserBody}>{desk.draftSaved}</p>}
               <p className={newsStyles.teaserTitle}>{openDraft.title}</p>
               <p className={newsStyles.teaserBody}>{openDraft.summary}</p>
-              <ButtonLink to="/interview" variant="outline" size="md">
-                {desk.continueDraft}
-              </ButtonLink>
+              <div className={styles.draftActions}>
+                <ButtonLink to="/interview" variant="outline" size="md">
+                  {desk.continueDraft}
+                </ButtonLink>
+                {onDiscardDraft && (
+                  <Button
+                    variant="outline"
+                    size="md"
+                    onClick={onDiscardDraft}
+                    disabled={discarding}
+                  >
+                    {desk.startOver}
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </aside>
@@ -107,16 +153,16 @@ export function EditionView({
         </section>
       )}
 
-      <section className={styles.lower}>
-        <h3 className={styles.lowerTitlePlain}>{common.allStories}</h3>
-        <div>
-          {[page.lead, ...page.secondary, ...page.list]
-            .filter((s): s is NonNullable<typeof s> => Boolean(s))
-            .map((story) => (
+      {allStories.length > 0 && (
+        <section className={styles.lower}>
+          <h3 className={styles.lowerTitlePlain}>{common.allStories}</h3>
+          <div>
+            {allStories.map((story) => (
               <StoryListRow key={story.id} story={story} showTag={showTag} />
             ))}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
     </>
   );
 }

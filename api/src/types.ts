@@ -66,6 +66,7 @@ export interface Story {
   imageCaption?: string;
   placement: "lead" | "secondary" | "list";
   shareToken: string;
+  hidden: boolean;
   author: StoryAuthor;
   gated?: boolean;
 }

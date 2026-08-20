@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 import { Link } from "react-router";
 import styles from "./Button.module.css";
 
@@ -47,5 +47,21 @@ export function ButtonLink({
     <Link to={to} state={state} className={cx(variant, size, block, className)}>
       {children}
     </Link>
+  );
+}
+
+export function ButtonAnchor({
+  href,
+  variant = "solid",
+  size = "md",
+  block,
+  className,
+  children,
+  ...rest
+}: Common & AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) {
+  return (
+    <a href={href} className={cx(variant, size, block, className)} {...rest}>
+      {children}
+    </a>
   );
 }

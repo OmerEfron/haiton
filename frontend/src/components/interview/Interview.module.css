@@ -64,7 +64,7 @@
   gap: 8px;
   background: var(--white);
 }
-.formRow { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.formRow { display: flex; align-items: flex-start; gap: 8px; min-width: 0; }
 .formRow > :last-child {
   min-width: 0;
   flex: 1;

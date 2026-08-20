@@ -64,8 +64,8 @@ export function ProfilePage() {
   }
 
   const p = profile.data;
-  const draftsInProgress =
-    interview.data?.draft.status !== "empty" ? 1 : p.stats.draftsInProgress;
+  const draftStatus = interview.data?.draft.status;
+  const draftsInProgress = draftStatus && draftStatus !== "empty" ? 1 : 0;
 
   const interviews = interviewsQuery.data ?? [];
   const interviewsMapped = interviews.map((item) => ({
@@ -79,6 +79,7 @@ export function ProfilePage() {
     to: storyPath(item),
     headline: item.headline,
     when: formatWhen(item.publishedAt),
+    hidden: item.hidden,
   }));
   const archiveItems = interviews.length ? interviewsMapped : storiesMapped;
 
@@ -112,10 +113,18 @@ export function ProfilePage() {
             <StatGrid
               columns={4}
               items={[
-                { value: p.stats.storiesPublished, label: profileCopy.stats.storiesPublished },
-                { value: p.stats.flashes, label: profileCopy.stats.flashes },
-                { value: p.stats.facts, label: profileCopy.stats.facts },
-                { value: draftsInProgress, label: profileCopy.stats.draftsInProgress },
+                {
+                  value: p.stats.storiesPublished,
+                  label: profileCopy.stats.storiesPublished,
+                  to: "/",
+                },
+                { value: p.stats.flashes, label: profileCopy.stats.flashes, to: "/briefs" },
+                { value: p.stats.facts, label: profileCopy.stats.facts, to: "/karteset" },
+                {
+                  value: draftsInProgress,
+                  label: profileCopy.stats.draftsInProgress,
+                  to: "/interview",
+                },
               ]}
             />
           </div>
@@ -153,6 +162,24 @@ export function ProfilePage() {
                   onChange={(next) => setSettings.mutate({ showEditionTag: next })}
                 />
               </div>
+
+              <div className={`${styles.listRow} ${styles.settingRow}`}>
+                <span>
+                  <span className={styles.settingTitle}>
+                    {profileCopy.settings.reminder.title}
+                  </span>
+                  <span className={styles.settingDetail}>
+                    {profileCopy.settings.reminder.detail}
+                  </span>
+                </span>
+                <Toggle
+                  label={profileCopy.settings.reminder.title}
+                  checked={Boolean(p.settings.interviewReminderAt)}
+                  onChange={(next) =>
+                    setSettings.mutate({ interviewReminderAt: next ? "21:00" : null })
+                  }
+                />
+              </div>
             </div>
 
             <p className={styles.signOut}>
@@ -182,7 +209,10 @@ export function ProfilePage() {
             <div className={styles.archiveList}>
               {archiveItems.map((item) => (
                 <Link key={item.id} to={item.to} className={styles.archiveItem}>
-                  <span className={styles.archiveHeadline}>{item.headline}</span>
+                  <span className={styles.archiveHeadline}>
+                    {item.headline}
+                    {"hidden" in item && item.hidden ? ` · ${desk.hidden}` : ""}
+                  </span>
                   <span className={styles.archiveWhen}>{item.when}</span>
                 </Link>
               ))}

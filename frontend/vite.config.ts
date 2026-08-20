@@ -14,7 +14,16 @@ export default defineConfig({
       '/editions': API_TARGET,
       '/stories': API_TARGET,
       '/flashes': API_TARGET,
-      '/profile': API_TARGET,
+      '/profile': {
+        target: API_TARGET,
+        bypass(req) {
+          if (req.headers['sec-fetch-dest'] === 'document') return '/index.html'
+          const accept = req.headers.accept
+          if (typeof accept === 'string' && accept.includes('text/html')) {
+            return '/index.html'
+          }
+        },
+      },
       '/karteset': API_TARGET,
       '/connections': API_TARGET,
       '/invitations': API_TARGET,

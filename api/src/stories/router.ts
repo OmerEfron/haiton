@@ -1,10 +1,11 @@
 import { Hono } from "hono";
-import { ERROR_DAILY_QUOTA } from "../contract.ts";
+import { DAILY_STORY_LIMIT, ERROR_DAILY_QUOTA } from "../contract.ts";
 import { getDb } from "../db.ts";
 import { countToday, nextResetIso, secondsUntilIsraelMidnight } from "../quota.ts";
 import type { Draft } from "../types.ts";
 import { dbForUser, EDITION_NOT_FOUND, loadMixedEdition, loadUserEdition } from "./edition.ts";
 import { DRAFT_NOT_READY, STORY_NOT_FOUND, rowToFlash, rowToStory, type FlashRow, type StoryRow } from "./mappers.ts";
+import { deleteStory, updateStory } from "./mutate.ts";
 import { publishDraft } from "./publish.ts";
 import { optionalSession, requireSession, type StoriesVariables } from "./session.ts";
 import { loadSharedStory } from "./share.ts";
@@ -43,7 +44,7 @@ export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
         .prepare(
           `SELECT f.id, f.time, f.text, f.story_id, s.share_token FROM flashes f
            LEFT JOIN stories s ON s.user_id = f.user_id AND s.id = f.story_id
-           WHERE f.user_id = ? ORDER BY f.sort_order`,
+           WHERE f.user_id = ? AND COALESCE(s.hidden, 0) = 0 ORDER BY f.sort_order`,
         )
         .all(userId) as FlashRow[]
     ).map(rowToFlash);
@@ -101,13 +102,34 @@ export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
         .prepare("SELECT created_at FROM stories WHERE user_id = ?")
         .all(userId) as { created_at: string | null }[]
     ).map((row) => row.created_at);
-    if (countToday(created) >= 2) {
+    if (countToday(created) >= DAILY_STORY_LIMIT) {
       c.header("Retry-After", String(secondsUntilIsraelMidnight()));
       return c.json({ message: ERROR_DAILY_QUOTA, resetsAt: nextResetIso() }, 429);
     }
 
     const story = publishDraft(getDb(), userId, draft);
     return c.json(story, 201);
+  });
+
+  app.patch("/stories/:id", async (c) => {
+    const userId = c.get("userId");
+    const id = c.req.param("id");
+    const patch = (await c.req.json()) as {
+      headline?: string;
+      standfirst?: string;
+      body?: string[];
+      hidden?: boolean;
+    };
+    const story = updateStory(getDb(), userId, id, patch);
+    if (!story) return c.json({ message: STORY_NOT_FOUND }, 404);
+    return c.json(story);
+  });
+
+  app.delete("/stories/:id", (c) => {
+    const userId = c.get("userId");
+    const id = c.req.param("id");
+    if (!deleteStory(getDb(), userId, id)) return c.json({ message: STORY_NOT_FOUND }, 404);
+    return c.body(null, 204);
   });
 
   return app;

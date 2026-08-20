@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import styles from "./FrontPage.module.css";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "react-router";
 import { Masthead } from "../components/layout/Masthead";
 import { PageHeader } from "../components/layout/PageHeader";
 import { SectionsBar } from "../components/layout/SectionsBar";
@@ -7,19 +7,32 @@ import { Ticker } from "../components/layout/Ticker";
 import { Footer } from "../components/layout/Footer";
 import { EditionView } from "../components/news/EditionView";
 import { ErrorState, LivePill, Loading } from "../components/ui/Bits";
-import { ButtonLink } from "../components/ui/Button";
+import { Button, ButtonLink } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
 import { getFrontPage } from "../api/core/stories";
 import { getProfile } from "../api/core/profile";
-import { getSession } from "../api/reporter/interview";
+import { discardSession, getSession } from "../api/reporter/interview";
 import { qk } from "../lib/queryKeys";
 import { common } from "../copy/common";
+import { circle } from "../copy/circle";
 import { desk } from "../copy/desk";
 
 export function FrontPage() {
+  const client = useQueryClient();
+  const [params] = useSearchParams();
+  const draftSaved = params.get("draft") === "saved";
   const front = useQuery({ queryKey: qk.frontPage, queryFn: getFrontPage });
   const profile = useQuery({ queryKey: qk.profile, queryFn: getProfile });
   const interview = useQuery({ queryKey: qk.interview, queryFn: getSession });
+
+  const discard = useMutation({
+    mutationFn: discardSession,
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: qk.interview });
+      await client.invalidateQueries({ queryKey: qk.frontPage });
+      await client.invalidateQueries({ queryKey: qk.profile });
+    },
+  });
 
   if (front.isPending) {
     return (
@@ -58,9 +71,22 @@ export function FrontPage() {
       {!empty && <Ticker items={page.ticker} />}
 
       {empty ? (
-        <EmptyEdition openDraft={openDraft} />
+        <EmptyEdition
+          openDraft={openDraft}
+          draftSaved={draftSaved}
+          onDiscard={() => discard.mutate()}
+          discarding={discard.isPending}
+        />
       ) : (
-        <EditionView page={page} showTag={showTag} openDraft={openDraft} showDesk />
+        <EditionView
+          page={page}
+          showTag={showTag}
+          openDraft={openDraft}
+          showDesk
+          draftSaved={draftSaved}
+          onDiscardDraft={() => discard.mutate()}
+          discarding={discard.isPending}
+        />
       )}
 
       <Footer />
@@ -68,28 +94,58 @@ export function FrontPage() {
   );
 }
 
-function EmptyEdition({ openDraft }: { openDraft: { title: string; summary: string } | null }) {
+function EmptyEdition({
+  openDraft,
+  draftSaved,
+  onDiscard,
+  discarding,
+}: {
+  openDraft: { title: string; summary: string } | null;
+  draftSaved: boolean;
+  onDiscard: () => void;
+  discarding: boolean;
+}) {
   if (openDraft) {
     return (
       <EmptyState
         badge={<LivePill>{common.inEditing}</LivePill>}
         title={desk.emptyEditionDraftTitle}
-        body={desk.emptyEditionDraftBody(openDraft.title)}
+        body={
+          draftSaved
+            ? `${desk.draftSaved} ${desk.emptyEditionDraftBody(openDraft.title)}`
+            : desk.emptyEditionDraftBody(openDraft.title)
+        }
         actions={
-          <ButtonLink to="/interview" size="lg">
-            {desk.continueDraft}
-          </ButtonLink>
+          <>
+            <ButtonLink to="/interview" size="lg">
+              {desk.continueDraft}
+            </ButtonLink>
+            <Button variant="outline" size="lg" onClick={onDiscard} disabled={discarding}>
+              {desk.startOver}
+            </Button>
+          </>
         }
       />
     );
   }
 
   return (
-    <div className={styles.emptyEdition}>
-      <h2 className={styles.emptyEditionTitle}>{desk.emptyEditionTitle}</h2>
-      <ButtonLink to="/interview" size="lg">
-        {desk.startFirstInterview}
-      </ButtonLink>
-    </div>
+    <EmptyState
+      title={desk.emptyEditionTitle}
+      body={desk.emptyEditionBody}
+      actions={
+        <>
+          <ButtonLink to="/karteset" variant="outline" size="lg">
+            {desk.fillKarteset}
+          </ButtonLink>
+          <ButtonLink to="/profile" variant="outline" size="lg">
+            {circle.invite}
+          </ButtonLink>
+          <ButtonLink to="/interview" size="lg">
+            {desk.startFirstInterview}
+          </ButtonLink>
+        </>
+      }
+    />
   );
 }

@@ -12,7 +12,7 @@ export function EmptyState({
   badge?: ReactNode;
   mark?: string;
   title: string;
-  body: string;
+  body?: string;
   actions?: ReactNode;
   compact?: boolean;
 }) {
@@ -21,7 +21,7 @@ export function EmptyState({
       {badge && <div className={styles.badge}>{badge}</div>}
       {mark && <span className={styles.mark}>{mark}</span>}
       <h2 className={styles.title}>{title}</h2>
-      <p className={styles.body}>{body}</p>
+      {body ? <p className={styles.body}>{body}</p> : null}
       {actions && <div className={styles.actions}>{actions}</div>}
     </div>
   );

@@ -14,6 +14,11 @@ export function storyShareUrl(story: Pick<Story, "shareToken" | "id">): string {
   return `${window.location.origin}${path}`;
 }
 
+/** Skip a leading comma so empty dates still read as a time (`12:39`). */
+export function displayPublishedAt(value: string): string {
+  return value.replace(/^,\s*/, "").trim();
+}
+
 export function flashPath(flash: Flash): string | null {
   if (flash.shareToken) return `/s/${flash.shareToken}`;
   if (flash.storyId) return `/story/${flash.storyId}`;

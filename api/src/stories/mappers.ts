@@ -32,6 +32,7 @@ export interface StoryRow {
   image_caption: string | null;
   placement: string;
   share_token: string | null;
+  hidden: number;
 }
 
 export interface FlashRow {
@@ -62,6 +63,7 @@ export function rowToStory(
     imageCaption: row.image_caption ?? undefined,
     placement: row.placement as Story["placement"],
     shareToken: row.share_token ?? "",
+    hidden: Boolean(row.hidden),
     author: extra?.author ?? { id: row.user_id, name: "", initial: "" },
   };
   if (extra?.gated) story.gated = true;
@@ -86,11 +88,38 @@ export function paragraphsToBody(paragraphs: string[]): StoryBlock[] {
   });
 }
 
-export function nowPublishedAt(dateShort: string): { time: string; full: string } {
-  const d = new Date();
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  const datePart = dateShort.split(", ")[1] ?? dateShort;
+const WEEKDAYS = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
+const MONTHS = [
+  "ינואר",
+  "פברואר",
+  "מרץ",
+  "אפריל",
+  "מאי",
+  "יוני",
+  "יולי",
+  "אוגוסט",
+  "ספטמבר",
+  "אוקטובר",
+  "נובמבר",
+  "דצמבר",
+];
+
+export function hebrewEditionDates(now = new Date()): { dateShort: string; dateLong: string } {
+  const weekday = WEEKDAYS[now.getDay()] ?? "";
+  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const yy = String(now.getFullYear()).slice(-2);
+  return {
+    dateShort: `${weekday}, ${dd}.${mm}.${yy}`,
+    dateLong: `יום ${weekday}, ${now.getDate()} ב${MONTHS[now.getMonth()]} ${now.getFullYear()}`,
+  };
+}
+
+export function nowPublishedAt(dateShort: string, now = new Date()): { time: string; full: string } {
+  const hh = String(now.getHours()).padStart(2, "0");
+  const mm = String(now.getMinutes()).padStart(2, "0");
+  const resolved = dateShort.trim() || hebrewEditionDates(now).dateShort;
+  const datePart = resolved.split(", ")[1] ?? resolved;
   return { time: `${hh}:${mm}`, full: `${datePart}, ${hh}:${mm}` };
 }
 

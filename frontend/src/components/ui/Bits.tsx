@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import { Link } from "react-router";
 import styles from "./Bits.module.css";
 import { brand, common } from "../../copy/common";
 
@@ -110,16 +111,27 @@ export function StatGrid({
   items,
 }: {
   columns: number;
-  items: { value: number | string; label: string }[];
+  items: { value: number | string; label: string; to?: string }[];
 }) {
   return (
     <div className={styles.stats} style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
-      {items.map((item) => (
-        <div key={item.label} className={styles.stat}>
-          <p className={styles.statValue}>{item.value}</p>
-          <p className={styles.statLabel}>{item.label}</p>
-        </div>
-      ))}
+      {items.map((item) => {
+        const inner = (
+          <>
+            <p className={styles.statValue}>{item.value}</p>
+            <p className={styles.statLabel}>{item.label}</p>
+          </>
+        );
+        return item.to ? (
+          <Link key={item.label} to={item.to} className={styles.stat}>
+            {inner}
+          </Link>
+        ) : (
+          <div key={item.label} className={styles.stat}>
+            {inner}
+          </div>
+        );
+      })}
     </div>
   );
 }

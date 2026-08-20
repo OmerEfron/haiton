@@ -8,7 +8,7 @@ const { personaFacts } = await import("../fixtures/persona.js");
 const { weekAnswers } = await import("../fixtures/week-answers.js");
 const { getCallCount } = await import("../llm.js");
 const { WORD_COUNT } = await import("../types.js");
-const { buildWriterInput, writeArticle } = await import("./writer.js");
+const { buildInstructions, buildWriterInput, writeArticle } = await import("./writer.js");
 
 const turns = [
   {
@@ -51,6 +51,19 @@ describe("buildWriterInput", () => {
   it("forbids inventing a name when none was given", () => {
     const input = buildWriterInput([], []);
     assert.match(input, /השם לא סופק/);
+  });
+
+  it("instructions keep a short news band and ban padding phrases", () => {
+    assert.equal(WORD_COUNT.news.min, 60);
+    assert.equal(WORD_COUNT.news.max, 180);
+    assert.ok(WORD_COUNT.feature.max < 350);
+    const text = buildInstructions("news", "factual");
+    assert.match(text, /60–180/);
+    assert.match(text, /1–2 תשובות/);
+    assert.match(text, /2–3 פסקאות קצרות/);
+    assert.match(text, /לא נמסר/);
+    assert.match(text, /לא זוהה/);
+    assert.match(text, /אם תימסר התייחסות/);
   });
 });
 

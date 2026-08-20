@@ -12,11 +12,19 @@
   transition: background-color 0.12s, color 0.12s, border-color 0.12s;
   white-space: nowrap;
 }
-.base:disabled { opacity: 0.45; cursor: not-allowed; }
+.base:disabled { cursor: not-allowed; }
 
 /* Variants — all taken from the mockups' three button treatments */
 .solid { background: var(--paper-red); color: var(--white); }
 .solid:hover:not(:disabled) { background: var(--paper-red-dark); color: var(--white); }
+.solid:disabled,
+.outline:disabled,
+.quiet:disabled {
+  background: var(--ph);
+  color: var(--ink-2);
+  border: 1px solid var(--rule);
+  opacity: 1;
+}
 
 .outline {
   background: transparent;

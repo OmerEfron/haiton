@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PageHeader } from "../components/layout/PageHeader";
 import { Footer } from "../components/layout/Footer";
-import { ErrorState, Loading } from "../components/ui/Bits";
+import { Loading } from "../components/ui/Bits";
 import { Button, ButtonLink } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
 import { joinInvitation, previewInvitation, respondToInvitation } from "../api/core/connections";
@@ -86,7 +86,14 @@ export function JoinPage() {
     return (
       <>
         <PageHeader />
-        <ErrorState error={preview.error} />
+        <EmptyState
+          title={preview.error instanceof Error ? preview.error.message : circle.joinBody}
+          actions={
+            <ButtonLink to="/" size="lg">
+              {common.backHome}
+            </ButtonLink>
+          }
+        />
         <Footer />
       </>
     );

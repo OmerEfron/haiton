@@ -16,6 +16,8 @@ const PLAN_ROUTES: { method: string; path: string; handler?: string }[] = [
   { method: "GET", path: "/stories", handler: "listStories" },
   { method: "GET", path: "/flashes", handler: "listFlashes" },
   { method: "POST", path: "/stories", handler: "publishStory" },
+  { method: "PATCH", path: "/stories/:id", handler: "updateStory" },
+  { method: "DELETE", path: "/stories/:id", handler: "removeStory" },
   { method: "GET", path: "/profile", handler: "getProfile" },
   { method: "PATCH", path: "/profile/edition-settings", handler: "updateEditionSettings" },
   { method: "GET", path: "/karteset/facts", handler: "listFacts" },

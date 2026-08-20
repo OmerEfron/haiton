@@ -9,6 +9,7 @@ import { provisionUser } from "../provision.ts";
 import { assertPasswordOk, hashPassword, verifyPassword } from "./password.ts";
 
 const SIGN_IN_ERROR = "צריך דוא״ל וסיסמה כדי להיכנס";
+const SIGN_IN_BAD_CREDS = "דוא״ל או סיסמה שגויים";
 const SIGN_UP_ERROR = "צריך שם, דוא״ל וסיסמה כדי לפתוח מהדורה";
 const SIGN_UP_EMAIL_EXISTS_ERROR = "הדוא״ל הזה כבר רשום";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
@@ -107,7 +108,7 @@ export const authRouter = new Hono()
       )
       .get(email) as { id: string; password_hash: string } | undefined;
     if (!user || !verifyPassword(password, user.password_hash)) {
-      return badRequest(c, SIGN_IN_ERROR);
+      return badRequest(c, SIGN_IN_BAD_CREDS);
     }
 
     const sessionId = createSession(user.id);
