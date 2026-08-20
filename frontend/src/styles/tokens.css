@@ -25,8 +25,8 @@
   --dot: #ccc;
 
   /* Type */
-  --serif: "Frank Ruhl Libre", Georgia, serif;
-  --sans: Heebo, system-ui, -apple-system, sans-serif;
+  --serif: "David Libre", Georgia, serif;
+  --sans: Assistant, system-ui, -apple-system, sans-serif;
 
   /* Metrics */
   --shell: 1120px;
