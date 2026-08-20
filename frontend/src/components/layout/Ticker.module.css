@@ -7,10 +7,9 @@
 }
 .label {
   flex: none;
-  background: var(--paper-red);
+  background: var(--paper-red-hot);
   padding: 7px 14px;
   font: 900 12px/1.4 var(--sans);
-  letter-spacing: var(--track);
   display: flex;
   align-items: center;
 }
@@ -23,14 +22,28 @@
   white-space: nowrap;
   color: rgba(255, 255, 255, 0.88);
 }
-/* Desktop: the line scrolls. Mobile: it truncates, as in 1b. */
 .line {
   display: inline-block;
   animation: hai-tick 32s linear infinite;
 }
 
 @media (max-width: 900px) {
-  .label { padding: 6px 10px; font-size: 10.5px; letter-spacing: var(--track-sm); }
-  .track { padding: 6px 10px; font-size: 11.5px; text-overflow: ellipsis; }
+  .ticker { background: var(--band); color: var(--ink); }
+  .label {
+    padding: 6px 10px;
+    font-size: 11px;
+    background: var(--urgency-tint);
+    color: var(--paper-red);
+  }
+  .track {
+    padding: 6px 10px;
+    font-size: 12px;
+    color: var(--ink-2);
+    text-overflow: ellipsis;
+  }
+  .line { animation: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
   .line { animation: none; }
 }

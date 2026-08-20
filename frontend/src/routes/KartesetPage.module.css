@@ -38,7 +38,7 @@
 
 /* Empty state (1i) */
 .emptyIntro { margin: 10px 0 18px; font: 400 14.5px/1.7 var(--sans); color: var(--ink-2); }
-.startersTitle { margin: 18px 0 8px; font: 700 12px/1 var(--sans); letter-spacing: var(--track-sm); color: var(--ink-2); }
+.startersTitle { margin: 18px 0 8px; font: 700 12px/1 var(--sans); color: var(--ink-2); }
 .starters { display: flex; flex-direction: column; gap: 8px; }
 .starter {
   padding: 11px 13px;

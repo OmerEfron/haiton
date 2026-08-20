@@ -5,7 +5,8 @@
   z-index: 20;
   border-top: 1px solid var(--rule);
   background: var(--white);
-  padding: 9px var(--gutter-sm);
+  padding: 8px var(--gutter-sm);
+  padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
   justify-content: space-between;
   align-items: stretch;
   gap: 4px;
@@ -19,34 +20,38 @@
   gap: 4px;
   min-width: 4.5em;
   min-height: var(--tap);
-  font: 500 10.5px/1 var(--sans);
+  font: 500 12px/1 var(--sans);
   color: var(--ink-2);
   text-align: center;
+  border-radius: var(--radius-ui);
+  transition: color 0.12s;
 }
 .item:hover { color: var(--paper-red); }
 .active { color: var(--paper-red); font-weight: 700; border-top: 2px solid var(--paper-red); }
-.glyph { font: 900 16px/1 var(--serif); }
+.glyph { font: 900 15px/1 var(--serif); }
 .cta {
   background: transparent;
   color: var(--ink-2);
   font-weight: 700;
-  padding: 6px 4px;
+  padding: 6px 8px;
   border: 1px solid var(--rule);
+  border-radius: var(--radius-ui);
 }
-.cta:hover { color: var(--paper-red); background: transparent; }
+.cta:hover { color: var(--paper-red); background: transparent; border-color: var(--paper-red); }
 .cta.active {
-  background: var(--paper-red);
+  background: var(--paper-red-hot);
   color: var(--white);
-  border-color: var(--paper-red);
+  border-color: var(--paper-red-hot);
   border-top: 0;
 }
 .cta.active:hover { color: var(--white); background: var(--paper-red-dark); }
 .ctaNote { font: 400 9.5px/1 var(--sans); opacity: 0.85; }
 .badge {
-  padding: 1px 5px;
-  background: var(--paper-red);
+  padding: 1px 6px;
+  background: var(--paper-red-hot);
   color: var(--white);
   font: 700 9px/1.3 var(--sans);
+  border-radius: var(--radius-pill);
 }
 
 @media (max-width: 900px) {

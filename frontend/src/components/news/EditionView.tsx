@@ -66,7 +66,13 @@ export function EditionView({
                   <Avatar initial="כ" size={34} tone="solid" />
                   <div style={{ flex: 1 }}>
                     <p className={newsStyles.promptKicker}>
-                      {openDraft ? desk.continueDraft : desk.waitingTitle}
+                      {openDraft ? (
+                        desk.continueDraft
+                      ) : (
+                        <>
+                          הכתב <mark>ממתין</mark> לך
+                        </>
+                      )}
                     </p>
                     <p className={newsStyles.promptBody}>
                       {openDraft

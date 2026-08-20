@@ -15,8 +15,9 @@
   max-width: 560px;
   background: var(--white);
   border: 1px solid var(--rule);
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+  border-radius: var(--radius-ui);
   margin: auto;
+  overflow: hidden;
 }
 .head {
   background: var(--ink);

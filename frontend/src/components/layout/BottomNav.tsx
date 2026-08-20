@@ -41,9 +41,11 @@ export function BottomNav() {
         {hasDraft && <span className={styles.ctaNote}>1 טיוטה</span>}
       </NavLink>
       <NavLink to="/karteset" className={cls}>
+        <span className={styles.glyph}>כ</span>
         {nav.karteset}
       </NavLink>
       <NavLink to="/profile" className={cls}>
+        <span className={styles.glyph}>מ</span>
         {nav.circleShort}
         {pending > 0 && <span className={styles.badge}>{pending}</span>}
       </NavLink>

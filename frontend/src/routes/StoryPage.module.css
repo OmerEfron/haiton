@@ -9,7 +9,14 @@
   color: var(--ink);
   text-wrap: pretty;
 }
-.standfirst { margin: 16px 0 0; font: 400 20px/1.62 var(--sans); color: var(--ink-2); text-wrap: pretty; }
+.leadRule {
+  width: 48px;
+  height: 3px;
+  background: var(--paper-red-hot);
+  margin-top: 12px;
+  border: 0;
+}
+.standfirst { margin: 16px 0 0; font: 400 18px/1.65 var(--sans); color: var(--ink-2); text-wrap: pretty; }
 .byline {
   margin: 18px 0;
   display: flex;
@@ -44,7 +51,7 @@
 .ownerActions { display: flex; flex-wrap: wrap; gap: 8px; }
 .edit { display: flex; flex-direction: column; gap: 12px; }
 .body {
-  font: 400 17px/1.85 var(--sans);
+  font: 400 18px/1.8 var(--sans);
   color: var(--ink);
   display: flex;
   flex-direction: column;
@@ -67,6 +74,7 @@
   margin-top: 22px;
   padding: 16px 18px;
   border: 1px solid var(--paper-red);
+  border-radius: var(--radius-ui);
   background: var(--tint);
 }
 .gateBody { margin: 0 0 12px; font: 400 15px/1.6 var(--sans); color: var(--ink); }

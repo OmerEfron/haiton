@@ -38,6 +38,7 @@ export function LeadStory({
       <h2 className={styles.leadHeadline}>
         <Link to={storyPath(story)}>{story.headline}</Link>
       </h2>
+      <hr className={styles.leadRule} aria-hidden />
       <p className={styles.leadStandfirst}>{story.standfirst}</p>
       <div className={styles.leadByline}>
         <time>{displayPublishedAt(story.publishedAt)}</time>

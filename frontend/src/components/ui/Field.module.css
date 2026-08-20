@@ -13,7 +13,7 @@
   padding: 11px 13px;
   font: 400 14.5px/1.5 var(--sans);
   color: var(--ink);
-  border-radius: 0;
+  border-radius: var(--radius-ui);
 }
 .control::placeholder { color: var(--muted); }
 .control:focus {

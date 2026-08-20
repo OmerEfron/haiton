@@ -1,12 +1,12 @@
 .bar {
   background: var(--paper-red);
   color: var(--white);
-  border-bottom: 1px solid var(--rule);
+  border-bottom: 1px solid var(--paper-red-dark);
 }
 .inner {
   max-width: var(--shell);
   margin: 0 auto;
-  padding: 8px var(--gutter);
+  padding: 6px var(--gutter);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -22,21 +22,26 @@
 }
 .items::-webkit-scrollbar { display: none; }
 .item {
-  padding: 5px 9px;
+  padding: 6px 10px;
   color: var(--white);
   white-space: nowrap;
   border: 0;
+  border-radius: var(--radius-ui);
+  transition: background-color 0.12s;
 }
 .item:hover { color: var(--white); background: rgba(255, 255, 255, 0.12); }
-.active { background: rgba(255, 255, 255, 0.18); font-weight: 700; }
+.active { background: rgba(255, 255, 255, 0.2); font-weight: 700; }
 
-/* Breadcrumb variant used on the story page */
 .crumbs { font-size: 12px; padding-block: 6px; }
 .crumbs .sep { opacity: 0.6; }
 .crumbs .muted { opacity: 0.8; }
 
 @media (max-width: 900px) {
-  .inner { padding: 7px var(--gutter-sm); font-size: 12.5px; }
+  .inner { padding: 4px var(--gutter-sm); font-size: 12.5px; }
   .label, .divider { display: none; }
-  .item { min-height: 34px; display: flex; align-items: center; }
+  .item {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+  }
 }

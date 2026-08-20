@@ -109,6 +109,7 @@ export function StoryPage() {
       <article className={styles.article}>
         <Kicker>{s.sectionName}</Kicker>
         {!editing && <h1 className={styles.headline}>{s.headline}</h1>}
+        {!editing && <hr className={styles.leadRule} aria-hidden />}
         {!editing && <p className={styles.standfirst}>{s.standfirst}</p>}
 
         <div className={styles.byline}>

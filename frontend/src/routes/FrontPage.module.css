@@ -33,7 +33,7 @@
 /* Mobile-only blocks lifted from 1b */
 .mobileOnly { display: none; }
 .flashBlock {
-  background: var(--tint);
+  background: var(--urgency-tint);
   border-block: 1px solid var(--rule);
   padding: 14px;
 }

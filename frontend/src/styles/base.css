@@ -26,9 +26,8 @@ body {
   background: var(--canvas);
   color: var(--ink);
   font-family: var(--sans);
-  font-size: 15px;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
+  font-size: 17px;
+  line-height: 1.75;
 }
 
 h1, h2, h3, h4, p, figure, blockquote { margin: 0; }

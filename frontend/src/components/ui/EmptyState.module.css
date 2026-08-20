@@ -11,6 +11,7 @@
   width: 52px;
   height: 52px;
   border: 2px solid var(--paper-red);
+  border-radius: 50%;
   color: var(--paper-red);
   align-items: center;
   justify-content: center;
@@ -28,7 +29,7 @@
 .body {
   margin: 14px auto 0;
   max-width: 46ch;
-  font: 400 15.5px/1.7 var(--sans);
+  font: 400 16px/1.7 var(--sans);
   color: var(--ink-2);
   text-wrap: pretty;
 }

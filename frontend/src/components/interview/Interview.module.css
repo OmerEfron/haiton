@@ -1,5 +1,5 @@
 /* ---- Chat bubbles (1e / 1f) -------------------------------------------- */
-.bubble { max-width: 78%; padding: 13px 16px; animation: hai-fade-in 0.2s ease-out; }
+.bubble { max-width: 78%; padding: 13px 16px; border-radius: var(--radius-ui); animation: hai-fade-in 0.2s ease-out; }
 .reporter {
   border: 1px solid rgba(181, 18, 27, 0.3);
   border-inline-start: 3px solid var(--paper-red);
@@ -13,7 +13,6 @@
 .who {
   margin: 0 0 5px;
   font: 700 11px/1 var(--sans);
-  letter-spacing: var(--track);
   color: var(--ink-2);
 }
 .reporter .who { color: var(--paper-red); }
@@ -24,6 +23,7 @@
   align-self: center;
   padding: 4px 12px;
   background: var(--ph);
+  border-radius: var(--radius-pill);
   font: 500 11px/1 var(--sans);
   color: var(--ink-2);
 }
@@ -90,7 +90,7 @@
 .draftTitle { margin: 0; font: 700 19px/1 var(--serif); color: var(--paper-red); }
 .draftBody { flex: 1; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
 .fieldLabel { margin: 0 0 5px; font: 500 12.5px/1 var(--sans); color: var(--ink-2); }
-.box { padding: 10px 13px; background: var(--white); border: 1px solid var(--rule); font: 400 14px/1.6 var(--sans); color: var(--ink); }
+.box { padding: 10px 13px; background: var(--white); border: 1px solid var(--rule); border-radius: var(--radius-ui); font: 400 14px/1.6 var(--sans); color: var(--ink); }
 .boxLive { border-color: var(--paper-red); }
 .boxHeadline { font: 700 21px/1.28 var(--serif); padding: 11px 13px; }
 .boxAngle { font: 500 13.5px/1.5 var(--sans); padding: 9px 12px; }
@@ -104,8 +104,8 @@
   font-family: inherit;
 }
 
-.checks { border: 1px solid var(--rule); background: var(--white); padding: 12px 13px; }
-.checksTitle { margin: 0 0 8px; font: 700 11px/1 var(--sans); letter-spacing: var(--track-sm); color: var(--ink-2); }
+.checks { border: 1px solid var(--rule); border-radius: var(--radius-ui); background: var(--white); padding: 12px 13px; }
+.checksTitle { margin: 0 0 8px; font: 700 11px/1 var(--sans); color: var(--ink-2); }
 .checkList { display: flex; flex-direction: column; gap: 6px; font: 400 12.5px/1.5 var(--sans); color: var(--ink); }
 .check { display: flex; gap: 8px; }
 .checkOff { color: var(--ink-2); }

@@ -11,9 +11,16 @@
 }
 .leadHeadline a { color: inherit; }
 .leadHeadline a:hover { color: var(--paper-red); }
+.leadRule {
+  width: 48px;
+  height: 3px;
+  background: var(--paper-red-hot);
+  margin-top: 10px;
+  border: 0;
+}
 .leadStandfirst {
   margin: 14px 0 0;
-  font: 400 19px/1.6 var(--sans);
+  font: 400 19px/1.65 var(--sans);
   color: var(--ink-2);
   max-width: 44ch;
   text-wrap: pretty;
@@ -44,7 +51,7 @@
 .cardTime { display: block; margin-top: 7px; font: 400 11.5px/1 var(--sans); color: var(--ink-2); }
 
 /* ---- List rows (1a "כל הידיעות") --------------------------------------- */
-.listRow { display: block; padding: 10px 0; border-bottom: 1px solid var(--rule); }
+.listRow { display: block; padding: 12px 0; border-bottom: 1px solid var(--rule); }
 .listRow:last-child { border-bottom: 0; }
 .listMeta { display: block; font: 400 11.5px/1.4 var(--sans); color: var(--ink-2); }
 .listHeadline {
@@ -59,7 +66,7 @@
 .thumbRow {
   display: flex;
   gap: 11px;
-  padding: 11px 0;
+  padding: 12px 0;
   border-bottom: 1px solid var(--rule);
   align-items: flex-start;
 }
@@ -80,24 +87,47 @@
   border-bottom: 1px solid var(--rule-soft);
 }
 .flashItem:last-child { border-bottom: 0; }
-.flashTime { flex: none; font: 700 11px/1.5 var(--sans); color: var(--paper-red); }
+.flashTime { flex: none; font: 700 11px/1.5 var(--sans); color: var(--paper-red-hot); }
 .flashText { font: 500 13.5px/1.5 var(--sans); color: var(--ink); }
 a.flashText:hover { color: var(--paper-red); }
 
 /* ---- Draft teaser (1a sidebar) ----------------------------------------- */
-.teaser { margin-top: 20px; border: 1px solid var(--rule); background: var(--tint); padding: 16px; }
-.teaserKicker { margin: 0 0 4px; font: 700 11px/1 var(--sans); letter-spacing: var(--track); color: var(--paper-red); }
+.teaser {
+  margin-top: 20px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-ui);
+  background: var(--tint);
+  padding: 16px;
+}
+.teaserKicker { margin: 0 0 4px; font: 700 11px/1 var(--sans); color: var(--paper-red); }
 .teaserTitle { margin: 0 0 10px; font: 700 16px/1.35 var(--serif); color: var(--ink); }
 .teaserBody { margin: 0 0 12px; font: 400 12.5px/1.6 var(--sans); color: var(--ink-2); }
 
 /* ---- Mobile reporter prompt (1b) --------------------------------------- */
-.prompt { border: 1px solid var(--paper-red); padding: 13px; display: flex; gap: 12px; align-items: flex-start; }
-.promptKicker { margin: 0 0 3px; font: 700 11px/1 var(--sans); letter-spacing: var(--track-sm); color: var(--paper-red); }
+.prompt {
+  border: 1px solid var(--paper-red);
+  border-radius: var(--radius-ui);
+  padding: 13px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: var(--white);
+}
+.promptKicker {
+  margin: 0 0 3px;
+  font: 700 11px/1.4 var(--sans);
+  color: var(--paper-red);
+}
+.promptKicker mark {
+  background: var(--fun-mark);
+  color: var(--ink);
+  padding: 0 0.15em;
+}
 .promptBody { margin: 0 0 10px; font: 400 13px/1.55 var(--sans); color: var(--ink); }
 
 @media (max-width: 900px) {
-  .leadHeadline { font-size: 30px; line-height: 1.13; }
-  .leadStandfirst { font-size: 15px; margin-top: 10px; max-width: none; }
+  .leadHeadline { font-size: 30px; line-height: 1.12; }
+  .leadStandfirst { font-size: 16px; margin-top: 10px; max-width: none; line-height: 1.65; }
   .cardGrid { grid-template-columns: 1fr; gap: 18px; }
   .cardHeadline { font-size: 19px; }
 }
