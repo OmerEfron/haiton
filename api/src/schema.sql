@@ -158,3 +158,13 @@ CREATE TABLE IF NOT EXISTS interviews (
 
 CREATE INDEX IF NOT EXISTS idx_interviews_user_day ON interviews(user_id, day);
 CREATE INDEX IF NOT EXISTS idx_interviews_user_started ON interviews(user_id, started_at);
+
+CREATE TABLE IF NOT EXISTS credit_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  day TEXT NOT NULL,
+  delta INTEGER NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('admin', 'question', 'draft')),
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_credit_events_user_day ON credit_events(user_id, day);

@@ -285,6 +285,8 @@ export interface InterviewSession {
 
 /** Reader turns after which the reporter stops and writes a draft. */
 export const MAX_INTERVIEW_MESSAGES = 4;
+export const CREDITS_QUESTION = 1;
+export const CREDITS_DRAFT = 2;
 
 export interface Quota {
   limit: number;

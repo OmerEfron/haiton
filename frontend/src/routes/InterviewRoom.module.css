@@ -59,6 +59,7 @@
   text-underline-offset: 3px;
 }
 .kartesetLink:hover { color: var(--white); }
+.credits { white-space: nowrap; }
 
 .split {
   flex: 1;

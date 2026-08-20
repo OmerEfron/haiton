@@ -1,11 +1,8 @@
 import { Hono } from "hono";
-import {
-  DAILY_INTERVIEW_LIMIT,
-  ERROR_DAILY_QUOTA,
-  ERROR_INTERVIEW_NOT_FOUND,
-} from "../contract.ts";
+import { ERROR_DAILY_QUOTA, ERROR_INTERVIEW_NOT_FOUND } from "../contract.ts";
+import { balance, charge, isCreditKind } from "../credits.ts";
 import { getDb } from "../db.ts";
-import { israelDay, nextResetIso, quotaPayload, secondsUntilIsraelMidnight } from "../quota.ts";
+import { israelDay } from "../quota.ts";
 import { requireSession, type StoriesVariables } from "../stories/session.ts";
 import type { InterviewListItem, InterviewSnapshot, Quota } from "../types.ts";
 import { loadBrief } from "./brief.ts";
@@ -23,22 +20,27 @@ function headlineFrom(session: InterviewSnapshot): string | null {
   return first?.text ?? null;
 }
 
-function todayCount(userId: string, day: string): number {
-  const row = getDb()
-    .prepare("SELECT COUNT(*) AS n FROM interviews WHERE user_id = ? AND day = ?")
-    .get(userId, day) as { n: number };
-  return row.n;
-}
-
 export function createDeskRouter(): Hono<{ Variables: StoriesVariables }> {
   const app = new Hono<{ Variables: StoriesVariables }>();
   app.use("/quota", requireSession);
   app.use("/desk/*", requireSession);
 
   app.get("/quota", (c) => {
-    const used = todayCount(c.get("userId"), israelDay());
-    const quota: Quota = quotaPayload(used);
+    const quota: Quota = balance(c.get("userId"));
     return c.json(quota);
+  });
+
+  app.post("/desk/credits", async (c) => {
+    const body = (await c.req.json()) as { kind?: unknown };
+    if (!isCreditKind(body.kind)) {
+      return c.json({ message: "סוג חיוב לא תקין" }, 400);
+    }
+    const result = charge(c.get("userId"), body.kind);
+    if (!result.ok) {
+      c.header("Retry-After", String(result.retryAfter));
+      return c.json({ message: ERROR_DAILY_QUOTA, resetsAt: result.resetsAt }, 429);
+    }
+    return c.json(result.quota);
   });
 
   app.get("/desk/brief", (c) => {
@@ -87,26 +89,21 @@ export function createDeskRouter(): Hono<{ Variables: StoriesVariables }> {
     const existing = db
       .prepare("SELECT id FROM interviews WHERE user_id = ? AND id = ?")
       .get(userId, id) as { id: string } | undefined;
-    const day = israelDay();
     const json = JSON.stringify(body);
     const headline = headlineFrom(body);
 
     if (!existing) {
-      if (todayCount(userId, day) >= DAILY_INTERVIEW_LIMIT) {
-        c.header("Retry-After", String(secondsUntilIsraelMidnight()));
-        return c.json({ message: ERROR_DAILY_QUOTA, resetsAt: nextResetIso() }, 429);
-      }
       db.prepare(
         `INSERT INTO interviews (id, user_id, day, started_at, headline, session_json)
          VALUES (?, ?, ?, ?, ?, ?)`,
-      ).run(id, userId, day, body.startedAt, headline, json);
+      ).run(id, userId, israelDay(), body.startedAt, headline, json);
     } else {
       db.prepare(
         "UPDATE interviews SET headline = ?, session_json = ? WHERE user_id = ? AND id = ?",
       ).run(headline, json, userId, id);
     }
 
-    return c.json(quotaPayload(todayCount(userId, day)));
+    return c.json(balance(userId));
   });
 
   return app;

@@ -20,6 +20,7 @@ const API_PREFIXES = [
   "/invitations/",
   "/profile/",
   "/desk/",
+  "/admin/",
 ];
 
 function originFor(pathname: string): string | null {

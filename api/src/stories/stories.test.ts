@@ -177,7 +177,7 @@ test("POST /stories demotes lead and increments edition", async () => {
   assert.ok(sectionCounts.length > 0);
 });
 
-test("third POST /stories in a day is 429", async () => {
+test("can publish more than two stories in a day", async () => {
   closeDb();
   process.env.DATABASE_PATH = join(dbDir, "quota.sqlite");
   seedBaseUser();
@@ -195,7 +195,7 @@ test("third POST /stories in a day is 429", async () => {
     section: null,
   };
 
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 3; i++) {
     const res = await app.request("/stories", {
       method: "POST",
       headers: { Cookie: COOKIE, "Content-Type": "application/json" },
@@ -203,15 +203,6 @@ test("third POST /stories in a day is 429", async () => {
     });
     assert.equal(res.status, 201);
   }
-
-  const third = await app.request("/stories", {
-    method: "POST",
-    headers: { Cookie: COOKIE, "Content-Type": "application/json" },
-    body: JSON.stringify({ ...draft, headline: "ידיעה 3" }),
-  });
-  assert.equal(third.status, 429);
-  const body = (await third.json()) as { message: string };
-  assert.equal(body.message, "הגעתם לשתי ידיעות להיום. מחר הכתב מחכה שוב.");
 });
 
 test("GET /stories/share/:token teasers guests and authors see the rest", async () => {

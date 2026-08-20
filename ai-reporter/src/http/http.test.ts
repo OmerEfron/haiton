@@ -63,9 +63,10 @@ function fakeDeps() {
     return match?.[1] ?? "u-test";
   };
   const saveInterview = async () => ({ ok: true as const });
+  const chargeCredits = async () => ({ ok: true as const });
   const proposeKarteset = async () => [];
 
-  return { nextQuestion, writeArticle, proposeKarteset, getUserId, saveInterview, turnsSeen };
+  return { nextQuestion, writeArticle, proposeKarteset, getUserId, saveInterview, chargeCredits, turnsSeen };
 }
 
 describe("http session", () => {
@@ -486,12 +487,12 @@ describe("http session", () => {
     assert.equal(body.message, ERROR_INVALID_FORM);
   });
 
-  it("429 from saveInterview does not call the LLM", async () => {
+  it("429 from chargeCredits does not call the LLM", async () => {
     let llm = 0;
-    const saveInterview = async () => ({
+    const chargeCredits = async () => ({
       ok: false as const,
       status: 429,
-      message: "הגעתם לשתי ידיעות להיום. מחר הכתב מחכה שוב.",
+      message: "נגמרו הקרדיטים להיום. שאלה = קרדיט אחד, טיוטה = שניים. מחר הם מתחדשים.",
     });
     const nextQuestion = async (): Promise<NextQuestion> => {
       llm += 1;
@@ -508,7 +509,7 @@ describe("http session", () => {
         type: "feature",
       };
     };
-    const app = createApp({ ...fakeDeps(), saveInterview, nextQuestion, writeArticle });
+    const app = createApp({ ...fakeDeps(), chargeCredits, nextQuestion, writeArticle });
     const createRes = await app.request("/interviews", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

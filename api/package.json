@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "test": "node --experimental-strip-types --test src/contract.test.ts src/app.test.ts src/app.integration.test.ts src/auth/auth.test.ts src/stories/stories.test.ts src/stories/mappers.test.ts src/stories/mutate.test.ts src/circle/circle.test.ts src/desk/desk.test.ts src/http/rateLimit.test.ts",
+    "test": "node --experimental-strip-types --test src/contract.test.ts src/app.test.ts src/app.integration.test.ts src/auth/auth.test.ts src/stories/stories.test.ts src/stories/mappers.test.ts src/stories/mutate.test.ts src/circle/circle.test.ts src/desk/desk.test.ts src/credits.test.ts src/http/rateLimit.test.ts",
     "start": "node src/index.ts",
     "dev": "node --env-file=../.env --env-file=.env --watch-path=src src/index.ts | pino-pretty",
     "dev:nowatch": "node --env-file=../.env --env-file=.env src/index.ts | pino-pretty"

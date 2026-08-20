@@ -12,7 +12,7 @@ import {
   ERROR_UNAUTHORIZED,
 } from "../contract.js";
 import { MAX_MESSAGES, TONE_LABELS, TYPE_LABELS, type ArticleTypeId, type ToneId } from "../types.js";
-import { cookieOf, coreGetUserId, coreSaveInterview } from "./core.js";
+import { cookieOf, coreChargeCredits, coreGetUserId, coreSaveInterview } from "./core.js";
 import { clientIp, rateLimit } from "./rateLimit.js";
 import { allowTestMode, llmFns } from "./placeholders.js";
 import { closeWithDraft, jsonError, persistAfter, readerCount } from "./run.js";
@@ -28,6 +28,7 @@ import {
   toWireSession,
 } from "./session.js";
 import type {
+  ChargeCreditsFn,
   GetUserIdFn,
   NextQuestionFn,
   ProposeKartesetFn,
@@ -44,6 +45,7 @@ export type AppDeps = {
   proposeKarteset?: ProposeKartesetFn;
   getUserId?: GetUserIdFn;
   saveInterview?: SaveInterviewFn;
+  chargeCredits?: ChargeCreditsFn;
 };
 
 type AppEnv = { Variables: { userId: string } };
@@ -65,6 +67,7 @@ async function resolveDeps(deps?: AppDeps): Promise<Required<AppDeps>> {
     proposeKarteset,
     getUserId: deps?.getUserId ?? coreGetUserId,
     saveInterview: deps?.saveInterview ?? coreSaveInterview,
+    chargeCredits: deps?.chargeCredits ?? coreChargeCredits,
   };
 }
 
@@ -201,14 +204,19 @@ export function createApp(deps?: AppDeps): Hono<AppEnv> {
     const deps = await getDeps();
     const { nextQuestion, writeArticle, proposeKarteset } = llmFns(state!.testMode, deps);
     const cookie = cookieOf(c);
-    const charged = await deps.saveInterview(cookie, toWireSession(state!));
+    const saved = await deps.saveInterview(cookie, toWireSession(state!));
+    if (!saved.ok) return jsonError(saved.message, saved.status);
+
+    const nextCount = readerCount(state!) + 1;
+    const kind = nextCount >= MAX_MESSAGES ? "draft" : "question";
+    const charged = await deps.chargeCredits(cookie, kind);
     if (!charged.ok) return jsonError(charged.message, charged.status);
 
     return sseJson(async () => {
       state!.messages.push(newMessage("reader", text));
       state!.turns = buildTurns(state!.messages);
 
-      if (readerCount(state!) >= MAX_MESSAGES) {
+      if (nextCount >= MAX_MESSAGES) {
         await closeWithDraft(state!, writeArticle, proposeKarteset);
         await persistAfter(deps.saveInterview, cookie, state!);
         return toWireSession(state!);
@@ -220,7 +228,10 @@ export function createApp(deps?: AppDeps): Hono<AppEnv> {
       }
 
       if (result.done && !result.question) {
-        await closeWithDraft(state!, writeArticle, proposeKarteset);
+        const extra = await deps.chargeCredits(cookie, "draft");
+        if (extra.ok) {
+          await closeWithDraft(state!, writeArticle, proposeKarteset);
+        }
       }
 
       await persistAfter(deps.saveInterview, cookie, state!);
@@ -240,7 +251,9 @@ export function createApp(deps?: AppDeps): Hono<AppEnv> {
     const deps = await getDeps();
     const { writeArticle, proposeKarteset } = llmFns(state!.testMode, deps);
     const cookie = cookieOf(c);
-    const charged = await deps.saveInterview(cookie, toWireSession(state!));
+    const saved = await deps.saveInterview(cookie, toWireSession(state!));
+    if (!saved.ok) return jsonError(saved.message, saved.status);
+    const charged = await deps.chargeCredits(cookie, "draft");
     if (!charged.ok) return jsonError(charged.message, charged.status);
 
     return sseJson(async () => {

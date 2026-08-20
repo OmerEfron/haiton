@@ -30,6 +30,7 @@ export default defineConfig({
       '/health': API_TARGET,
       '/quota': API_TARGET,
       '/desk': API_TARGET,
+      '/admin': API_TARGET,
     },
   },
 })

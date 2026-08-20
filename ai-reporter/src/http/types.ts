@@ -95,3 +95,10 @@ export type SaveInterviewFn = (
   cookie: string,
   session: InterviewSession,
 ) => Promise<SaveInterviewResult>;
+
+export type CreditKind = "question" | "draft";
+
+export type ChargeCreditsFn = (
+  cookie: string,
+  kind: CreditKind,
+) => Promise<SaveInterviewResult>;

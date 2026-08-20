@@ -13,6 +13,11 @@ export type SaveInterviewFn = (
   session: InterviewSession,
 ) => Promise<SaveInterviewResult>;
 
+export type ChargeCreditsFn = (
+  cookie: string,
+  kind: "question" | "draft",
+) => Promise<SaveInterviewResult>;
+
 const DEFAULT_CORE = "http://localhost:8787";
 
 function coreUrl(): string {
@@ -58,14 +63,41 @@ export async function coreSaveInterview(
     throw err;
   }
   if (res.ok) return { ok: true };
-  let message = "שגיאה בשמירת הראיון";
+  return { ok: false, status: res.status, message: await readMessage(res, "שגיאה בשמירת הראיון") };
+}
+
+export async function coreChargeCredits(
+  cookie: string,
+  kind: "question" | "draft",
+): Promise<SaveInterviewResult> {
+  let res: Response;
+  try {
+    res = await coreFetch("/desk/credits", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookie,
+      },
+      body: JSON.stringify({ kind }),
+    });
+  } catch (err) {
+    if (err instanceof HTTPException) {
+      return { ok: false, status: err.status, message: err.message };
+    }
+    throw err;
+  }
+  if (res.ok) return { ok: true };
+  return { ok: false, status: res.status, message: await readMessage(res, "אין מספיק קרדיטים") };
+}
+
+async function readMessage(res: Response, fallback: string): Promise<string> {
   try {
     const body = (await res.json()) as { message?: string };
-    if (typeof body.message === "string" && body.message) message = body.message;
+    if (typeof body.message === "string" && body.message) return body.message;
   } catch {
     /* non-JSON */
   }
-  return { ok: false, status: res.status, message };
+  return fallback;
 }
 
 export function cookieOf(c: Context): string {

@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { ERROR_RATE_LIMIT } from "./contract.ts";
 import { authRouter } from "./auth/index.ts";
+import { createAdminRouter } from "./admin/router.ts";
 import { createCircleRouter } from "./circle/router.ts";
 import { createDeskRouter } from "./desk/router.ts";
 import { clientIp, rateLimit } from "./http/rateLimit.ts";
@@ -71,6 +72,7 @@ export function createApp(): Hono {
   app.route("/", createStoriesRouter());
   app.route("/", createDeskRouter());
   app.route("/", createCircleRouter());
+  app.route("/", createAdminRouter());
 
   return app;
 }

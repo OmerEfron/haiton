@@ -12,7 +12,8 @@ import { ErrorState, Loading } from "../components/ui/Bits";
 import { Button, ButtonLink } from "../components/ui/Button";
 import { Chip } from "../components/ui/Chip";
 import { EmptyState } from "../components/ui/EmptyState";
-import { MAX_INTERVIEW_MESSAGES, type ArticleTypeId, type Draft, type ProposedFact, type ToneId } from "../api/types";
+import { CREDITS_DRAFT, MAX_INTERVIEW_MESSAGES, type ArticleTypeId, type Draft, type ProposedFact, type ToneId } from "../api/types";
+import { getQuota } from "../api/core/desk";
 import {
   discardSession, loadOrStartSession, publishDraftWithFacts, requestDraft, restartSession, sendMessage, setArticleForm,
 } from "../api/reporter/interview";
@@ -34,6 +35,7 @@ export function InterviewRoom() {
     queryFn: () => loadOrStartSession(),
     staleTime: 0,
   });
+  const quota = useQuery({ queryKey: qk.quota, queryFn: getQuota });
 
   const send = useMutation({
     mutationFn: (value: string) => sendMessage(value),
@@ -48,12 +50,16 @@ export function InterviewRoom() {
     onSuccess: (session) => {
       client.setQueryData(qk.interview, session);
       setPending(null);
+      void client.invalidateQueries({ queryKey: qk.quota });
     },
   });
 
   const draftIt = useMutation({
     mutationFn: requestDraft,
-    onSuccess: (session) => client.setQueryData(qk.interview, session),
+    onSuccess: (session) => {
+      client.setQueryData(qk.interview, session);
+      void client.invalidateQueries({ queryKey: qk.quota });
+    },
   });
 
   const chooseForm = useMutation({
@@ -99,7 +105,6 @@ export function InterviewRoom() {
     client.invalidateQueries({ queryKey: qk.profile });
     navigate("/?draft=saved");
   };
-
   const busy = send.isPending || draftIt.isPending || toggleTest.isPending;
   const confirmedTurns = interview.data?.messages.filter((m) => m.role === "reader").length ?? 0;
   const writingNow =
@@ -122,11 +127,7 @@ export function InterviewRoom() {
       <EmptyState
         title={desk.quotaTitle}
         body={desk.quotaBody}
-        actions={
-          <ButtonLink to="/" size="lg">
-            {desk.backToEdition}
-          </ButtonLink>
-        }
+        actions={<ButtonLink to="/" size="lg">{desk.backToEdition}</ButtonLink>}
       />
     );
   }
@@ -137,7 +138,9 @@ export function InterviewRoom() {
   const showDraft = writingNow || s.draft.status === "ready";
   const showComposer = !closed && !writingNow;
   const last = s.messages.at(-1);
-  const offerDraft = last?.role === "reporter" && confirmedTurns > 0 && !closed && !busy;
+  const remaining = quota.data?.remaining;
+  const offerDraft =
+    last?.role === "reporter" && confirmedTurns > 0 && !closed && !busy && (remaining ?? 0) >= CREDITS_DRAFT;
   const canDrop = closed || Boolean(publish.error);
   const canTest = import.meta.env.DEV && confirmedTurns === 0 && !closed && !busy && !pending;
 
@@ -172,6 +175,7 @@ export function InterviewRoom() {
         closed={closed}
         testMode={s.testMode}
         onToggleTestMode={canTest ? () => toggleTest.mutate(!s.testMode) : undefined}
+        creditsRemaining={remaining}
       />
 
       <div className={[styles.split, !showDraft && styles.splitSolo].filter(Boolean).join(" ")}>

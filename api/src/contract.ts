@@ -15,12 +15,16 @@ export interface RouteContract {
 export const SESSION_COOKIE_NAME = "iton_session";
 
 export const ERROR_UNAUTHORIZED = "יש להתחבר כדי להמשיך";
-export const ERROR_DAILY_QUOTA = "הגעתם לשתי ידיעות להיום. מחר הכתב מחכה שוב.";
+export const ERROR_DAILY_QUOTA = "נגמרו הקרדיטים להיום. שאלה = קרדיט אחד, טיוטה = שניים. מחר הם מתחדשים.";
 export const ERROR_RATE_LIMIT = "יותר מדי בקשות. נסו שוב בעוד רגע.";
 export const ERROR_INTERNAL = "משהו השתבש בשולחן העורכים";
 export const ERROR_INTERVIEW_NOT_FOUND = "ראיון לא נמצא בארכיון";
-export const DAILY_INTERVIEW_LIMIT = process.env.DAILY_INTERVIEW_LIMIT ? parseInt(process.env.DAILY_INTERVIEW_LIMIT) : 2;
-export const DAILY_STORY_LIMIT = process.env.DAILY_STORY_LIMIT ? parseInt(process.env.DAILY_STORY_LIMIT) : 2;
+export const DAILY_CREDITS_DEFAULT = 10;
+
+export function dailyCredits(): number {
+  const n = Number.parseInt(process.env.DAILY_CREDITS ?? "", 10);
+  return Number.isFinite(n) && n >= 0 ? n : DAILY_CREDITS_DEFAULT;
+}
 
 export const ROUTES: readonly RouteContract[] = [
   { method: "GET", path: "/health" },
@@ -116,6 +120,11 @@ export const ROUTES: readonly RouteContract[] = [
   { method: "PATCH", path: "/connections/:id", handler: "updateConnection" },
   { method: "DELETE", path: "/connections/:id", handler: "removeConnection" },
   { method: "GET", path: "/quota", handler: "getQuota" },
+  {
+    method: "POST",
+    path: "/desk/credits",
+    notes: "reporter charge; body: { kind: 'question' | 'draft' }",
+  },
   {
     method: "GET",
     path: "/desk/brief",

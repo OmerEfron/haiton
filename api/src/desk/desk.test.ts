@@ -51,6 +51,7 @@ function snapshot(
 before(() => {
   dbDir = mkdtempSync(join(tmpdir(), "iton-desk-"));
   process.env.DATABASE_PATH = join(dbDir, "test.sqlite");
+  delete process.env.DAILY_CREDITS;
   closeDb();
   const db = getDb();
   db.prepare(
@@ -71,13 +72,13 @@ after(() => {
   delete process.env.DATABASE_PATH;
 });
 
-test("GET /quota starts at zero", async () => {
+test("GET /quota starts at the daily grant", async () => {
   const res = await app.request("/quota", { headers: { Cookie: COOKIE } });
   assert.equal(res.status, 200);
   const body = (await res.json()) as { limit: number; used: number; remaining: number };
-  assert.equal(body.limit, 2);
+  assert.equal(body.limit, 10);
   assert.equal(body.used, 0);
-  assert.equal(body.remaining, 2);
+  assert.equal(body.remaining, 10);
 });
 
 test("PUT same interview id twice does not consume a second slot", async () => {
@@ -97,7 +98,7 @@ test("PUT same interview id twice does not consume a second slot", async () => {
 
   const quota = await app.request("/quota", { headers: { Cookie: COOKIE } });
   const body = (await quota.json()) as { used: number };
-  assert.equal(body.used, 1);
+  assert.equal(body.used, 0);
 
   const got = await app.request("/desk/interviews/i1", { headers: { Cookie: COOKIE } });
   const session = (await got.json()) as { draft: { headline: string }; exhausted: boolean };
@@ -105,7 +106,7 @@ test("PUT same interview id twice does not consume a second slot", async () => {
   assert.equal(session.exhausted, true);
 });
 
-test("third distinct interview in a day is 429", async () => {
+test("third distinct interview in a day is allowed", async () => {
   const two = await app.request("/desk/interviews/i2", {
     method: "PUT",
     headers: { Cookie: COOKIE, "Content-Type": "application/json" },
@@ -116,21 +117,19 @@ test("third distinct interview in a day is 429", async () => {
   const three = await app.request("/desk/interviews/i3", {
     method: "PUT",
     headers: { Cookie: COOKIE, "Content-Type": "application/json" },
-    body: JSON.stringify(snapshot("i3", "שלישית")),
+    body: JSON.stringify(snapshot("i3", "שלישית", false, "2026-08-19T10:00:00.000Z")),
   });
-  assert.equal(three.status, 429);
-  const body = (await three.json()) as { message: string };
-  assert.equal(body.message, ERROR_DAILY_QUOTA);
-  assert.ok(three.headers.get("Retry-After"));
+  assert.equal(three.status, 200);
 });
 
 test("GET /desk/interviews lists newest first", async () => {
   const res = await app.request("/desk/interviews", { headers: { Cookie: COOKIE } });
   assert.equal(res.status, 200);
   const list = (await res.json()) as { id: string; headline: string | null }[];
-  assert.equal(list.length, 2);
-  assert.equal(list[0].id, "i2");
-  assert.equal(list[1].id, "i1");
+  assert.equal(list.length, 3);
+  assert.equal(list[0].id, "i3");
+  assert.equal(list[1].id, "i2");
+  assert.equal(list[2].id, "i1");
 });
 
 test("GET missing interview is 404", async () => {
@@ -188,4 +187,55 @@ test("GET /desk/brief returns subject, facts, circle, and recent", async () => {
   assert.equal(brief.circle[0]?.relationLabel, "שכנה");
   assert.equal(brief.recent.length, 1);
   assert.equal(brief.recent[0]?.headline, "המשוב הראשון");
+});
+
+test("POST /desk/credits charges a question then a draft", async () => {
+  const question = await app.request("/desk/credits", {
+    method: "POST",
+    headers: { Cookie: COOKIE, "Content-Type": "application/json" },
+    body: JSON.stringify({ kind: "question" }),
+  });
+  assert.equal(question.status, 200);
+  const afterQ = (await question.json()) as { used: number; remaining: number };
+  assert.equal(afterQ.used, 1);
+  assert.equal(afterQ.remaining, 9);
+
+  const draft = await app.request("/desk/credits", {
+    method: "POST",
+    headers: { Cookie: COOKIE, "Content-Type": "application/json" },
+    body: JSON.stringify({ kind: "draft" }),
+  });
+  assert.equal(draft.status, 200);
+  const afterD = (await draft.json()) as { used: number; remaining: number };
+  assert.equal(afterD.used, 3);
+  assert.equal(afterD.remaining, 7);
+});
+
+test("POST /desk/credits rejects a bad kind", async () => {
+  const res = await app.request("/desk/credits", {
+    method: "POST",
+    headers: { Cookie: COOKIE, "Content-Type": "application/json" },
+    body: JSON.stringify({ kind: "publish" }),
+  });
+  assert.equal(res.status, 400);
+});
+
+test("POST /desk/credits is 429 when the pool is empty", async () => {
+  for (let i = 0; i < 7; i++) {
+    const res = await app.request("/desk/credits", {
+      method: "POST",
+      headers: { Cookie: COOKIE, "Content-Type": "application/json" },
+      body: JSON.stringify({ kind: "question" }),
+    });
+    assert.equal(res.status, 200);
+  }
+  const blocked = await app.request("/desk/credits", {
+    method: "POST",
+    headers: { Cookie: COOKIE, "Content-Type": "application/json" },
+    body: JSON.stringify({ kind: "question" }),
+  });
+  assert.equal(blocked.status, 429);
+  const body = (await blocked.json()) as { message: string };
+  assert.equal(body.message, ERROR_DAILY_QUOTA);
+  assert.ok(blocked.headers.get("Retry-After"));
 });

@@ -32,7 +32,7 @@ export async function startSession(
   });
 }
 
-/** Resume a live session, or start one when quota remains. Null = daily cap, nothing open. */
+/** Resume a live session, or start one when credits remain. Null = daily pool empty, nothing open. */
 export async function loadOrStartSession(): Promise<InterviewSession | null> {
   const existing = await reporterRequest<InterviewSession | undefined>("/interviews");
   if (existing) return existing;

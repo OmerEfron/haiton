@@ -16,6 +16,7 @@ export function InterviewBar({
   closed,
   testMode,
   onToggleTestMode,
+  creditsRemaining,
 }: {
   startedAt: string;
   elapsedLabel: string;
@@ -23,6 +24,7 @@ export function InterviewBar({
   closed: boolean;
   testMode?: boolean;
   onToggleTestMode?: () => void;
+  creditsRemaining?: number;
 }) {
   const started = heDate(startedAt);
   const showTest = import.meta.env.DEV;
@@ -64,6 +66,9 @@ export function InterviewBar({
         )}
       </div>
       <div className={styles.barEnd}>
+        {creditsRemaining != null && (
+          <span className={styles.credits}>{desk.creditsLeft(creditsRemaining)}</span>
+        )}
         <span className={styles.barMeta}>
           {started} · {elapsedLabel}
         </span>

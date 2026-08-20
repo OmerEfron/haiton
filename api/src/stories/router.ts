@@ -1,7 +1,5 @@
 import { Hono } from "hono";
-import { DAILY_STORY_LIMIT, ERROR_DAILY_QUOTA } from "../contract.ts";
 import { getDb } from "../db.ts";
-import { countToday, nextResetIso, secondsUntilIsraelMidnight } from "../quota.ts";
 import type { Draft } from "../types.ts";
 import { dbForUser, EDITION_NOT_FOUND, loadMixedEdition, loadUserEdition } from "./edition.ts";
 import { DRAFT_NOT_READY, STORY_NOT_FOUND, rowToFlash, rowToStory, type FlashRow, type StoryRow } from "./mappers.ts";
@@ -98,18 +96,7 @@ export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
       return c.json({ message: DRAFT_NOT_READY }, 400);
     }
 
-    const userId = c.get("userId");
-    const created = (
-      getDb()
-        .prepare("SELECT created_at FROM stories WHERE user_id = ?")
-        .all(userId) as { created_at: string | null }[]
-    ).map((row) => row.created_at);
-    if (countToday(created) >= DAILY_STORY_LIMIT) {
-      c.header("Retry-After", String(secondsUntilIsraelMidnight()));
-      return c.json({ message: ERROR_DAILY_QUOTA, resetsAt: nextResetIso() }, 429);
-    }
-
-    const story = publishDraft(getDb(), userId, draft);
+    const story = publishDraft(getDb(), c.get("userId"), draft);
     return c.json(story, 201);
   });
 
