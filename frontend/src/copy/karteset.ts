@@ -1,7 +1,7 @@
 export const karteset = {
   title: "כרטסת",
   factLabel: "עובדה קבועה",
-  placeholder: "למשל: עובד בחברת אד־טק מאוגוסט 2024",
+  placeholder: "למשל: חולה על הפועל רמת גן",
   submit: "רשמו בכרטסת",
   all: "הכול",
   categories: {

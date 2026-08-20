@@ -131,7 +131,7 @@ export interface FrontPage {
   /** "שבת, 16.08.26" */
   dateShort: string;
   editionName: string;
-  /** The rolling "עכשיו" ticker items. */
+  /** Last five headlines in this edition's feed. */
   ticker: string[];
   lead: Story | null;
   secondary: Story[];

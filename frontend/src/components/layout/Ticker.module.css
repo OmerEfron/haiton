@@ -15,16 +15,24 @@
 }
 .track {
   flex: 1;
-  position: relative;
   overflow: hidden;
-  padding: 7px 14px;
+  padding: 7px 0;
   font: 400 12.5px/1.4 var(--sans);
   white-space: nowrap;
   color: rgba(255, 255, 255, 0.88);
 }
 .line {
-  display: inline-block;
-  animation: hai-tick 32s linear infinite;
+  display: inline-flex;
+  width: max-content;
+  animation: tick 28s linear infinite;
+}
+.line span {
+  padding-inline: 14px;
+}
+
+@keyframes tick {
+  from { transform: translateX(0); }
+  to { transform: translateX(50%); }
 }
 
 @media (max-width: 900px) {
@@ -36,12 +44,10 @@
     color: var(--paper-red);
   }
   .track {
-    padding: 6px 10px;
+    padding: 6px 0;
     font-size: 12px;
     color: var(--ink-2);
-    text-overflow: ellipsis;
   }
-  .line { animation: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

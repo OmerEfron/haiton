@@ -214,6 +214,7 @@ test("accept writes two rows; mix, share, and remove stay in lockstep", async ()
   assert.equal(page.lead?.headline, "של נועה");
   assert.equal(page.lead?.shareToken, "share_b");
   assert.equal(page.lead?.author.id, B.id);
+  assert.deepEqual(page.ticker, ["של נועה", "שלי"]);
 
   const ownOnly = await app.request("/stories/9", { headers: cookie(A.session) });
   assert.equal(ownOnly.status, 404);
@@ -248,6 +249,7 @@ test("accept writes two rows; mix, share, and remove stay in lockstep", async ()
   assert.equal(after.lead?.headline, "שלי");
   assert.ok(!after.secondary.some((s) => s.headline === "של נועה"));
   assert.ok(!after.list.some((s) => s.headline === "של נועה"));
+  assert.deepEqual(after.ticker, ["שלי"]);
 
   const blocked = await app.request(`/editions/${B.id}`, { headers: cookie(A.session) });
   assert.equal(blocked.status, 404);

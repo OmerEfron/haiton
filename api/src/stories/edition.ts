@@ -126,7 +126,7 @@ export function loadMixedEdition(userId: string): FrontPage {
     state.open_draft_title != null
       ? { title: state.open_draft_title, summary: state.open_draft_summary ?? "" }
       : null;
-  return pageFrom(
+  const page = pageFrom(
     settings,
     state,
     {
@@ -137,6 +137,7 @@ export function loadMixedEdition(userId: string): FrontPage {
     loadFlashes(db, ids),
     openDraft,
   );
+  return { ...page, ticker: stories.slice(0, 5).map((s) => s.headline) };
 }
 
 export function loadUserEdition(viewerId: string, targetUserId: string): FrontPage | null {
