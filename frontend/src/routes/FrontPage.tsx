@@ -155,44 +155,27 @@ export function FrontPage() {
 }
 
 function EmptyEdition({ openDraft }: { openDraft: { title: string; summary: string } | null }) {
-  return (
-    <>
+  if (openDraft) {
+    return (
       <EmptyState
-        badge={<LivePill>{openDraft ? common.inEditing : desk.emptyEditionKicker}</LivePill>}
-        title={openDraft ? desk.emptyEditionDraftTitle : desk.emptyEditionTitle}
-        body={openDraft ? desk.emptyEditionDraftBody(openDraft.title) : desk.emptyEditionBody}
+        badge={<LivePill>{common.inEditing}</LivePill>}
+        title={desk.emptyEditionDraftTitle}
+        body={desk.emptyEditionDraftBody(openDraft.title)}
         actions={
-          openDraft ? (
-            <ButtonLink to="/interview" size="lg">
-              {desk.continueDraft}
-            </ButtonLink>
-          ) : (
-            <>
-              <ButtonLink to="/interview" size="lg">
-                {desk.startFirstInterview}
-              </ButtonLink>
-              <ButtonLink to="/karteset" variant="outline" size="lg">
-                {desk.fillKarteset}
-              </ButtonLink>
-            </>
-          )
+          <ButtonLink to="/interview" size="lg">
+            {desk.continueDraft}
+          </ButtonLink>
         }
       />
-      <div className={styles.emptyFlashes}>
-        <h3 className={styles.emptyFlashesTitle}>{common.flashes}</h3>
-        <p className={styles.emptyFlashesBody}>{desk.noFlashes}</p>
-      </div>
-      <div className={styles.tomorrow}>
-        <p className={styles.tomorrowLabel}>{desk.tomorrowTitle}</p>
-        <div className={styles.tomorrowGrid}>
-          {desk.tomorrowCards.map((card) => (
-            <div key={card.kicker + card.text} className={styles.tomorrowCard}>
-              <span className={styles.tomorrowKicker}>{card.kicker}</span>
-              <p className={styles.tomorrowText}>{card.text}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </>
+    );
+  }
+
+  return (
+    <div className={styles.emptyEdition}>
+      <h2 className={styles.emptyEditionTitle}>{desk.emptyEditionTitle}</h2>
+      <ButtonLink to="/interview" size="lg">
+        {desk.startFirstInterview}
+      </ButtonLink>
+    </div>
   );
 }
