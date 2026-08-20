@@ -118,6 +118,21 @@
 .sectionHeadTitle { font: 700 19px/1 var(--serif); color: var(--paper-red); margin: 0; }
 
 /* --- Spinner / states --------------------------------------------------- */
+.splash {
+  min-height: 100dvh;
+  max-width: var(--shell);
+  margin: 0 auto;
+  background: var(--white);
+  border-inline: 1px solid var(--rule);
+}
+.splashBrand {
+  margin: 0;
+  padding: 14px var(--gutter);
+  border-bottom: 4px solid var(--paper-red);
+  font: 900 40px/1 var(--serif);
+  color: var(--paper-red);
+  letter-spacing: -0.02em;
+}
 .state {
   padding: 16px 24px;
   text-align: center;
@@ -129,4 +144,10 @@
 @media (max-width: 900px) {
   .stats { grid-template-columns: repeat(2, 1fr) !important; }
   .statValue { font-size: 24px; }
+  .splash { border-inline: 0; }
+  .splashBrand {
+    padding: 10px var(--gutter-sm);
+    border-bottom-width: 3px;
+    font-size: 26px;
+  }
 }

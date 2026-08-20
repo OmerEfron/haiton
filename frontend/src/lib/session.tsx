@@ -17,7 +17,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const client = useQueryClient();
   const { data, isPending } = useQuery({ queryKey: qk.session, queryFn: getSession });
 
-  if (isPending) return <Loading />;
+  if (isPending) return <Loading framed />;
 
   return (
     <Ctx.Provider
