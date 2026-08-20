@@ -11,10 +11,12 @@ export function Modal({
   children: ReactNode;
 }) {
   const panel = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") onCloseRef.current();
     }
     document.addEventListener("keydown", onKey);
     const previousOverflow = document.body.style.overflow;
@@ -24,7 +26,8 @@ export function Modal({
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = previousOverflow;
     };
-  }, [onClose]);
+    // mount-only: re-running this on inline onClose identity steals input focus
+  }, []);
 
   return (
     <div className={styles.backdrop} onClick={onClose}>
