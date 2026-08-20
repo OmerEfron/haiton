@@ -1,6 +1,6 @@
 /** Frozen HTTP contract from docs/features/core-api/PLAN.md (W0). */
 
-export type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE";
+export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 export interface RouteContract {
   method: HttpMethod;
