@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { register } from "node:module";
 import { describe, it, beforeEach } from "node:test";
 import type { Article, NextQuestion, Turn } from "../types.js";
+import type { InterviewSession } from "./types.js";
 
 register("./hook.mjs", import.meta.url);
 
@@ -18,6 +19,10 @@ const {
 const { createApp } = await import("./app.js");
 const { clearSession } = await import("./session.js");
 const { parseSseJson } = await import("./sse.js");
+
+function sseSession(text: string) {
+  return parseSseJson<InterviewSession>(text);
+}
 
 const FACTS = [
   { id: "f1", category: "work", text: "מפתח בחיפה", usedInStories: 0 },
@@ -113,7 +118,7 @@ describe("http session", () => {
       body: JSON.stringify({ text: "היה לי יום קשה" }),
     });
     assert.equal(res.status, 200);
-    const session = parseSseJson(await res.text());
+    const session = sseSession(await res.text());
     assert.equal(session.messages.length, 2);
     assert.equal(session.messages[0].role, "reader");
     assert.equal(session.messages[1].role, "reporter");
@@ -228,7 +233,7 @@ describe("http session", () => {
 
     const res = await app.request(`/interviews/${id}/draft`, { method: "POST" });
     assert.equal(res.status, 200);
-    const session = parseSseJson(await res.text());
+    const session = sseSession(await res.text());
     assert.equal(session.draft.status, "ready");
     assert.equal(session.draft.headline, "כותרת בדיקה");
     assert.equal(session.draft.pendingParagraph, null);
@@ -256,7 +261,7 @@ describe("http session", () => {
     });
     const { id } = await createRes.json();
 
-    let session;
+    let session!: InterviewSession;
     for (let i = 1; i <= 4; i++) {
       const res = await app.request(`/interviews/${id}/messages`, {
         method: "POST",
@@ -264,10 +269,10 @@ describe("http session", () => {
         body: JSON.stringify({ text: `תשובה ${i}` }),
       });
       assert.equal(res.status, 200);
-      session = parseSseJson(await res.text());
+      session = sseSession(await res.text());
     }
 
-    const readers = session.messages.filter((m: { role: string }) => m.role === "reader");
+    const readers = session.messages.filter((m) => m.role === "reader");
     const last = session.messages[session.messages.length - 1];
     assert.equal(readers.length, 4);
     assert.equal(last.role, "reader");
@@ -406,7 +411,7 @@ describe("http session", () => {
     });
 
     const res = await app.request(`/interviews/${id}/draft`, { method: "POST" });
-    const session = parseSseJson(await res.text());
+    const session = sseSession(await res.text());
     assert.equal(seen.type, "news");
     assert.equal(seen.tone, undefined);
     assert.equal(session.type, "news");
