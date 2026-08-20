@@ -63,8 +63,12 @@ export function InterviewRoom() {
   const publish = useMutation({
     mutationFn: publishStory,
     onSuccess: async (story) => {
+      await client.cancelQueries({ queryKey: qk.interview });
       await discardSession();
-      await client.invalidateQueries();
+      client.setQueryData(qk.interview, null);
+      await client.invalidateQueries({ queryKey: qk.frontPage });
+      await client.invalidateQueries({ queryKey: qk.profile });
+      await client.invalidateQueries({ queryKey: qk.deskInterviews });
       navigate(`/story/${story.id}`);
     },
   });

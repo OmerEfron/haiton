@@ -19,7 +19,7 @@ export const ERROR_DAILY_QUOTA = "הגעתם לשתי ידיעות להיום. �
 export const ERROR_RATE_LIMIT = "יותר מדי בקשות. נסו שוב בעוד רגע.";
 export const ERROR_INTERNAL = "משהו השתבש בשולחן העורכים";
 export const ERROR_INTERVIEW_NOT_FOUND = "ראיון לא נמצא בארכיון";
-export const DAILY_INTERVIEW_LIMIT = 2;
+export const DAILY_INTERVIEW_LIMIT = process.env.DAILY_INTERVIEW_LIMIT ? parseInt(process.env.DAILY_INTERVIEW_LIMIT) : 2;
 
 export const ROUTES: readonly RouteContract[] = [
   { method: "GET", path: "/health" },

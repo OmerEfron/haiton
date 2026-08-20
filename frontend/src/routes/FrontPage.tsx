@@ -33,17 +33,17 @@ export function FrontPage() {
   const page = front.data;
   const showTag = profile.data?.settings.showEditionTag ?? true;
   const empty = !page.lead && page.secondary.length === 0 && page.list.length === 0;
+  const session = interview.data;
   const openDraft =
     page.openDraft ??
-    (() => {
-      const session = interview.data;
-      if (!session) return null;
-      const draft = session.draft;
-      return {
-        title: draft.headline ?? draft.angle ?? desk.openInterview,
-        summary: draft.standfirst ?? "",
-      };
-    })();
+    (session &&
+    (session.draft.status !== "empty" ||
+      session.messages.some((m) => m.role === "reader"))
+      ? {
+          title: session.draft.headline ?? session.draft.angle ?? desk.openInterview,
+          summary: session.draft.standfirst ?? "",
+        }
+      : null);
 
   return (
     <>
