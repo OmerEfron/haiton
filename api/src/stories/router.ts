@@ -1,90 +1,34 @@
 import { Hono } from "hono";
 import { ERROR_DAILY_QUOTA } from "../contract.ts";
 import { getDb } from "../db.ts";
-import { provisionUser } from "../provision.ts";
 import { countToday, nextResetIso, secondsUntilIsraelMidnight } from "../quota.ts";
-import type { Draft, FrontPage } from "../types.ts";
-import {
-  DRAFT_NOT_READY,
-  STORY_NOT_FOUND,
-  rowToFlash,
-  rowToStory,
-  type FlashRow,
-  type StoryRow,
-} from "./mappers.ts";
+import type { Draft } from "../types.ts";
+import { dbForUser, EDITION_NOT_FOUND, loadMixedEdition, loadUserEdition } from "./edition.ts";
+import { DRAFT_NOT_READY, STORY_NOT_FOUND, rowToFlash, rowToStory, type FlashRow, type StoryRow } from "./mappers.ts";
 import { publishDraft } from "./publish.ts";
-import { requireSession, type StoriesVariables } from "./session.ts";
-
-function dbForUser(userId: string) {
-  const db = getDb();
-  const settings = db
-    .prepare("SELECT edition_name FROM edition_settings WHERE user_id = ?")
-    .get(userId) as { edition_name: string } | undefined;
-  provisionUser(db, userId, settings?.edition_name ?? "");
-  return db;
-}
+import { optionalSession, requireSession, type StoriesVariables } from "./session.ts";
+import { loadSharedStory } from "./share.ts";
 
 export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
   const app = new Hono<{ Variables: StoriesVariables }>();
-  app.use("*", requireSession);
 
-  app.get("/editions/current", (c) => {
-    const userId = c.get("userId");
-    const db = dbForUser(userId);
+  app.get("/stories/share/:token", optionalSession, (c) => {
+    const shared = loadSharedStory(c.req.param("token"), c.get("userId") || null);
+    if (!shared) return c.json({ message: STORY_NOT_FOUND }, 404);
+    return c.json(shared);
+  });
 
-    const settings = db
-      .prepare("SELECT edition_name FROM edition_settings WHERE user_id = ?")
-      .get(userId) as { edition_name: string };
-    const state = db
-      .prepare(
-        `SELECT edition_number, date_long, date_short, ticker_json, digests_json,
-                open_draft_title, open_draft_summary
-         FROM edition_state WHERE user_id = ?`,
-      )
-      .get(userId) as {
-      edition_number: number;
-      date_long: string;
-      date_short: string;
-      ticker_json: string;
-      digests_json: string;
-      open_draft_title: string | null;
-      open_draft_summary: string | null;
-    };
-    const stories = db
-      .prepare("SELECT * FROM stories WHERE user_id = ?")
-      .all(userId) as StoryRow[];
-    const mapped = stories.map((row) => rowToStory(row, settings.edition_name));
+  // Scoped so public routes on sibling routers (invite preview) are not 401'd.
+  app.use("/editions/*", requireSession);
+  app.use("/flashes", requireSession);
+  app.use("/stories", requireSession);
+  app.use("/stories/*", requireSession);
 
-    const flashes = (
-      db
-        .prepare(
-          "SELECT id, time, text, story_id FROM flashes WHERE user_id = ? ORDER BY sort_order",
-        )
-        .all(userId) as FlashRow[]
-    ).map(rowToFlash);
+  app.get("/editions/current", (c) => c.json(loadMixedEdition(c.get("userId"))));
 
-    const openDraft =
-      state.open_draft_title != null
-        ? {
-            title: state.open_draft_title,
-            summary: state.open_draft_summary ?? "",
-          }
-        : null;
-
-    const page: FrontPage = {
-      editionNumber: state.edition_number,
-      dateLong: state.date_long,
-      dateShort: state.date_short,
-      editionName: settings.edition_name,
-      ticker: JSON.parse(state.ticker_json) as string[],
-      lead: mapped.find((s) => s.placement === "lead") ?? null,
-      secondary: mapped.filter((s) => s.placement === "secondary"),
-      list: mapped.filter((s) => s.placement === "list"),
-      flashes,
-      digests: JSON.parse(state.digests_json) as FrontPage["digests"],
-      openDraft,
-    };
-
+  app.get("/editions/:userId", (c) => {
+    const page = loadUserEdition(c.get("userId"), c.req.param("userId"));
+    if (!page) return c.json({ message: EDITION_NOT_FOUND }, 404);
     return c.json(page);
   });
 
@@ -97,7 +41,9 @@ export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
     const flashes = (
       db
         .prepare(
-          "SELECT id, time, text, story_id FROM flashes WHERE user_id = ? ORDER BY sort_order",
+          `SELECT f.id, f.time, f.text, f.story_id, s.share_token FROM flashes f
+           LEFT JOIN stories s ON s.user_id = f.user_id AND s.id = f.story_id
+           WHERE f.user_id = ? ORDER BY f.sort_order`,
         )
         .all(userId) as FlashRow[]
     ).map(rowToFlash);
@@ -112,6 +58,9 @@ export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
     const settings = db
       .prepare("SELECT edition_name FROM edition_settings WHERE user_id = ?")
       .get(userId) as { edition_name: string };
+    const author = db
+      .prepare("SELECT id, name, initial FROM users WHERE id = ?")
+      .get(userId) as { id: string; name: string; initial: string };
 
     const rows = section
       ? (db
@@ -119,7 +68,7 @@ export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
           .all(userId, section) as StoryRow[])
       : (db.prepare("SELECT * FROM stories WHERE user_id = ?").all(userId) as StoryRow[]);
 
-    return c.json(rows.map((row) => rowToStory(row, settings.edition_name)));
+    return c.json(rows.map((row) => rowToStory(row, settings.edition_name, { author })));
   });
 
   app.get("/stories/:id", (c) => {
@@ -129,12 +78,15 @@ export function createStoriesRouter(): Hono<{ Variables: StoriesVariables }> {
     const settings = db
       .prepare("SELECT edition_name FROM edition_settings WHERE user_id = ?")
       .get(userId) as { edition_name: string };
+    const author = db
+      .prepare("SELECT id, name, initial FROM users WHERE id = ?")
+      .get(userId) as { id: string; name: string; initial: string };
     const row = db
       .prepare("SELECT * FROM stories WHERE user_id = ? AND id = ?")
       .get(userId, id) as StoryRow | undefined;
 
     if (!row) return c.json({ message: STORY_NOT_FOUND }, 404);
-    return c.json(rowToStory(row, settings.edition_name));
+    return c.json(rowToStory(row, settings.edition_name, { author }));
   });
 
   app.post("/stories", async (c) => {

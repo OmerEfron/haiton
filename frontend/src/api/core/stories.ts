@@ -1,12 +1,20 @@
-import type { Draft, FrontPage, Story } from "../types";
+import type { Draft, FrontPage, SharedStory, Story } from "../types";
 import { request } from "../client";
 
 export async function getFrontPage(): Promise<FrontPage> {
   return request<FrontPage>("/editions/current");
 }
 
+export async function getUserEdition(userId: string): Promise<FrontPage> {
+  return request<FrontPage>(`/editions/${encodeURIComponent(userId)}`);
+}
+
 export async function getStory(id: string): Promise<Story> {
   return request<Story>(`/stories/${encodeURIComponent(id)}`);
+}
+
+export async function getSharedStory(token: string): Promise<SharedStory> {
+  return request<SharedStory>(`/stories/share/${encodeURIComponent(token)}`);
 }
 
 export async function listStories(section?: string): Promise<Story[]> {

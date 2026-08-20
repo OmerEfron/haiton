@@ -9,7 +9,15 @@ import { closeDb, getDb } from "../db.ts";
 import type { EditionSettings, Profile } from "../types.ts";
 import { profileRouter, resetProfileDb } from "./index.ts";
 
-const PROFILE_KEYS = ["user", "publishingSince", "settings", "stats", "sectionCounts", "archive"];
+const PROFILE_KEYS = [
+  "user",
+  "publishingSince",
+  "settings",
+  "stats",
+  "sectionCounts",
+  "archive",
+  "inviteToken",
+];
 const SETTINGS_KEYS = ["editionName", "showEditionTag", "interviewReminderAt"];
 const STATS_KEYS = ["storiesPublished", "flashes", "facts", "draftsInProgress"];
 

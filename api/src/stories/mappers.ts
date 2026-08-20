@@ -31,6 +31,7 @@ export interface StoryRow {
   published_at: string;
   image_caption: string | null;
   placement: string;
+  share_token: string | null;
 }
 
 export interface FlashRow {
@@ -38,10 +39,15 @@ export interface FlashRow {
   time: string;
   text: string;
   story_id: string | null;
+  share_token: string | null;
 }
 
-export function rowToStory(row: StoryRow, editionName: string): Story {
-  return {
+export function rowToStory(
+  row: StoryRow,
+  editionName: string,
+  extra?: { author?: Story["author"]; gated?: boolean },
+): Story {
+  const story: Story = {
     id: row.id,
     section: row.section as SectionId,
     sectionName: row.section_name,
@@ -55,7 +61,11 @@ export function rowToStory(row: StoryRow, editionName: string): Story {
     publishedAt: row.published_at,
     imageCaption: row.image_caption ?? undefined,
     placement: row.placement as Story["placement"],
+    shareToken: row.share_token ?? "",
+    author: extra?.author ?? { id: row.user_id, name: "", initial: "" },
   };
+  if (extra?.gated) story.gated = true;
+  return story;
 }
 
 export function rowToFlash(row: FlashRow): Flash {
@@ -64,6 +74,7 @@ export function rowToFlash(row: FlashRow): Flash {
     time: row.time,
     text: row.text,
     storyId: row.story_id ?? undefined,
+    shareToken: row.share_token ?? undefined,
   };
 }
 

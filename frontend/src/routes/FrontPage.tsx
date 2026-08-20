@@ -5,15 +5,8 @@ import { PageHeader } from "../components/layout/PageHeader";
 import { SectionsBar } from "../components/layout/SectionsBar";
 import { Ticker } from "../components/layout/Ticker";
 import { Footer } from "../components/layout/Footer";
-import {
-  FlashItem,
-  LeadStory,
-  StoryCard,
-  StoryListRow,
-  StoryThumbRow,
-} from "../components/news/StoryPieces";
-import newsStyles from "../components/news/News.module.css";
-import { Avatar, ErrorState, LivePill, Loading, SectionHead } from "../components/ui/Bits";
+import { EditionView } from "../components/news/EditionView";
+import { ErrorState, LivePill, Loading } from "../components/ui/Bits";
 import { ButtonLink } from "../components/ui/Button";
 import { EmptyState } from "../components/ui/EmptyState";
 import { getFrontPage } from "../api/core/stories";
@@ -64,97 +57,10 @@ export function FrontPage() {
       <SectionsBar />
       {!empty && <Ticker items={page.ticker} />}
 
-      {empty ? <EmptyEdition openDraft={openDraft} /> : (
-        <>
-          <div className={styles.grid}>
-            <div>
-              {page.lead && (
-                <LeadStory story={page.lead} editionName={page.editionName} showTag={showTag} />
-              )}
-
-              {/* Mobile-only blocks from 1b */}
-              <div className={styles.mobileOnly}>
-                <div className={styles.flashBlock}>
-                  <div className={styles.flashHead}>
-                    <h3 className={styles.flashHeadTitle}>{common.flashes}</h3>
-                    <ButtonLink to="/briefs" variant="link" size="sm">
-                      {common.allFlashes}
-                    </ButtonLink>
-                  </div>
-                  {page.flashes.slice(0, 3).map((flash) => (
-                    <FlashItem key={flash.id} flash={flash} />
-                  ))}
-                </div>
-
-                <div className={styles.promptBlock}>
-                  <div className={newsStyles.prompt}>
-                    <Avatar initial="כ" size={34} tone="solid" />
-                    <div style={{ flex: 1 }}>
-                      <p className={newsStyles.promptKicker}>
-                        {openDraft ? desk.continueDraft : desk.waitingTitle}
-                      </p>
-                      <p className={newsStyles.promptBody}>
-                        {openDraft
-                          ? `יש טיוטה אחת בעריכה: «${openDraft.title}».`
-                          : "הכתב מוכן לשאלה הראשונה על היום שלך."}
-                      </p>
-                      <ButtonLink to="/interview" size="lg">
-                        {desk.openInterviewRoom}
-                      </ButtonLink>
-                    </div>
-                  </div>
-                </div>
-
-                <div className={styles.moreBlock}>
-                  <h3 className={styles.moreTitle}>{desk.moreInEdition}</h3>
-                  {[...page.secondary, ...page.list].map((story) => (
-                    <StoryThumbRow key={story.id} story={story} showTag={showTag} />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <aside className={styles.rail}>
-              <SectionHead title={common.flashes} aside={<LivePill>{common.live}</LivePill>} />
-              {page.flashes.map((flash) => (
-                <FlashItem key={flash.id} flash={flash} />
-              ))}
-
-              {openDraft && (
-                <div className={newsStyles.teaser}>
-                  <p className={newsStyles.teaserKicker}>{common.inEditing}</p>
-                  <p className={newsStyles.teaserTitle}>{openDraft.title}</p>
-                  <p className={newsStyles.teaserBody}>{openDraft.summary}</p>
-                  <ButtonLink to="/interview" variant="outline" size="md">
-                    {desk.continueDraft}
-                  </ButtonLink>
-                </div>
-              )}
-            </aside>
-          </div>
-
-          {page.secondary.length > 0 && (
-            <section className={styles.band}>
-              <h3 className={styles.bandTitle}>{common.subheads}</h3>
-              <div className={newsStyles.cardGrid}>
-                {page.secondary.slice(0, 3).map((story) => (
-                  <StoryCard key={story.id} story={story} showTag={showTag} />
-                ))}
-              </div>
-            </section>
-          )}
-
-          <section className={styles.lower}>
-            <h3 className={styles.lowerTitlePlain}>{common.allStories}</h3>
-            <div>
-              {[page.lead, ...page.secondary, ...page.list]
-                .filter((s): s is NonNullable<typeof s> => Boolean(s))
-                .map((story) => (
-                  <StoryListRow key={story.id} story={story} showTag={showTag} />
-                ))}
-            </div>
-          </section>
-        </>
+      {empty ? (
+        <EmptyEdition openDraft={openDraft} />
+      ) : (
+        <EditionView page={page} showTag={showTag} openDraft={openDraft} showDesk />
       )}
 
       <Footer />

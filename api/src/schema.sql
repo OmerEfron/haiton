@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS users (
   city TEXT,
   headline TEXT,
   publishing_since TEXT NOT NULL DEFAULT '',
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  invite_token TEXT UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
@@ -71,6 +72,7 @@ CREATE TABLE IF NOT EXISTS stories (
   image_caption TEXT,
   placement TEXT NOT NULL CHECK (placement IN ('lead', 'secondary', 'list')),
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  share_token TEXT UNIQUE,
   PRIMARY KEY (user_id, id)
 );
 
@@ -115,16 +117,23 @@ CREATE TABLE IF NOT EXISTS connections (
   PRIMARY KEY (user_id, id)
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS idx_connections_pair
+  ON connections(user_id, connected_user_id);
+
 CREATE TABLE IF NOT EXISTS invitations (
   id TEXT NOT NULL,
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   target_user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+  from_user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   initial TEXT NOT NULL,
   detail TEXT NOT NULL,
   direction TEXT NOT NULL CHECK (direction IN ('incoming', 'outgoing')),
   PRIMARY KEY (user_id, id)
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_invitations_pending_pair
+  ON invitations(user_id, from_user_id);
 
 CREATE TABLE IF NOT EXISTS invitation_meta (
   user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -135,15 +144,6 @@ CREATE TABLE IF NOT EXISTS invitation_meta (
   settings_json TEXT NOT NULL DEFAULT '{}',
   PRIMARY KEY (user_id, invitation_id)
 );
-
-CREATE TABLE IF NOT EXISTS readers (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  initial TEXT NOT NULL,
-  detail TEXT NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS idx_readers_name ON readers(name);
 
 CREATE TABLE IF NOT EXISTS interviews (
   id TEXT NOT NULL,

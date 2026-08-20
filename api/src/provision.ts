@@ -1,4 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
+import { newToken } from "./circle/graph.ts";
 
 /** Satellite rows every signed-in user needs. INSERT OR IGNORE so live DBs self-heal. */
 export function provisionUser(
@@ -6,6 +7,9 @@ export function provisionUser(
   userId: string,
   editionName: string,
 ): void {
+  db.prepare(
+    "UPDATE users SET invite_token = ? WHERE id = ? AND invite_token IS NULL",
+  ).run(newToken(), userId);
   db.prepare(
     "INSERT OR IGNORE INTO edition_settings (user_id, edition_name) VALUES (?, ?)",
   ).run(userId, editionName);

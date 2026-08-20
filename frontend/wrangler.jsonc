@@ -24,7 +24,6 @@
       "/connections/*",
       "/invitations",
       "/invitations/*",
-      "/readers",
       "/profile",
       "/profile/*",
       "/quota",

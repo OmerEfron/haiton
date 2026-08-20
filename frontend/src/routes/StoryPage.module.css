@@ -51,6 +51,15 @@
 .moreTitle { margin: 0 0 10px; font: 700 18px/1 var(--serif); color: var(--paper-red); }
 .moreLinks { display: flex; flex-direction: column; gap: 9px; font: 500 14px/1.45 var(--sans); }
 .back { margin: 24px 0 0; padding-top: 16px; border-top: 1px solid var(--rule); font: 500 13px/1 var(--sans); }
+.gate {
+  margin-top: 22px;
+  padding: 16px 18px;
+  border: 1px solid var(--paper-red);
+  background: var(--tint);
+}
+.gateBody { margin: 0 0 12px; font: 400 15px/1.6 var(--sans); color: var(--ink); }
+.gateActions { display: flex; gap: 8px; flex-wrap: wrap; }
+.gateError { margin: 10px 0 0; font: 500 12px/1.5 var(--sans); color: var(--paper-red); }
 
 @media (max-width: 900px) {
   .article { padding: 20px var(--gutter-sm) 28px; }

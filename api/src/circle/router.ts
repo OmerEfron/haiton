@@ -1,8 +1,10 @@
 import { Hono } from "hono";
 import { getDb } from "../db.ts";
-import type { Connection, RelationKind, SectionId } from "../types.ts";
-import { DEFAULT_ACCEPT_SETTINGS, SECTION_NAMES } from "./constants.ts";
-import { nextId, parseSettings, rowToConnection, rowToInvitation } from "./rows.ts";
+import type { RelationKind, SectionId } from "../types.ts";
+import { CONNECTION_NOT_FOUND, SECTION_NAMES } from "./constants.ts";
+import { deleteConnectionPair } from "./graph.ts";
+import { registerInviteRoutes } from "./invites.ts";
+import { rowToConnection } from "./rows.ts";
 import { requireUser } from "./session.ts";
 
 export function createCircleRouter(): Hono {
@@ -14,9 +16,11 @@ export function createCircleRouter(): Hono {
 
     const rows = getDb()
       .prepare(
-        `SELECT id, name, initial, relation_label, relation, section, section_name,
-                status, story_count, last_published, settings_json
-         FROM connections WHERE user_id = ?`,
+        `SELECT c.id, c.connected_user_id, u.name, u.initial, c.relation_label, c.relation,
+                c.section, c.section_name, c.status, c.story_count, c.last_published
+         FROM connections c
+         JOIN users u ON u.id = c.connected_user_id
+         WHERE c.user_id = ? AND c.status = 'connected'`,
       )
       .all(userId);
 
@@ -30,7 +34,7 @@ export function createCircleRouter(): Hono {
     const connected = getDb()
       .prepare(
         `SELECT COUNT(*) AS n FROM connections
-         WHERE user_id = ? AND status = 'connected'`,
+         WHERE user_id = ? AND status = 'connected' AND connected_user_id IS NOT NULL`,
       )
       .get(userId) as { n: number };
 
@@ -52,205 +56,6 @@ export function createCircleRouter(): Hono {
     });
   });
 
-  app.get("/connections/suggested", (c) => {
-    const userId = requireUser(c);
-    if (userId instanceof Response) return userId;
-
-    const connections = getDb()
-      .prepare(`SELECT name, connected_user_id FROM connections WHERE user_id = ?`)
-      .all(userId) as { name: string; connected_user_id: string | null }[];
-
-    const connectedNames = new Set(connections.map((row) => row.name));
-    const connectedIds = new Set(
-      connections.flatMap((row) => (row.connected_user_id ? [row.connected_user_id] : [])),
-    );
-
-    const readers = getDb()
-      .prepare(`SELECT id, name, initial, detail FROM readers`)
-      .all() as { id: string; name: string; initial: string; detail: string }[];
-
-    const suggested = readers.filter(
-      (reader) => !connectedNames.has(reader.name) && !connectedIds.has(reader.id),
-    );
-
-    return c.json(suggested);
-  });
-
-  app.get("/invitations", (c) => {
-    const userId = requireUser(c);
-    if (userId instanceof Response) return userId;
-
-    const rows = getDb()
-      .prepare(
-        `SELECT id, name, initial, detail, direction
-         FROM invitations WHERE user_id = ?`,
-      )
-      .all(userId);
-
-    return c.json(rows.map((row) => rowToInvitation(row as never)));
-  });
-
-  app.post("/invitations", async (c) => {
-    const userId = requireUser(c);
-    if (userId instanceof Response) return userId;
-
-    const body = (await c.req.json()) as {
-      readerId?: string;
-      name?: string;
-      relation?: RelationKind;
-      section?: SectionId;
-      note?: string;
-      settings?: Connection["settings"];
-    };
-
-    let name = body.name?.trim() ?? "";
-    let initial = name[0] ?? "";
-    let targetUserId: string | null = null;
-
-    if (body.readerId) {
-      const user = getDb()
-        .prepare(`SELECT id, name, initial FROM users WHERE id = ?`)
-        .get(body.readerId) as { id: string; name: string; initial: string } | undefined;
-      if (user) {
-        targetUserId = user.id;
-        if (!name) {
-          name = user.name;
-          initial = user.initial;
-        }
-      }
-    }
-
-    if (!name) {
-      return c.json({ message: "צריך לבחור קורא או להזין שם" }, 400);
-    }
-    if (!targetUserId && !name.includes("@")) {
-      return c.json({ message: "צריך לבחור קורא או להזין דוא״ל" }, 400);
-    }
-
-    const id = nextId("i");
-    const invitation = {
-      id,
-      name: `${name} — הזמנה שאתה שלחת`,
-      initial: initial || name[0],
-      detail: "ממתין לתשובה · נשלח עכשיו",
-      direction: "outgoing" as const,
-    };
-
-    const relation = body.relation ?? "friend";
-    const section = body.section ?? "friends";
-    const note = body.note?.trim() || null;
-    const settings = body.settings ?? DEFAULT_ACCEPT_SETTINGS;
-
-    getDb()
-      .prepare(
-        `INSERT INTO invitations
-         (id, user_id, target_user_id, name, initial, detail, direction)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      )
-      .run(
-        id,
-        userId,
-        targetUserId,
-        invitation.name,
-        invitation.initial,
-        invitation.detail,
-        invitation.direction,
-      );
-
-    getDb()
-      .prepare(
-        `INSERT INTO invitation_meta (user_id, invitation_id, relation, section, note, settings_json)
-         VALUES (?, ?, ?, ?, ?, ?)
-         ON CONFLICT(user_id, invitation_id) DO UPDATE SET
-           relation = excluded.relation,
-           section = excluded.section,
-           note = excluded.note,
-           settings_json = excluded.settings_json`,
-      )
-      .run(userId, id, relation, section, note, JSON.stringify(settings));
-
-    return c.json(invitation);
-  });
-
-  app.post("/invitations/:id/respond", async (c) => {
-    const userId = requireUser(c);
-    if (userId instanceof Response) return userId;
-
-    const invitationId = c.req.param("id");
-    const body = (await c.req.json()) as { accept?: boolean };
-
-    const row = getDb()
-      .prepare(
-        `SELECT id, name, initial, detail, direction
-         FROM invitations WHERE user_id = ? AND id = ?`,
-      )
-      .get(userId, invitationId) as
-      | { id: string; name: string; initial: string; detail: string; direction: "incoming" | "outgoing" }
-      | undefined;
-
-    if (!row) return c.json({ message: "ההזמנה לא נמצאה" }, 404);
-
-    const meta = getDb()
-      .prepare(
-        `SELECT relation, section, settings_json
-         FROM invitation_meta WHERE user_id = ? AND invitation_id = ?`,
-      )
-      .get(userId, invitationId) as
-      | { relation: RelationKind; section: SectionId; settings_json: string }
-      | undefined;
-
-    getDb()
-      .prepare(`DELETE FROM invitation_meta WHERE user_id = ? AND invitation_id = ?`)
-      .run(userId, invitationId);
-
-    getDb()
-      .prepare(`DELETE FROM invitations WHERE user_id = ? AND id = ?`)
-      .run(userId, invitationId);
-
-    if (body.accept && row.direction === "incoming") {
-      const relation = meta?.relation ?? "friend";
-      const section = meta?.section ?? "friends";
-      const settings = meta ? parseSettings(meta.settings_json) : DEFAULT_ACCEPT_SETTINGS;
-      const connectionId = nextId("c");
-      getDb()
-        .prepare(
-          `INSERT INTO connections
-           (id, user_id, name, initial, relation_label, relation, section, section_name,
-            status, story_count, settings_json)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'connected', 0, ?)`,
-        )
-        .run(
-          connectionId,
-          userId,
-          row.name,
-          row.initial,
-          "חדש במעגל",
-          relation,
-          section,
-          SECTION_NAMES[section] ?? SECTION_NAMES.friends,
-          JSON.stringify(settings),
-        );
-    }
-
-    return c.body(null, 204);
-  });
-
-  app.delete("/invitations/:id", (c) => {
-    const userId = requireUser(c);
-    if (userId instanceof Response) return userId;
-
-    const invitationId = c.req.param("id");
-    getDb()
-      .prepare(`DELETE FROM invitation_meta WHERE user_id = ? AND invitation_id = ?`)
-      .run(userId, invitationId);
-
-    getDb()
-      .prepare(`DELETE FROM invitations WHERE user_id = ? AND id = ?`)
-      .run(userId, invitationId);
-
-    return c.body(null, 204);
-  });
-
   app.patch("/connections/:id", async (c) => {
     const userId = requireUser(c);
     if (userId instanceof Response) return userId;
@@ -260,18 +65,19 @@ export function createCircleRouter(): Hono {
       relation?: RelationKind;
       relationLabel?: string;
       section?: SectionId;
-      settings?: Partial<Connection["settings"]>;
     };
 
     const existing = getDb()
       .prepare(
-        `SELECT id, name, initial, relation_label, relation, section, section_name,
-                status, story_count, last_published, settings_json
-         FROM connections WHERE user_id = ? AND id = ?`,
+        `SELECT c.id, c.connected_user_id, u.name, u.initial, c.relation_label, c.relation,
+                c.section, c.section_name, c.status, c.story_count, c.last_published
+         FROM connections c
+         JOIN users u ON u.id = c.connected_user_id
+         WHERE c.user_id = ? AND c.id = ?`,
       )
       .get(userId, connectionId) as Record<string, unknown> | undefined;
 
-    if (!existing) return c.json({ message: "החיבור לא נמצא" }, 404);
+    if (!existing) return c.json({ message: CONNECTION_NOT_FOUND }, 404);
 
     const relation = body.relation ?? (existing.relation as RelationKind);
     const relationLabel = body.relationLabel ?? (existing.relation_label as string);
@@ -280,32 +86,21 @@ export function createCircleRouter(): Hono {
       ? (SECTION_NAMES[body.section] ?? (existing.section_name as string))
       : (existing.section_name as string);
 
-    const settings = {
-      ...JSON.parse(existing.settings_json as string),
-      ...body.settings,
-    };
-
     getDb()
       .prepare(
         `UPDATE connections
-         SET relation = ?, relation_label = ?, section = ?, section_name = ?, settings_json = ?
+         SET relation = ?, relation_label = ?, section = ?, section_name = ?
          WHERE user_id = ? AND id = ?`,
       )
-      .run(
-        relation,
-        relationLabel,
-        section,
-        sectionName,
-        JSON.stringify(settings),
-        userId,
-        connectionId,
-      );
+      .run(relation, relationLabel, section, sectionName, userId, connectionId);
 
     const updated = getDb()
       .prepare(
-        `SELECT id, name, initial, relation_label, relation, section, section_name,
-                status, story_count, last_published, settings_json
-         FROM connections WHERE user_id = ? AND id = ?`,
+        `SELECT c.id, c.connected_user_id, u.name, u.initial, c.relation_label, c.relation,
+                c.section, c.section_name, c.status, c.story_count, c.last_published
+         FROM connections c
+         JOIN users u ON u.id = c.connected_user_id
+         WHERE c.user_id = ? AND c.id = ?`,
       )
       .get(userId, connectionId);
 
@@ -316,33 +111,12 @@ export function createCircleRouter(): Hono {
     const userId = requireUser(c);
     if (userId instanceof Response) return userId;
 
-    const result = getDb()
-      .prepare(`DELETE FROM connections WHERE user_id = ? AND id = ?`)
-      .run(userId, c.req.param("id"));
-
-    if (result.changes === 0) {
-      return c.json({ message: "החיבור לא נמצא" }, 404);
+    if (!deleteConnectionPair(getDb(), userId, c.req.param("id"))) {
+      return c.json({ message: CONNECTION_NOT_FOUND }, 404);
     }
-
     return c.body(null, 204);
   });
 
-  app.get("/readers", (c) => {
-    const userId = requireUser(c);
-    if (userId instanceof Response) return userId;
-
-    const q = (c.req.query("q") ?? "").trim();
-    if (!q) return c.json([]);
-
-    const rows = getDb()
-      .prepare(
-        `SELECT id, name, initial, email AS detail FROM users
-         WHERE email = ? COLLATE NOCASE AND id != ?`,
-      )
-      .all(q, userId);
-
-    return c.json(rows);
-  });
-
+  registerInviteRoutes(app);
   return app;
 }

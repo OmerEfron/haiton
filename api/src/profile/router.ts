@@ -23,6 +23,7 @@ interface ProfileRow {
   drafts_in_progress: number;
   section_counts_json: string;
   archive_json: string;
+  invite_token: string | null;
 }
 
 function unauthorized(c: { json: (body: unknown, status: number) => Response }) {
@@ -46,7 +47,7 @@ function loadProfile(userId: string): Profile | null {
   const row = getDb()
     .prepare(
       `SELECT u.id, u.name, u.email, u.initial, u.age, u.city, u.headline, u.publishing_since,
-              es.edition_name, es.show_edition_tag, es.interview_reminder_at,
+              u.invite_token, es.edition_name, es.show_edition_tag, es.interview_reminder_at,
               ps.stories_published, ps.flashes, ps.facts, ps.drafts_in_progress,
               pm.section_counts_json, pm.archive_json
        FROM users u
@@ -74,6 +75,7 @@ function loadProfile(userId: string): Profile | null {
     },
     sectionCounts: JSON.parse(row.section_counts_json) as Profile["sectionCounts"],
     archive: JSON.parse(row.archive_json) as string[],
+    inviteToken: row.invite_token ?? "",
   };
 }
 

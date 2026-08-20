@@ -41,6 +41,8 @@ export interface EditionSettings {
 
 export interface Profile {
   user: User;
+  /** Reusable token; frontend builds `/join/${inviteToken}`. */
+  inviteToken: string;
   /** "המהדורה שלו יוצאת מאז ינואר 2026" */
   publishingSince: string;
   settings: EditionSettings;
@@ -55,8 +57,18 @@ export interface Profile {
   archive: string[];
 }
 
+export interface StoryAuthor {
+  id: string;
+  name: string;
+  initial: string;
+}
+
 export interface Story {
   id: string;
+  shareToken: string;
+  author: StoryAuthor;
+  /** True when the viewer only gets the teaser. */
+  gated?: boolean;
   section: SectionId;
   sectionName: string;
   /** Which edition published it — "המהדורה שלך", "המהדורה של מיכל". */
@@ -87,6 +99,27 @@ export interface Flash {
   text: string;
   /** Set when the flash was created by publishing a story. */
   storyId?: string;
+  shareToken?: string;
+}
+
+/** GET /stories/share/:token — story plus circle flags. */
+export interface SharedStory extends Story {
+  connected: boolean;
+  pending: boolean;
+  invitationId?: string;
+}
+
+export interface InvitePreview {
+  id: string;
+  name: string;
+  initial: string;
+}
+
+/** POST /invitations/join — invite token or story share token. */
+export interface JoinResult {
+  connected: boolean;
+  inviterId: string;
+  invitationId?: string;
 }
 
 export interface FrontPage {
@@ -125,6 +158,7 @@ export type RelationKind = "family" | "friend" | "work" | "neighbour" | "other";
 
 export interface Connection {
   id: string;
+  connectedUserId: string;
   name: string;
   initial: string;
   /** Free text: "אחות", "מפתח בצוות". */
@@ -137,11 +171,6 @@ export interface Connection {
   storyCount: number;
   /** "פרסום אחרון אתמול" */
   lastPublished?: string;
-  settings: {
-    seesMyEdition: boolean;
-    showsFullName: boolean;
-    notifyOnPublish: boolean;
-  };
 }
 
 export interface Invitation {
@@ -152,14 +181,7 @@ export interface Invitation {
   detail: string;
   /** incoming = they asked to join your circle; outgoing = you invited them. */
   direction: "incoming" | "outgoing";
-}
-
-export interface ReaderSearchResult {
-  id: string;
-  name: string;
-  initial: string;
-  /** "מהדורה פעילה · חיפה · 3 חיבורים משותפים" */
-  detail: string;
+  fromUserId?: string;
 }
 
 /* ----------------------------------------------------- reporter agent API */

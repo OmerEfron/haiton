@@ -3,8 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import styles from "./Masthead.module.css";
 import { ButtonLink } from "../ui/Button";
 import { brand, common, nav } from "../../copy/common";
-import { getCircleSummary } from "../../api/core/connections";
+import { listInvitations } from "../../api/core/connections";
 import { qk } from "../../lib/queryKeys";
+import { useSession } from "../../lib/session";
 
 interface Props {
   dateLong?: string;
@@ -19,8 +20,13 @@ function navClass({ isActive }: { isActive: boolean }) {
 
 /** Masthead per mockup 2d, the design doc's own refinement of 1a/1g/1h. */
 export function Masthead({ dateLong, dateShort, editionNumber, editionName }: Props) {
-  const summary = useQuery({ queryKey: qk.circleSummary, queryFn: getCircleSummary });
-  const pending = summary.data?.pending ?? 0;
+  const { session } = useSession();
+  const invitations = useQuery({
+    queryKey: qk.invitations,
+    queryFn: listInvitations,
+    enabled: Boolean(session),
+  });
+  const pending = (invitations.data ?? []).filter((i) => i.direction !== "outgoing").length;
 
   return (
     <header className={styles.masthead}>
@@ -50,7 +56,7 @@ export function Masthead({ dateLong, dateShort, editionNumber, editionName }: Pr
             {nav.karteset}
           </NavLink>
           <NavLink
-            to="/circle"
+            to="/profile"
             className={({ isActive }) =>
               [styles.circleLink, isActive && styles.navActive].filter(Boolean).join(" ")
             }

@@ -31,7 +31,8 @@ function todayCount(userId: string, day: string): number {
 
 export function createDeskRouter(): Hono<{ Variables: StoriesVariables }> {
   const app = new Hono<{ Variables: StoriesVariables }>();
-  app.use("*", requireSession);
+  app.use("/quota", requireSession);
+  app.use("/desk/*", requireSession);
 
   app.get("/quota", (c) => {
     const used = todayCount(c.get("userId"), israelDay());

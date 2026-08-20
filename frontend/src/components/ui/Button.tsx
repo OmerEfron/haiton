@@ -36,14 +36,15 @@ export function Button({
 
 export function ButtonLink({
   to,
+  state,
   variant = "solid",
   size = "md",
   block,
   className,
   children,
-}: Common & { to: string }) {
+}: Common & { to: string; state?: unknown }) {
   return (
-    <Link to={to} className={cx(variant, size, block, className)}>
+    <Link to={to} state={state} className={cx(variant, size, block, className)}>
       {children}
     </Link>
   );

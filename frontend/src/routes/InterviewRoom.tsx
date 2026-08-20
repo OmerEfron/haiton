@@ -69,7 +69,7 @@ export function InterviewRoom() {
       await client.invalidateQueries({ queryKey: qk.frontPage });
       await client.invalidateQueries({ queryKey: qk.profile });
       await client.invalidateQueries({ queryKey: qk.deskInterviews });
-      navigate(`/story/${story.id}`);
+      navigate(story.shareToken ? `/s/${story.shareToken}` : `/story/${story.id}`);
     },
   });
 

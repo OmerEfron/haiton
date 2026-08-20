@@ -18,7 +18,6 @@ export default defineConfig({
       '/karteset': API_TARGET,
       '/connections': API_TARGET,
       '/invitations': API_TARGET,
-      '/readers': API_TARGET,
       '/health': API_TARGET,
       '/quota': API_TARGET,
       '/desk': API_TARGET,

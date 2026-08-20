@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import styles from "../../routes/CirclePage.module.css";
+import styles from "../../routes/ProfilePage.module.css";
 import { Modal } from "../ui/Modal";
 import { Button } from "../ui/Button";
 import { Chip, ChipRow } from "../ui/Chip";
-import { Toggle } from "../ui/Bits";
 import type { Connection, RelationKind } from "../../api/types";
 import { updateConnection } from "../../api/core/connections";
 import { qk } from "../../lib/queryKeys";
@@ -21,29 +20,15 @@ export function EditConnectionDialog({
   onClose: () => void;
 }) {
   const client = useQueryClient();
-
   const [relation, setRelation] = useState<RelationKind>(connection.relation);
-  const [settings, setSettings] = useState<Connection["settings"]>(connection.settings);
 
   const save = useMutation({
-    mutationFn: () =>
-      updateConnection({
-        id: connection.id,
-        relation,
-        settings,
-      }),
+    mutationFn: () => updateConnection({ id: connection.id, relation }),
     onSuccess: async () => {
       await client.invalidateQueries({ queryKey: qk.connections });
-      await client.invalidateQueries({ queryKey: qk.circleSummary });
       onClose();
     },
   });
-
-  const settingRows = [
-    { key: "seesMyEdition", copy: circle.dialog.settings.seesMyEdition },
-    { key: "showsFullName", copy: circle.dialog.settings.showsFullName },
-    { key: "notifyOnPublish", copy: circle.dialog.settings.notifyOnPublish },
-  ] as const;
 
   return (
     <Modal title={`${circle.manage} — ${connection.name}`} onClose={onClose}>
@@ -56,23 +41,6 @@ export function EditConnectionDialog({
             </Chip>
           ))}
         </ChipRow>
-
-        <p className={styles.settingsLabel}>{circle.dialog.settingsTitle}</p>
-        <div className={styles.settingsBox}>
-          {settingRows.map((row) => (
-            <div key={row.key} className={styles.settingRow}>
-              <span>
-                <span className={styles.settingTitle}>{row.copy.title}</span>
-                <span className={styles.settingDetail}>{row.copy.detail}</span>
-              </span>
-              <Toggle
-                label={row.copy.title}
-                checked={settings[row.key]}
-                onChange={(next) => setSettings((prev) => ({ ...prev, [row.key]: next }))}
-              />
-            </div>
-          ))}
-        </div>
       </div>
 
       <div className={styles.dialogActions}>

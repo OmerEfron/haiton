@@ -1,4 +1,5 @@
 import type { DatabaseSync } from "node:sqlite";
+import { bumpAuthorPublish, newToken } from "../circle/graph.ts";
 import type { Draft, FrontPage, SectionId, Story } from "../types.ts";
 import {
   BYLINE,
@@ -107,6 +108,10 @@ export function publishDraft(
   const { time, full } = nowPublishedAt(state.date_short);
   const storyId = nextStoryId(db, userId);
   const body = paragraphsToBody(draft.paragraphs);
+  const shareToken = newToken();
+  const author = db
+    .prepare(`SELECT id, name, initial FROM users WHERE id = ?`)
+    .get(userId) as { id: string; name: string; initial: string };
 
   db.prepare(
     "UPDATE stories SET placement = 'secondary' WHERE user_id = ? AND placement = 'lead'",
@@ -115,8 +120,8 @@ export function publishDraft(
   db.prepare(
     `INSERT INTO stories (
       id, user_id, section, section_name, edition_label, headline, standfirst,
-      body_json, angle, byline, published_at, image_caption, placement, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'lead', ?)`,
+      body_json, angle, byline, published_at, image_caption, placement, created_at, share_token
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'lead', ?, ?)`,
   ).run(
     storyId,
     userId,
@@ -131,6 +136,7 @@ export function publishDraft(
     full,
     null,
     new Date().toISOString(),
+    shareToken,
   );
 
   const flashId = `f_${Date.now()}`;
@@ -171,9 +177,11 @@ export function publishDraft(
     "UPDATE profile_meta SET section_counts_json = ? WHERE user_id = ?",
   ).run(rebuildSectionCountsJson(db, userId), userId);
 
+  bumpAuthorPublish(db, userId, full);
+
   const row = db
     .prepare("SELECT * FROM stories WHERE user_id = ? AND id = ?")
     .get(userId, storyId) as StoryRow;
 
-  return rowToStory(row, settings.edition_name);
+  return rowToStory(row, settings.edition_name, { author });
 }

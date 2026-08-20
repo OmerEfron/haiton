@@ -34,6 +34,12 @@
 .cta:hover { color: var(--white); background: var(--paper-red-dark); }
 .cta.active { border-top: 0; }
 .ctaNote { font: 400 9.5px/1 var(--sans); opacity: 0.85; }
+.badge {
+  padding: 1px 5px;
+  background: var(--paper-red);
+  color: var(--white);
+  font: 700 9px/1.3 var(--sans);
+}
 
 @media (max-width: 900px) {
   .nav { display: flex; }

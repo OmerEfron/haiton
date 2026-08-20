@@ -42,6 +42,13 @@ export interface Profile {
   };
   sectionCounts: { label: string; detail: string }[];
   archive: string[];
+  inviteToken: string;
+}
+
+export interface StoryAuthor {
+  id: string;
+  name: string;
+  initial: string;
 }
 
 export interface Story {
@@ -58,6 +65,16 @@ export interface Story {
   publishedAt: string;
   imageCaption?: string;
   placement: "lead" | "secondary" | "list";
+  shareToken: string;
+  author: StoryAuthor;
+  gated?: boolean;
+}
+
+export interface SharedStory extends Story {
+  gated: boolean;
+  connected: boolean;
+  pending: boolean;
+  invitationId?: string;
 }
 
 export type StoryBlock =
@@ -69,6 +86,7 @@ export interface Flash {
   time: string;
   text: string;
   storyId?: string;
+  shareToken?: string;
 }
 
 export interface FrontPage {
@@ -101,6 +119,7 @@ export type RelationKind = "family" | "friend" | "work" | "neighbour" | "other";
 
 export interface Connection {
   id: string;
+  connectedUserId: string;
   name: string;
   initial: string;
   relationLabel: string;
@@ -110,11 +129,6 @@ export interface Connection {
   status: ConnectionStatus;
   storyCount: number;
   lastPublished?: string;
-  settings: {
-    seesMyEdition: boolean;
-    showsFullName: boolean;
-    notifyOnPublish: boolean;
-  };
 }
 
 export interface Invitation {
@@ -123,13 +137,19 @@ export interface Invitation {
   initial: string;
   detail: string;
   direction: "incoming" | "outgoing";
+  fromUserId?: string;
 }
 
-export interface ReaderSearchResult {
+export interface InvitePreview {
   id: string;
   name: string;
   initial: string;
-  detail: string;
+}
+
+export interface JoinResult {
+  connected: boolean;
+  inviterId: string;
+  invitationId?: string;
 }
 
 export interface DraftChecks {

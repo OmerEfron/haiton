@@ -9,6 +9,7 @@ import { useSession } from "../lib/session";
 import { qk } from "../lib/queryKeys";
 import { brand } from "../copy/common";
 import { authCopy } from "../copy/circle";
+import { joinReturnPath } from "./JoinPage";
 
 type Mode = "signIn" | "signUp";
 
@@ -24,7 +25,7 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const from = (location.state as { from?: string } | null)?.from ?? "/";
+  const from = joinReturnPath((location.state as { from?: string } | null)?.from);
 
   const submit = useMutation({
     mutationFn: async () => {

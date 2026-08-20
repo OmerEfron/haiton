@@ -7,7 +7,6 @@ const API_EXACT = new Set([
   "/flashes",
   "/connections",
   "/invitations",
-  "/readers",
   "/profile",
   "/quota",
 ]);

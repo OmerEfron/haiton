@@ -3,13 +3,28 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test, { after, before, beforeEach } from "node:test";
+import { createApp } from "../app.ts";
 import { SESSION_COOKIE_NAME } from "../contract.ts";
 import { closeDb, getDb } from "../db.ts";
-import { createCircleRouter } from "./router.ts";
+import { provisionUser } from "../provision.ts";
+import type { FrontPage, Invitation, JoinResult, SharedStory } from "../types.ts";
+import { insertConnectionPair } from "./graph.ts";
 
 let tempDir = "";
-let sessionId = "";
-const userId = "u_test";
+const A = {
+  id: "u_a",
+  name: "אלון",
+  email: "a@example.com",
+  token: "invite_a",
+  session: "sess_a",
+};
+const B = {
+  id: "u_b",
+  name: "נועה",
+  email: "b@example.com",
+  token: "invite_b",
+  session: "sess_b",
+};
 
 function resetDb(): void {
   closeDb();
@@ -18,33 +33,47 @@ function resetDb(): void {
   getDb();
 }
 
-function seedUserAndSession(): void {
+function seedPerson(person: typeof A): void {
   getDb()
     .prepare(
-      `INSERT INTO users (id, name, email, password_hash, initial, publishing_since)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO users (id, name, email, password_hash, initial, publishing_since, invite_token)
+       VALUES (?, ?, ?, 'x', ?, '2026', ?)`,
     )
-    .run(userId, "בודק", "test@example.com", "x", "ב", "2026");
+    .run(person.id, person.name, person.email, person.name[0], person.token);
+  getDb()
+    .prepare(`INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?)`)
+    .run(person.session, person.id, "2099-01-01T00:00:00.000Z");
+  provisionUser(getDb(), person.id, `המהדורה של ${person.name}`);
+}
 
-  sessionId = "sess_test_1";
+function cookie(session: string): Record<string, string> {
+  return { Cookie: `${SESSION_COOKIE_NAME}=${session}` };
+}
+
+function jsonHeaders(session: string): Record<string, string> {
+  return { ...cookie(session), "Content-Type": "application/json" };
+}
+
+function insertStory(
+  userId: string,
+  id: string,
+  headline: string,
+  shareToken: string,
+  createdAt: string,
+): void {
+  const body = JSON.stringify([
+    { kind: "paragraph", text: "פסקה ראשונה." },
+    { kind: "paragraph", text: "פסקה שנייה." },
+  ]);
   getDb()
     .prepare(
-      `INSERT INTO sessions (id, user_id, expires_at)
-       VALUES (?, ?, datetime('now', '+1 day'))`,
+      `INSERT INTO stories (
+        id, user_id, section, section_name, edition_label, headline, standfirst,
+        body_json, angle, byline, published_at, placement, created_at, share_token
+      ) VALUES (?, ?, 'work', 'עבודה', 'מהדורה', ?, '', ?, '', 'כתב', '01.01.26, 10:00',
+                'list', ?, ?)`,
     )
-    .run(sessionId, userId);
-}
-
-function seedReaders(): void {
-  const insert = getDb().prepare(
-    `INSERT INTO readers (id, name, initial, detail) VALUES (?, ?, ?, ?)`,
-  );
-  insert.run("r1", "נועה שגב", "נ", "מהדורה פעילה · חיפה");
-  insert.run("r2", "נועם שריד", "נ", "מהדורה פעילה · תל אביב");
-}
-
-function cookieHeader(): Record<string, string> {
-  return { Cookie: `${SESSION_COOKIE_NAME}=${sessionId}` };
+    .run(id, userId, headline, body, createdAt, shareToken);
 }
 
 before(() => {
@@ -58,243 +87,186 @@ after(() => {
 
 beforeEach(() => {
   resetDb();
-  seedUserAndSession();
-  seedReaders();
+  seedPerson(A);
+  seedPerson(B);
 });
 
-test("searchReaders returns [] for blank q", async () => {
-  const app = createCircleRouter();
-  const res = await app.request("/readers?q=", { headers: cookieHeader() });
+test("mixed flash carries shareToken so the client does not use /story/:id", async () => {
+  insertStory(B.id, "9", "של נועה", "share_b", "2026-08-20T00:00:00.000Z");
+  getDb()
+    .prepare(
+      `INSERT INTO flashes (id, user_id, time, text, story_id, sort_order)
+       VALUES ('f_b', ?, '10:00', 'מבזק של נועה', '9', 0)`,
+    )
+    .run(B.id);
+  insertConnectionPair(getDb(), A.id, B.id);
+
+  const page = (await (
+    await createApp().request("/editions/current", { headers: cookie(A.session) })
+  ).json()) as FrontPage;
+  const flash = page.flashes.find((item) => item.storyId === "9");
+  assert.equal(flash?.shareToken, "share_b");
+  const path = flash?.shareToken ? `/s/${flash.shareToken}` : `/story/${flash?.storyId}`;
+  assert.equal(path, "/s/share_b");
+});
+
+test("GET /invitations/preview/:token is public", async () => {
+  const app = createApp();
+  const res = await app.request(`/invitations/preview/${A.token}`);
   assert.equal(res.status, 200);
-  assert.deepEqual(await res.json(), []);
+  assert.deepEqual(await res.json(), { id: A.id, name: A.name, initial: A.name[0] });
+
+  const missing = await app.request("/invitations/preview/nope");
+  assert.equal(missing.status, 404);
 });
 
-test("searchReaders matches exact email and excludes the current user", async () => {
-  getDb()
-    .prepare(
-      `INSERT INTO users (id, name, email, password_hash, initial, publishing_since)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-    )
-    .run("u_other", "נועה", "noa@example.com", "x", "נ", "2026");
-
-  const app = createCircleRouter();
-  const hit = await app.request("/readers?q=NOA@example.com", { headers: cookieHeader() });
-  assert.equal(hit.status, 200);
-  assert.deepEqual(await hit.json(), [
-    { id: "u_other", name: "נועה", initial: "נ", detail: "noa@example.com" },
-  ]);
-
-  const self = await app.request("/readers?q=test@example.com", { headers: cookieHeader() });
-  assert.deepEqual(await self.json(), []);
-
-  const byName = await app.request(`/readers?q=${encodeURIComponent("נועה")}`, {
-    headers: cookieHeader(),
-  });
-  assert.deepEqual(await byName.json(), []);
-});
-
-test("sendInvitation looks up users by readerId and rejects names without @", async () => {
-  getDb()
-    .prepare(
-      `INSERT INTO users (id, name, email, password_hash, initial, publishing_since)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-    )
-    .run("u_other", "נועה", "noa@example.com", "x", "נ", "2026");
-
-  const app = createCircleRouter();
-  const headers = { ...cookieHeader(), "Content-Type": "application/json" };
-
-  const nameless = await app.request("/invitations", {
+test("self-join is 400", async () => {
+  const app = createApp();
+  const res = await app.request("/invitations/join", {
     method: "POST",
-    headers,
-    body: JSON.stringify({ name: "דוד כהן", relation: "friend" }),
-  });
-  assert.equal(nameless.status, 400);
-
-  const byId = await app.request("/invitations", {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ readerId: "u_other", relation: "friend" }),
-  });
-  assert.equal(byId.status, 200);
-  const invited = (await byId.json()) as { name: string; initial: string };
-  assert.equal(invited.initial, "נ");
-  assert.ok(invited.name.includes("נועה"));
-
-  const unknown = await app.request("/invitations", {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ readerId: "missing", name: "new@example.com" }),
-  });
-  assert.equal(unknown.status, 200);
-});
-
-test("sendInvitation returns 400 when name missing and no reader", async () => {
-  const app = createCircleRouter();
-  const res = await app.request("/invitations", {
-    method: "POST",
-    headers: { ...cookieHeader(), "Content-Type": "application/json" },
-    body: JSON.stringify({
-      name: "   ",
-      relation: "friend",
-      section: "friends",
-      settings: { seesMyEdition: true, showsFullName: true, notifyOnPublish: false },
-    }),
+    headers: jsonHeaders(A.session),
+    body: JSON.stringify({ token: A.token }),
   });
   assert.equal(res.status, 400);
-  const body = (await res.json()) as { message: string };
-  assert.equal(body.message, "צריך לבחור קורא או להזין שם");
 });
 
-test("accept incoming invitation uses meta from POST invitation", async () => {
-  const app = createCircleRouter();
-  const postRes = await app.request("/invitations", {
+test("join from invite token creates incoming for visitor, not owner", async () => {
+  const app = createApp();
+  const join = await app.request("/invitations/join", {
     method: "POST",
-    headers: { ...cookieHeader(), "Content-Type": "application/json" },
-    body: JSON.stringify({
-      name: "david@example.com",
-      relation: "family",
-      section: "family",
-      settings: { seesMyEdition: true, showsFullName: false, notifyOnPublish: true },
-    }),
+    headers: jsonHeaders(B.session),
+    body: JSON.stringify({ token: A.token }),
   });
-  assert.equal(postRes.status, 200);
-  const invitation = (await postRes.json()) as { id: string };
+  assert.equal(join.status, 200);
+  const body = (await join.json()) as JoinResult;
+  assert.equal(body.connected, false);
+  assert.equal(body.inviterId, A.id);
+  assert.ok(body.invitationId);
 
-  getDb()
-    .prepare(`UPDATE invitations SET direction = 'incoming' WHERE user_id = ? AND id = ?`)
-    .run(userId, invitation.id);
-
-  const res = await app.request(`/invitations/${invitation.id}/respond`, {
+  const again = await app.request("/invitations/join", {
     method: "POST",
-    headers: { ...cookieHeader(), "Content-Type": "application/json" },
-    body: JSON.stringify({ accept: true }),
+    headers: jsonHeaders(B.session),
+    body: JSON.stringify({ token: A.token }),
   });
-  assert.equal(res.status, 204);
+  const againBody = (await again.json()) as JoinResult;
+  assert.equal(againBody.invitationId, body.invitationId);
 
-  const listRes = await app.request("/connections", { headers: cookieHeader() });
-  const connections = (await listRes.json()) as {
-    relation: string;
-    section: string;
-    settings: { seesMyEdition: boolean; showsFullName: boolean; notifyOnPublish: boolean };
-  }[];
+  const visitor = await app.request("/invitations", { headers: cookie(B.session) });
+  const incoming = (await visitor.json()) as Invitation[];
+  assert.equal(incoming.length, 1);
+  assert.equal(incoming[0].fromUserId, A.id);
+  assert.equal(incoming[0].direction, "incoming");
 
-  assert.equal(connections.length, 1);
-  assert.equal(connections[0].relation, "family");
-  assert.equal(connections[0].section, "family");
-  assert.deepEqual(connections[0].settings, {
-    seesMyEdition: true,
-    showsFullName: false,
-    notifyOnPublish: true,
-  });
+  const owner = await app.request("/invitations", { headers: cookie(A.session) });
+  assert.deepEqual(await owner.json(), []);
 });
 
-test("accept incoming invitation creates a connection", async () => {
-  getDb()
-    .prepare(
-      `INSERT INTO invitations (id, user_id, name, initial, detail, direction)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-    )
-    .run("i_in", userId, "נועה שגב", "נ", "מבקשת חיבור", "incoming");
-
-  const app = createCircleRouter();
-  const res = await app.request("/invitations/i_in/respond", {
+test("join via story share token targets the owner", async () => {
+  insertStory(A.id, "1", "שלי", "share_a", "2026-01-01T00:00:00.000Z");
+  const app = createApp();
+  const join = await app.request("/invitations/join", {
     method: "POST",
-    headers: { ...cookieHeader(), "Content-Type": "application/json" },
+    headers: jsonHeaders(B.session),
+    body: JSON.stringify({ token: "share_a" }),
+  });
+  assert.equal(join.status, 200);
+  const body = (await join.json()) as JoinResult;
+  assert.equal(body.connected, false);
+  assert.equal(body.inviterId, A.id);
+});
+
+test("accept writes two rows; mix, share, and remove stay in lockstep", async () => {
+  insertStory(A.id, "1", "שלי", "share_a", "2026-01-01T00:00:00.000Z");
+  insertStory(B.id, "9", "של נועה", "share_b", "2026-08-20T00:00:00.000Z");
+
+  const app = createApp();
+  const guestShare = await app.request("/stories/share/share_b");
+  assert.equal(guestShare.status, 200);
+  const teaser = (await guestShare.json()) as SharedStory;
+  assert.equal(teaser.gated, true);
+  assert.equal(teaser.body.length, 1);
+  const join = await app.request("/invitations/join", {
+    method: "POST",
+    headers: jsonHeaders(B.session),
+    body: JSON.stringify({ token: A.token }),
+  });
+  const { invitationId } = (await join.json()) as JoinResult;
+
+  const accept = await app.request(`/invitations/${invitationId}/respond`, {
+    method: "POST",
+    headers: jsonHeaders(B.session),
     body: JSON.stringify({ accept: true }),
   });
-  assert.equal(res.status, 204);
+  assert.equal(accept.status, 204);
 
-  const listRes = await app.request("/connections", { headers: cookieHeader() });
-  const connections = (await listRes.json()) as {
-    name: string;
-    relation: string;
-    section: string;
-    relationLabel: string;
-    settings: { seesMyEdition: boolean; showsFullName: boolean; notifyOnPublish: boolean };
-  }[];
+  const pair = getDb()
+    .prepare(`SELECT user_id, connected_user_id FROM connections ORDER BY user_id`)
+    .all() as { user_id: string; connected_user_id: string }[];
+  assert.equal(pair.length, 2);
+  assert.deepEqual(
+    pair.map((row) => `${row.user_id}->${row.connected_user_id}`).sort(),
+    [`${A.id}->${B.id}`, `${B.id}->${A.id}`].sort(),
+  );
 
+  const mix = await app.request("/editions/current", { headers: cookie(A.session) });
+  assert.equal(mix.status, 200);
+  const page = (await mix.json()) as FrontPage;
+  assert.equal(page.lead?.headline, "של נועה");
+  assert.equal(page.lead?.shareToken, "share_b");
+  assert.equal(page.lead?.author.id, B.id);
+
+  const ownOnly = await app.request("/stories/9", { headers: cookie(A.session) });
+  assert.equal(ownOnly.status, 404);
+
+  const shared = await app.request("/stories/share/share_b", { headers: cookie(A.session) });
+  assert.equal(shared.status, 200);
+  const full = (await shared.json()) as SharedStory;
+  assert.equal(full.gated, false);
+  assert.equal(full.connected, true);
+  assert.equal(full.body.length, 2);
+
+  const friendPaper = await app.request(`/editions/${B.id}`, { headers: cookie(A.session) });
+  assert.equal(friendPaper.status, 200);
+
+  const list = await app.request("/connections", { headers: cookie(A.session) });
+  const connections = (await list.json()) as { id: string }[];
   assert.equal(connections.length, 1);
-  assert.equal(connections[0].name, "נועה שגב");
-  assert.equal(connections[0].relation, "friend");
-  assert.equal(connections[0].section, "friends");
-  assert.equal(connections[0].relationLabel, "חדש במעגל");
-  assert.deepEqual(connections[0].settings, {
-    seesMyEdition: true,
-    showsFullName: true,
-    notifyOnPublish: false,
+
+  const gone = await app.request(`/connections/${connections[0].id}`, {
+    method: "DELETE",
+    headers: cookie(A.session),
   });
+  assert.equal(gone.status, 204);
+  const leftover = getDb()
+    .prepare(`SELECT COUNT(*) AS n FROM connections`)
+    .get() as { n: number };
+  assert.equal(leftover.n, 0);
+
+  const after = (await (
+    await app.request("/editions/current", { headers: cookie(A.session) })
+  ).json()) as FrontPage;
+  assert.equal(after.lead?.headline, "שלי");
+  assert.ok(!after.secondary.some((s) => s.headline === "של נועה"));
+  assert.ok(!after.list.some((s) => s.headline === "של נועה"));
+
+  const blocked = await app.request(`/editions/${B.id}`, { headers: cookie(A.session) });
+  assert.equal(blocked.status, 404);
 });
 
 test("removeConnection returns 404 when missing", async () => {
-  const app = createCircleRouter();
+  const app = createApp();
   const res = await app.request("/connections/missing", {
     method: "DELETE",
-    headers: cookieHeader(),
+    headers: cookie(A.session),
   });
   assert.equal(res.status, 404);
-  const body = (await res.json()) as { message: string };
-  assert.equal(body.message, "החיבור לא נמצא");
-});
-
-test("listSuggestedConnections omits already-connected reader names", async () => {
-  getDb()
-    .prepare(
-      `INSERT INTO connections
-       (id, user_id, name, initial, relation_label, relation, section, section_name, status, story_count, settings_json)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'connected', 0, '{}')`,
-    )
-    .run("c1", userId, "נועה שגב", "נ", "חברה", "friend", "friends", "חברים");
-
-  const app = createCircleRouter();
-  const res = await app.request("/connections/suggested", { headers: cookieHeader() });
-  assert.equal(res.status, 200);
-  const suggested = (await res.json()) as { name: string }[];
-  assert.ok(!suggested.some((row) => row.name === "נועה שגב"));
-  assert.ok(suggested.some((row) => row.name === "נועם שריד"));
-});
-
-test("getCircleSummary counts connections with lastPublished", async () => {
-  getDb()
-    .prepare(
-      `INSERT INTO connections
-       (id, user_id, name, initial, relation_label, relation, section, section_name,
-        status, story_count, last_published, settings_json)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'connected', 0, ?, '{}'),
-              (?, ?, ?, ?, ?, ?, ?, ?, 'connected', 0, NULL, '{}')`,
-    )
-    .run(
-      "c1",
-      userId,
-      "א",
-      "א",
-      "חבר",
-      "friend",
-      "friends",
-      "חברים",
-      "2026-01-01",
-      "c2",
-      userId,
-      "ב",
-      "ב",
-      "חבר",
-      "friend",
-      "friends",
-      "חברים",
-    );
-
-  const app = createCircleRouter();
-  const res = await app.request("/connections/summary", { headers: cookieHeader() });
-  assert.equal(res.status, 200);
-  const body = (await res.json()) as { updatedThisWeek: number; connections: number };
-  assert.equal(body.updatedThisWeek, 1);
-  assert.equal(body.connections, 2);
 });
 
 test("getCircleSummary uses zero updatedThisWeek when none published", async () => {
-  const app = createCircleRouter();
-  const res = await app.request("/connections/summary", { headers: cookieHeader() });
+  const app = createApp();
+  const res = await app.request("/connections/summary", { headers: cookie(A.session) });
   assert.equal(res.status, 200);
-  const body = (await res.json()) as { updatedThisWeek: number };
+  const body = (await res.json()) as { updatedThisWeek: number; connections: number };
   assert.equal(body.updatedThisWeek, 0);
+  assert.equal(body.connections, 0);
 });

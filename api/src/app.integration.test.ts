@@ -71,7 +71,6 @@ const UI_GETS = [
   "/karteset/facts",
   "/connections",
   "/connections/summary",
-  "/connections/suggested",
   "/invitations",
 ] as const;
 

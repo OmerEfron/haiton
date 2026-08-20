@@ -3,7 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import styles from "./BottomNav.module.css";
 import { nav } from "../../copy/common";
 import { getSession } from "../../api/reporter/interview";
+import { listInvitations } from "../../api/core/connections";
 import { qk } from "../../lib/queryKeys";
+import { useSession } from "../../lib/session";
 
 function cls({ isActive }: { isActive: boolean }) {
   return [styles.item, isActive && styles.active].filter(Boolean).join(" ");
@@ -11,8 +13,15 @@ function cls({ isActive }: { isActive: boolean }) {
 
 /** Mobile tab bar from mockups 1b and 2c. */
 export function BottomNav() {
+  const { session } = useSession();
   const interview = useQuery({ queryKey: qk.interview, queryFn: getSession });
+  const invitations = useQuery({
+    queryKey: qk.invitations,
+    queryFn: listInvitations,
+    enabled: Boolean(session),
+  });
   const hasDraft = interview.data?.draft.status && interview.data.draft.status !== "empty";
+  const pending = (invitations.data ?? []).filter((i) => i.direction !== "outgoing").length;
 
   return (
     <nav className={styles.nav} aria-label="ניווט מובייל">
@@ -34,8 +43,9 @@ export function BottomNav() {
       <NavLink to="/karteset" className={cls}>
         {nav.karteset}
       </NavLink>
-      <NavLink to="/circle" className={cls}>
+      <NavLink to="/profile" className={cls}>
         {nav.circleShort}
+        {pending > 0 && <span className={styles.badge}>{pending}</span>}
       </NavLink>
     </nav>
   );

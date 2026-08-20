@@ -1,13 +1,22 @@
 import { Link } from "react-router";
 import styles from "./News.module.css";
 import type { Flash, Story } from "../../api/types";
+import { flashPath, storyPath } from "../../lib/format";
 import { Kicker } from "../ui/Bits";
 import { Tag } from "../ui/Chip";
 
 /** Which edition published the story — shown when the tag setting is on. */
 function EditionTag({ story, showTag }: { story: Story; showTag: boolean }) {
   if (!showTag) return null;
-  return <Tag>{story.ownEdition ? "המהדורה שלך" : story.editionLabel}</Tag>;
+  const tag = <Tag>{story.ownEdition ? "המהדורה שלך" : story.editionLabel}</Tag>;
+  if (story.ownEdition || !story.author?.id) return tag;
+  return <Link to={`/u/${story.author.id}`}>{tag}</Link>;
+}
+
+function AuthorLabel({ story }: { story: Story }) {
+  const label = story.byline;
+  if (story.ownEdition || !story.author?.id) return <span>{label}</span>;
+  return <Link to={`/u/${story.author.id}`}>{label}</Link>;
 }
 
 export function LeadStory({
@@ -27,13 +36,13 @@ export function LeadStory({
         <span className={styles.editionName}>{editionName}</span>
       </div>
       <h2 className={styles.leadHeadline}>
-        <Link to={`/story/${story.id}`}>{story.headline}</Link>
+        <Link to={storyPath(story)}>{story.headline}</Link>
       </h2>
       <p className={styles.leadStandfirst}>{story.standfirst}</p>
       <div className={styles.leadByline}>
         <time>{story.publishedAt}</time>
         <span className={styles.bullet} />
-        <span>{story.byline}</span>
+        <AuthorLabel story={story} />
         <EditionTag story={story} showTag={showTag} />
       </div>
     </article>
@@ -48,7 +57,7 @@ export function StoryCard({ story, showTag }: { story: Story; showTag: boolean }
         <EditionTag story={story} showTag={showTag} />
       </div>
       <h3 className={styles.cardHeadline}>
-        <Link to={`/story/${story.id}`}>{story.headline}</Link>
+        <Link to={storyPath(story)}>{story.headline}</Link>
       </h3>
       <time className={styles.cardTime}>{story.publishedAt}</time>
     </article>
@@ -57,7 +66,7 @@ export function StoryCard({ story, showTag }: { story: Story; showTag: boolean }
 
 export function StoryListRow({ story, showTag }: { story: Story; showTag: boolean }) {
   return (
-    <Link to={`/story/${story.id}`} className={styles.listRow}>
+    <Link to={storyPath(story)} className={styles.listRow}>
       <span className={styles.listMeta}>
         {story.sectionName}
         {showTag ? ` · ${story.ownEdition ? "המהדורה שלך" : story.editionLabel}` : ""}
@@ -70,7 +79,7 @@ export function StoryListRow({ story, showTag }: { story: Story; showTag: boolea
 /** The thumbnail rows of "עוד במהדורה" on mobile (1b). */
 export function StoryThumbRow({ story, showTag }: { story: Story; showTag: boolean }) {
   return (
-    <Link to={`/story/${story.id}`} className={styles.thumbRow}>
+    <Link to={storyPath(story)} className={styles.thumbRow}>
       <span>
         <span className={styles.listMeta}>
           {story.sectionName}
@@ -83,11 +92,12 @@ export function StoryThumbRow({ story, showTag }: { story: Story; showTag: boole
 }
 
 export function FlashItem({ flash }: { flash: Flash }) {
+  const to = flashPath(flash);
   return (
     <div className={styles.flashItem}>
       <span className={styles.flashTime}>{flash.time}</span>
-      {flash.storyId ? (
-        <Link to={`/story/${flash.storyId}`} className={styles.flashText}>
+      {to ? (
+        <Link to={to} className={styles.flashText}>
           {flash.text}
         </Link>
       ) : (

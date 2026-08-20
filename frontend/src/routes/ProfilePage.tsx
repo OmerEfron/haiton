@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import styles from "./ProfilePage.module.css";
 import { PageHeader } from "../components/layout/PageHeader";
 import { Footer } from "../components/layout/Footer";
-import { AddConnectionDialog } from "../components/circle/AddConnectionDialog";
+import { CirclePanel } from "../components/circle/CirclePanel";
 import { EditDetailsDialog } from "../components/profile/EditDetailsDialog";
 import { Avatar, ErrorState, Kicker, Loading, StatGrid, Toggle } from "../components/ui/Bits";
 import { Button, ButtonLink } from "../components/ui/Button";
@@ -12,12 +12,12 @@ import type { Profile } from "../api/types";
 import { getProfile, updateEditionSettings } from "../api/core/profile";
 import { listInterviews } from "../api/core/desk";
 import { listStories } from "../api/core/stories";
-import { getCircleSummary, listConnections } from "../api/core/connections";
 import { getSession } from "../api/reporter/interview";
 import { qk } from "../lib/queryKeys";
+import { storyPath } from "../lib/format";
 import { useSession } from "../lib/session";
 import { common } from "../copy/common";
-import { circle, profileCopy } from "../copy/circle";
+import { profileCopy } from "../copy/circle";
 import { desk } from "../copy/desk";
 
 function formatWhen(iso: string): string {
@@ -28,18 +28,13 @@ export function ProfilePage() {
   const client = useQueryClient();
   const navigate = useNavigate();
   const { signOut } = useSession();
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
   const profile = useQuery({ queryKey: qk.profile, queryFn: getProfile });
-  const connections = useQuery({ queryKey: qk.connections, queryFn: listConnections });
-  const summary = useQuery({ queryKey: qk.circleSummary, queryFn: getCircleSummary });
   const interview = useQuery({ queryKey: qk.interview, queryFn: getSession });
   const interviewsQuery = useQuery({ queryKey: qk.deskInterviews, queryFn: listInterviews });
   const storiesQuery = useQuery({ queryKey: ["stories"], queryFn: () => listStories() });
 
-  // Write the response straight into the cache: a settings toggle should not
-  // wait out a second round trip just to show its own new state.
   const setSettings = useMutation({
     mutationFn: updateEditionSettings,
     onSuccess: (settings) => {
@@ -69,7 +64,6 @@ export function ProfilePage() {
   }
 
   const p = profile.data;
-  const people = (connections.data ?? []).filter((c) => c.status === "connected");
   const draftsInProgress =
     interview.data?.draft.status !== "empty" ? 1 : p.stats.draftsInProgress;
 
@@ -82,7 +76,7 @@ export function ProfilePage() {
   }));
   const storiesMapped = (storiesQuery.data ?? []).map((item) => ({
     id: item.id,
-    to: `/story/${item.id}`,
+    to: storyPath(item),
     headline: item.headline,
     when: formatWhen(item.publishedAt),
   }));
@@ -177,53 +171,7 @@ export function ProfilePage() {
         </div>
 
         <aside>
-          {/* Circle card, refined per mockup 2d. */}
-          <div className={styles.card}>
-            <div className={styles.cardHead}>
-              <div>
-                <p className={styles.cardTitle}>{circle.cardTitle}</p>
-                <p className={styles.cardSub}>
-                  {circle.cardCount(
-                    summary.data?.connections ?? people.length,
-                    summary.data?.pending ?? 0,
-                  )}
-                </p>
-              </div>
-              <ButtonLink to="/circle" variant="outline" size="md">
-                {circle.manageCircle}
-              </ButtonLink>
-            </div>
-
-            <div className={styles.people}>
-              {people.slice(0, 3).map((person) => (
-                <div key={person.id} className={styles.person}>
-                  <Avatar initial={person.initial} size={34} />
-                  <span style={{ flex: 1 }}>
-                    <span className={styles.personName}>{person.name}</span>
-                    <span className={styles.personMeta}>
-                      {person.relationLabel} · {person.storyCount} ידיעות
-                    </span>
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className={styles.chipsRow}>
-              {people.slice(0, 3).map((person) => (
-                <span key={`chip-${person.id}`} className={styles.personChip}>
-                  <Avatar initial={person.initial} size={28} />
-                  {person.name.split(" ")[0]}
-                </span>
-              ))}
-              <button
-                type="button"
-                className={styles.addChip}
-                onClick={() => setDialogOpen(true)}
-              >
-                {circle.addShort}
-              </button>
-            </div>
-          </div>
+          <CirclePanel inviteToken={p.inviteToken} />
 
           <div className={styles.archive}>
             <p className={styles.archiveKicker}>{profileCopy.archive}</p>
@@ -243,7 +191,6 @@ export function ProfilePage() {
         </aside>
       </div>
 
-      {dialogOpen && <AddConnectionDialog onClose={() => setDialogOpen(false)} />}
       {editOpen && <EditDetailsDialog user={p.user} onClose={() => setEditOpen(false)} />}
       <Footer />
     </>

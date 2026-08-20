@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 import { after, before, test } from "node:test";
 import { closeDb, getDb } from "../db.ts";
 import { createStoriesRouter } from "./router.ts";
@@ -131,10 +131,14 @@ test("POST /stories demotes lead and increments edition", async () => {
     placement: string;
     ownEdition: boolean;
     sectionName: string;
+    shareToken: string;
+    author: { id: string };
   };
   assert.equal(story.placement, "lead");
   assert.equal(story.ownEdition, true);
   assert.equal(story.sectionName, "ראשי");
+  assert.ok(story.shareToken);
+  assert.equal(story.author.id, USER_ID);
 
   const db = getDb();
   const oldLead = db
@@ -208,4 +212,47 @@ test("third POST /stories in a day is 429", async () => {
   assert.equal(third.status, 429);
   const body = (await third.json()) as { message: string };
   assert.equal(body.message, "הגעתם לשתי ידיעות להיום. מחר הכתב מחכה שוב.");
+});
+
+test("GET /stories/share/:token teasers guests and authors see the rest", async () => {
+  closeDb();
+  process.env.DATABASE_PATH = join(dbDir, "share.sqlite");
+  seedBaseUser();
+  app = createStoriesRouter();
+
+  const body = JSON.stringify([
+    { kind: "paragraph", text: "פסקה ראשונה." },
+    { kind: "paragraph", text: "פסקה שנייה." },
+  ]);
+  getDb()
+    .prepare(
+      `INSERT INTO stories (
+        id, user_id, section, section_name, edition_label, headline, standfirst,
+        body_json, angle, byline, published_at, placement, created_at, share_token
+      ) VALUES ('s1', ?, 'work', 'עבודה', 'המהדורה של בדיקה', 'כותרת', '', ?, '', 'כתב',
+                '01.01.26, 10:00', 'lead', '2026-01-01T00:00:00.000Z', 'tok_share')`,
+    )
+    .run(USER_ID, body);
+
+  const guest = await app.request("/stories/share/tok_share");
+  assert.equal(guest.status, 200);
+  const teaser = (await guest.json()) as {
+    gated: boolean;
+    connected: boolean;
+    body: unknown[];
+    author: { id: string };
+  };
+  assert.equal(teaser.gated, true);
+  assert.equal(teaser.connected, false);
+  assert.equal(teaser.body.length, 1);
+  assert.equal(teaser.author.id, USER_ID);
+
+  const author = await app.request("/stories/share/tok_share", { headers: { Cookie: COOKIE } });
+  assert.equal(author.status, 200);
+  const full = (await author.json()) as { gated: boolean; body: unknown[] };
+  assert.equal(full.gated, false);
+  assert.equal(full.body.length, 2);
+
+  const missing = await app.request("/stories/share/nope");
+  assert.equal(missing.status, 404);
 });
