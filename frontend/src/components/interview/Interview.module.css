@@ -29,15 +29,6 @@
 }
 
 /* ---- Typing indicator --------------------------------------------------- */
-.typing {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 11px 14px;
-  border: 1px dashed var(--dash);
-  background: var(--tint);
-  max-width: 290px;
-}
 .dots { display: flex; gap: 3px; }
 .dots span {
   width: 6px;
@@ -48,13 +39,16 @@
 }
 .dots span:nth-child(2) { animation-delay: 0.15s; }
 .dots span:nth-child(3) { animation-delay: 0.3s; }
-.typingLabel { font: 500 12.5px/1 var(--sans); color: var(--ink-2); }
 
 /* ---- Composer ----------------------------------------------------------- */
 .composer { border-top: 1px solid var(--rule); padding: 16px var(--gutter); background: var(--white); }
-.composerTop { border-top: 0; border-bottom: 1px solid var(--rule); }
-.composerActions { margin-top: 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.consent { margin-inline-start: auto; font: 400 11.5px/1.5 var(--sans); color: var(--ink-2); }
+.composerRow {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+.composerRow > :first-child { flex: 1; min-width: 0; }
+.composerRow > button { min-width: 5.5em; }
 
 .form {
   border-top: 1px solid var(--rule);
@@ -63,6 +57,11 @@
   flex-direction: column;
   gap: 8px;
   background: var(--white);
+}
+.draft .form {
+  border-top: 0;
+  border-bottom: 1px solid var(--rule);
+  padding-inline: 20px;
 }
 .formRow { display: flex; align-items: flex-start; gap: 8px; min-width: 0; }
 .formRow > :last-child {
@@ -103,6 +102,12 @@
   display: block;
   font-family: inherit;
 }
+.skel {
+  min-height: 2.4em;
+  background: var(--ph);
+  animation: hai-blink 1.2s ease-in-out infinite;
+}
+.skelBody { min-height: 8em; }
 
 .checks { border: 1px solid var(--rule); border-radius: var(--radius-ui); background: var(--white); padding: 12px 13px; }
 .checksTitle { margin: 0 0 8px; font: 700 11px/1 var(--sans); color: var(--ink-2); }

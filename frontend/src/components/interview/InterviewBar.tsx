@@ -14,13 +14,21 @@ export function InterviewBar({
   elapsedLabel,
   factsLocked,
   closed,
+  testMode,
+  onToggleTestMode,
 }: {
   startedAt: string;
   elapsedLabel: string;
   factsLocked: number;
   closed: boolean;
+  testMode?: boolean;
+  onToggleTestMode?: () => void;
 }) {
   const started = heDate(startedAt);
+  const showTest = import.meta.env.DEV;
+  const testing = showTest && testMode;
+  const liveLabel = testing ? desk.testModeLive : desk.liveInterview;
+  const liveShort = testing ? desk.testModeLive : common.live;
   return (
     <div className={styles.bar}>
       <div className={styles.barStart}>
@@ -37,11 +45,23 @@ export function InterviewBar({
             desk.interviewEnded
           ) : (
             <>
-              <span className={styles.roomNameFull}>{desk.liveInterview}</span>
-              <span className={styles.roomNameShort}>{common.live}</span>
+              <span className={styles.roomNameFull}>{liveLabel}</span>
+              <span className={styles.roomNameShort}>{liveShort}</span>
             </>
           )}
         </LivePill>
+        {showTest && (
+          <button
+            type="button"
+            className={styles.testModeBtn}
+            aria-pressed={Boolean(testMode)}
+            disabled={!onToggleTestMode}
+            onClick={onToggleTestMode}
+            title={desk.testModeHint}
+          >
+            {desk.testMode}
+          </button>
+        )}
       </div>
       <div className={styles.barEnd}>
         <span className={styles.barMeta}>

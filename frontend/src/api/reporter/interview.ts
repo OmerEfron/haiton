@@ -8,7 +8,10 @@ import { listFacts } from "../core/karteset";
 import { getProfile } from "../core/profile";
 import { reporterRequest } from "./fetch";
 
-export async function startSession(subjectName?: string): Promise<InterviewSession> {
+export async function startSession(
+  subjectName?: string,
+  opts?: { testMode?: boolean },
+): Promise<InterviewSession> {
   const existing = await reporterRequest<InterviewSession | undefined>("/interviews");
   if (existing) return existing;
 
@@ -26,6 +29,7 @@ export async function startSession(subjectName?: string): Promise<InterviewSessi
     body: JSON.stringify({
       facts,
       ...(name ? { subjectName: name } : {}),
+      ...(import.meta.env.DEV && opts?.testMode ? { testMode: true } : {}),
     }),
   });
 }
@@ -97,4 +101,13 @@ export async function discardSession(): Promise<void> {
   if (!session) return;
 
   await reporterRequest<void>(`/interviews/${session.id}`, { method: "DELETE" });
+}
+
+/** Drop the open session (if any) and start a new one, optionally in test mode. */
+export async function restartSession(
+  subjectName?: string,
+  opts?: { testMode?: boolean },
+): Promise<InterviewSession> {
+  await discardSession();
+  return startSession(subjectName, opts);
 }

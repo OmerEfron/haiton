@@ -32,6 +32,7 @@ export function createSession(
   userId: string,
   facts: FactInput[],
   subjectName?: string,
+  testMode = false,
 ): SessionState {
   const session: InterviewSession = {
     id: randomUUID(),
@@ -46,6 +47,7 @@ export function createSession(
     exhausted: false,
     type: null,
     tone: null,
+    testMode,
   };
   const name = subjectName?.trim();
   const state: SessionState = {

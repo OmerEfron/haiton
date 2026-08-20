@@ -245,6 +245,8 @@ export interface InterviewSession {
   type: ArticleTypeId | null;
   /** null = Auto. Filled with the resolved id after the draft is written. */
   tone: ToneId | null;
+  /** Skip the real reporter model; placeholder questions and drafts. */
+  testMode?: boolean;
 }
 
 /** Reader turns after which the reporter stops and writes a draft. */

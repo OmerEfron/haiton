@@ -90,6 +90,7 @@ describe("http session", () => {
     assert.equal(session.exhausted, false);
     assert.equal(session.type, null);
     assert.equal(session.tone, null);
+    assert.equal(session.testMode, false);
     assert.deepEqual(session.openers, [
       "משהו קרה בעבודה",
       "משהו קרה למישהו קרוב",
@@ -541,5 +542,67 @@ describe("http session", () => {
     const payload = parseSseJson(await res.text()) as { message?: string; id?: string };
     assert.equal(payload.message, ERROR_LLM);
     assert.equal(payload.id, undefined);
+  });
+
+  it("testMode skips injected llm and returns placeholders", async () => {
+    const { PLACEHOLDER_ARTICLE, PLACEHOLDER_QUESTIONS } = await import("./placeholders.js");
+    let llm = 0;
+    const nextQuestion = async (): Promise<NextQuestion> => {
+      llm += 1;
+      return { question: "real", done: false };
+    };
+    const writeArticle = async (): Promise<Article> => {
+      llm += 1;
+      throw new Error("real write");
+    };
+    const app = createApp({ ...fakeDeps(), nextQuestion, writeArticle });
+    const createRes = await app.request("/interviews", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ facts: FACTS, testMode: true }),
+    });
+    const created = await createRes.json();
+    assert.equal(created.testMode, true);
+    const { id } = created;
+
+    const asked = await app.request(`/interviews/${id}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "פתיחה" }),
+    });
+    assert.equal(asked.status, 200);
+    const afterAsk = parseSseJson(await asked.text()) as {
+      messages: { role: string; text: string }[];
+      testMode: boolean;
+    };
+    assert.equal(afterAsk.testMode, true);
+    assert.equal(afterAsk.messages[1]?.text, PLACEHOLDER_QUESTIONS[0]);
+
+    const drafted = await app.request(`/interviews/${id}/draft`, { method: "POST" });
+    assert.equal(drafted.status, 200);
+    const afterDraft = parseSseJson(await drafted.text()) as {
+      draft: { headline: string };
+      exhausted: boolean;
+    };
+    assert.equal(afterDraft.draft.headline, PLACEHOLDER_ARTICLE.headline);
+    assert.equal(afterDraft.exhausted, true);
+    assert.equal(llm, 0);
+  });
+
+  it("ignores testMode when NODE_ENV is production", async () => {
+    const prev = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+    try {
+      const app = createApp(fakeDeps());
+      const createRes = await app.request("/interviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ facts: FACTS, testMode: true }),
+      });
+      const created = await createRes.json();
+      assert.equal(created.testMode, false);
+    } finally {
+      process.env.NODE_ENV = prev;
+    }
   });
 });

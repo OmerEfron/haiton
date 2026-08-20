@@ -11,10 +11,10 @@ import {
   ERROR_STATUS,
   ERROR_UNAUTHORIZED,
 } from "../contract.js";
-import type { ArticleTypeId, FactInput, ToneId } from "../types.js";
-import { MAX_MESSAGES, TONE_LABELS, TYPE_LABELS } from "../types.js";
+import { MAX_MESSAGES, TONE_LABELS, TYPE_LABELS, type ArticleTypeId, type FactInput, type ToneId } from "../types.js";
 import { cookieOf, coreGetUserId, coreSaveInterview } from "./core.js";
 import { clientIp, rateLimit } from "./rateLimit.js";
+import { allowTestMode, llmFns } from "./placeholders.js";
 import { closeWithDraft, jsonError, persistAfter, readerCount } from "./run.js";
 import { useHttpLogging } from "../log/http.js";
 import { sseJson } from "./sse.js";
@@ -159,11 +159,17 @@ export function createApp(deps?: AppDeps): Hono<AppEnv> {
     const body = (await c.req.json()) as {
       facts?: FactInput[];
       subjectName?: string;
+      testMode?: boolean;
     };
     const facts = Array.isArray(body.facts) ? body.facts : [];
     const subjectName =
       typeof body.subjectName === "string" ? body.subjectName : undefined;
-    const state = createSession(c.get("userId"), facts, subjectName);
+    const state = createSession(
+      c.get("userId"),
+      facts,
+      subjectName,
+      body.testMode === true && allowTestMode(),
+    );
     return c.json(toWireSession(state), 200);
   });
 
@@ -188,9 +194,10 @@ export function createApp(deps?: AppDeps): Hono<AppEnv> {
       return jsonError(ERROR_INTERVIEW_CLOSED, ERROR_STATUS.interviewClosed);
     }
 
-    const { nextQuestion, writeArticle, saveInterview } = await getDeps();
+    const deps = await getDeps();
+    const { nextQuestion, writeArticle } = llmFns(state!.testMode, deps);
     const cookie = cookieOf(c);
-    const charged = await saveInterview(cookie, toWireSession(state!));
+    const charged = await deps.saveInterview(cookie, toWireSession(state!));
     if (!charged.ok) return jsonError(charged.message, charged.status);
 
     return sseJson(async () => {
@@ -199,7 +206,7 @@ export function createApp(deps?: AppDeps): Hono<AppEnv> {
 
       if (readerCount(state!) >= MAX_MESSAGES) {
         await closeWithDraft(state!, writeArticle);
-        await persistAfter(saveInterview, cookie, state!);
+        await persistAfter(deps.saveInterview, cookie, state!);
         return toWireSession(state!);
       }
 
@@ -212,7 +219,7 @@ export function createApp(deps?: AppDeps): Hono<AppEnv> {
         await closeWithDraft(state!, writeArticle);
       }
 
-      await persistAfter(saveInterview, cookie, state!);
+      await persistAfter(deps.saveInterview, cookie, state!);
       return toWireSession(state!);
     });
   });
@@ -226,14 +233,15 @@ export function createApp(deps?: AppDeps): Hono<AppEnv> {
       return jsonError(ERROR_NO_TRANSCRIPT, ERROR_STATUS.noTranscript);
     }
 
-    const { writeArticle, saveInterview } = await getDeps();
+    const deps = await getDeps();
+    const { writeArticle } = llmFns(state!.testMode, deps);
     const cookie = cookieOf(c);
-    const charged = await saveInterview(cookie, toWireSession(state!));
+    const charged = await deps.saveInterview(cookie, toWireSession(state!));
     if (!charged.ok) return jsonError(charged.message, charged.status);
 
     return sseJson(async () => {
       await closeWithDraft(state!, writeArticle);
-      await persistAfter(saveInterview, cookie, state!);
+      await persistAfter(deps.saveInterview, cookie, state!);
       return toWireSession(state!);
     });
   });

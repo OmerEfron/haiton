@@ -51,6 +51,8 @@ export interface InterviewSession {
   type: import("../types.js").ArticleTypeId | null;
   /** null = Auto. Filled with the resolved id after the draft is written. */
   tone: import("../types.js").ToneId | null;
+  /** Skip the real LLM; placeholder questions and drafts with a think delay. */
+  testMode: boolean;
 }
 
 export type SessionState = InterviewSession & {

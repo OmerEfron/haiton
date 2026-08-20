@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "test": "node --env-file=../.env --env-file=.env --experimental-strip-types --test src/run.test.ts src/http/http.test.ts",
+    "test": "node --env-file=../.env --env-file=.env --experimental-strip-types --test src/run.test.ts src/http/http.test.ts src/http/placeholders.test.ts",
     "dev": "node --env-file=../.env --env-file=.env --experimental-strip-types --watch-path=src src/http/listen.ts | pino-pretty",
     "dev:nowatch": "node --env-file=../.env --env-file=.env --experimental-strip-types src/http/listen.ts | pino-pretty",
     "start": "node --experimental-strip-types src/http/listen.ts"
