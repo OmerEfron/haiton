@@ -65,7 +65,7 @@ export function UserEditionPage() {
         editionNumber={page.editionNumber}
         editionName={page.editionName}
       />
-      <SectionsBar />
+      {/* <SectionsBar /> */}
       {!empty && <Ticker items={page.ticker} />}
       {empty ? (
         <EmptyState title={circle.joinWallTitle} body={circle.emptyPeople} />

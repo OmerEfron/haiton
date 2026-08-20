@@ -20,7 +20,7 @@ export function BriefsPage() {
   return (
     <>
       <PageHeader />
-      <SectionsBar active="flashes" />
+      {/* <SectionsBar active="flashes" /> */}
       {isPending ? (
         <Loading />
       ) : error ? (

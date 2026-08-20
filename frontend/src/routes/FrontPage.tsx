@@ -67,7 +67,7 @@ export function FrontPage() {
         editionNumber={page.editionNumber}
         editionName={page.editionName}
       />
-      <SectionsBar />
+      {/* <SectionsBar /> */}
       {!empty && <Ticker items={page.ticker} />}
 
       {empty ? (
